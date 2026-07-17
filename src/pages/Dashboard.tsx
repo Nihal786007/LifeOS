@@ -1,81 +1,63 @@
-import StatCard from "../components/StatCard";
-import ProductivityChart from "../components/ProductivityChart";
-import MissionCard from "../components/MissionCard";
-import AICard from "../components/AICard";
+import HeroSection from "../components/dashboard/HeroSection";
+import PerformanceOverview from "../components/dashboard/PerformanceOverview";
+import AtlasCommandCenter from "../components/dashboard/AtlasCommandCenter";
+import AtlasPulse from "../components/dashboard/AtlasPulse";
+
+import { AtlasEngine } from "../atlas/atlasEngine";
 import { useApp } from "../context/AppContext";
 
-import {
-  FaTasks,
-  FaBullseye,
-  FaChartLine,
-  FaFire,
-} from "react-icons/fa";
-
 export default function Dashboard() {
-  const { tasks, completedTasks } = useApp();
+  const {
+    tasks,
+    habits,
+    completedTasks,
+  } = useApp();
 
-  const productivity =
-    tasks.length === 0
-      ? 0
-      : Math.round((completedTasks / tasks.length) * 100);
+  const atlas = new AtlasEngine(tasks, habits);
+  const atlasData = atlas.run();
 
-  const remainingTasks = Math.max(tasks.length - completedTasks, 0);
+  const productivity = atlasData.analysis.completionRate;
+
+  const remainingTasks = Math.max(
+    tasks.length - completedTasks,
+    0
+  );
 
   return (
     <div className="space-y-8">
-      {/* Welcome Section */}
-      <div>
-        <h1 className="text-4xl font-bold">
-          👋 Good Afternoon, Commander
-        </h1>
 
-        <p className="text-slate-400 mt-2">
-          Welcome back to LifeOS Mission Control.
-        </p>
-      </div>
+      {/* Hero */}
+      <HeroSection />
 
-      {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StatCard
-          title="Tasks"
-          value={tasks.length}
-          icon={<FaTasks />}
-          color="text-blue-400"
-        />
+      {/* Performance Overview */}
+      <PerformanceOverview
+        total={tasks.length}
+        completed={completedTasks}
+        productivity={productivity}
+        remaining={remainingTasks}
+      />
 
-        <StatCard
-          title="Completed"
-          value={completedTasks}
-          icon={<FaBullseye />}
-          color="text-green-400"
-        />
+      {/* Dashboard Content */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
 
-        <StatCard
-          title="Productivity"
-          value={`${productivity}%`}
-          icon={<FaChartLine />}
-          color="text-cyan-400"
-        />
-
-        <StatCard
-          title="Remaining"
-          value={remainingTasks}
-          icon={<FaFire />}
-          color="text-orange-400"
-        />
-      </div>
-
-      {/* Productivity Graph */}
-      <ProductivityChart />
-
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Main ATLAS Section */}
         <div className="xl:col-span-2">
-          <AICard />
+          <AtlasCommandCenter />
         </div>
 
-        <MissionCard />
+        {/* Mission Pulse */}
+        <AtlasPulse
+          productivity={productivity}
+          focus={
+            atlasData.missions.length > 0
+              ? atlasData.missions[0].title
+              : "No Active Mission"
+          }
+          missions={remainingTasks}
+        />
+
       </div>
+
     </div>
   );
 }

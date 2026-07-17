@@ -1,28 +1,32 @@
-import { ReactNode } from "react";
-import { motion } from "framer-motion";
+import type { ReactNode } from "react";
 
-type CardProps = {
+interface CardProps {
   children: ReactNode;
   className?: string;
-};
+}
 
-export default function Card({ children, className = "" }: CardProps) {
+export default function Card({
+  children,
+  className = "",
+}: CardProps) {
   return (
-    <motion.div
-      whileHover={{ y: -5, scale: 1.02 }}
-      transition={{ duration: 0.2 }}
+    <div
       className={`
-        rounded-2xl
+        rounded-3xl
         border
         border-slate-800
-        bg-slate-900/80
-        backdrop-blur-md
-        shadow-lg
+        bg-slate-900
         p-6
+        shadow-lg
+        transition-all
+        duration-300
+        hover:border-cyan-500/30
+        hover:shadow-cyan-500/10
+        hover:shadow-2xl
         ${className}
       `}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

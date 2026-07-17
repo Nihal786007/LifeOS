@@ -1,31 +1,47 @@
-export default function AICard() {
+import type { AtlasResult } from "../atlas/types";
+
+interface AICardProps {
+  atlas: AtlasResult;
+}
+
+export default function AICard({ atlas }: AICardProps) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
-
       <h2 className="text-2xl font-bold mb-4">
-        🤖 AI Assistant
+        🤖 ATLAS AI Assistant
       </h2>
 
-      <div className="rounded-xl bg-slate-950 p-4 text-slate-300">
+      <div className="rounded-xl bg-slate-950 p-4 text-slate-300 space-y-3">
 
         <p>
-          Good afternoon, Commander.
-        </p>
-
-        <p className="mt-3">
-          • Finish 2 more tasks today.
+          <strong>{atlas.greeting}</strong>
         </p>
 
         <p>
-          • Continue Apex Robotics.
+          {atlas.briefing.summary}
         </p>
 
         <p>
-          • Push today's code to GitHub.
+          💡 {atlas.briefing.recommendation}
+        </p>
+
+        {atlas.recommendations.map((rec, index) => (
+          <div key={index}>
+            <p className="font-semibold">
+              {rec.title}
+            </p>
+
+            <p className="text-sm text-slate-400">
+              {rec.description}
+            </p>
+          </div>
+        ))}
+
+        <p className="italic text-cyan-400">
+          "{atlas.motivation}"
         </p>
 
       </div>
-
     </div>
   );
 }

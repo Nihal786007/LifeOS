@@ -2,23 +2,11 @@ import {
   createContext,
   useContext,
   useState,
-  ReactNode,
   useEffect,
 } from "react";
 
-type Task = {
-  id: number;
-  text: string;
-  completed: boolean;
-  completedAt?: string;
-};
-
-type Habit = {
-  id: number;
-  name: string;
-  streak: number;
-  completedToday: boolean;
-};
+import type { ReactNode } from "react";
+import type { Task, Habit } from "../shared/types";
 
 type AppContextType = {
   // Tasks
@@ -164,7 +152,6 @@ export function AppProvider({
   return (
     <AppContext.Provider
       value={{
-        // Tasks
         tasks,
         addTask,
         toggleTask,
@@ -173,7 +160,6 @@ export function AppProvider({
           (task) => task.completed
         ).length,
 
-        // Habits
         habits,
         addHabit,
         toggleHabit,

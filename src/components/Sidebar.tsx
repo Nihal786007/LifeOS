@@ -1,60 +1,185 @@
+import {
+  FaHouse,
+  FaListCheck,
+  FaCalendarDays,
+  FaChartLine,
+  FaFire,
+  FaGear,
+} from "react-icons/fa6";
+
 type SidebarProps = {
   currentPage: string;
   setCurrentPage: (page: string) => void;
 };
 
-function Sidebar({ currentPage, setCurrentPage }: SidebarProps) {
+export default function Sidebar({
+  currentPage,
+  setCurrentPage,
+}: SidebarProps) {
   const menuItems = [
-    { id: "dashboard", label: "🏠 Dashboard" },
-    { id: "monthly", label: "📅 Monthly" },
-    { id: "tasks", label: "✅ Tasks" },
-    { id: "statistics", label: "📊 Statistics" },
-    { id: "habits", label: "🔥 Habits" },
-    { id: "settings", label: "⚙️ Settings" },
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: <FaHouse />,
+    },
+    {
+      id: "tasks",
+      label: "Tasks",
+      icon: <FaListCheck />,
+    },
+    {
+      id: "monthly",
+      label: "Monthly Planner",
+      icon: <FaCalendarDays />,
+    },
+    {
+      id: "statistics",
+      label: "Analytics",
+      icon: <FaChartLine />,
+    },
+    {
+      id: "habits",
+      label: "Habits",
+      icon: <FaFire />,
+    },
+    {
+      id: "settings",
+      label: "Settings",
+      icon: <FaGear />,
+    },
   ];
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-slate-800 bg-slate-900">
+    <aside className="flex h-screen w-72 flex-col border-r border-slate-800 bg-slate-950">
+
       {/* Logo */}
-      <div className="border-b border-slate-800 p-6">
-        <h1 className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-3xl font-extrabold tracking-wide text-transparent">
+
+      <div className="border-b border-slate-800 px-8 py-8">
+
+        <h1 className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-4xl font-black tracking-tight text-transparent">
           LifeOS
         </h1>
 
-        <p className="mt-1 text-sm text-slate-400">
-          Version 1.0
+        <p className="mt-2 text-sm text-slate-500">
+          Personal Operating System
         </p>
+
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setCurrentPage(item.id)}
-            className={`mb-2 w-full rounded-xl px-4 py-3 text-left transition-all duration-200 ${
-              currentPage === item.id
-                ? "bg-blue-600 text-white shadow-lg"
-                : "text-slate-300 hover:bg-slate-800 hover:text-white"
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
+
+      <nav className="flex-1 px-5 py-8">
+
+        <p className="mb-5 px-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+          Navigation
+        </p>
+
+        <div className="space-y-2">
+
+          {menuItems.map((item) => {
+
+            const active =
+              currentPage === item.id;
+
+            return (
+              <button
+                key={item.id}
+                onClick={() =>
+                  setCurrentPage(item.id)
+                }
+                className={`
+                  group
+                  flex
+                  w-full
+                  items-center
+                  gap-4
+                  rounded-2xl
+                  px-4
+                  py-3
+                  transition-all
+                  duration-300
+
+                  ${
+                    active
+                      ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/10"
+                      : "border border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
+                  }
+                `}
+              >
+
+                <div
+                  className={`
+                    text-lg
+                    transition-transform
+                    duration-300
+                    ${
+                      active
+                        ? "scale-110"
+                        : "group-hover:translate-x-1"
+                    }
+                  `}
+                >
+                  {item.icon}
+                </div>
+
+                <span className="font-medium">
+                  {item.label}
+                </span>
+
+              </button>
+            );
+          })}
+
+        </div>
+
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-slate-800 p-4">
-        <p className="text-sm text-slate-400">
-          Made by
+      {/* ATLAS */}
+
+      <div className="mx-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
+
+        <p className="text-xs uppercase tracking-[0.35em] text-cyan-400">
+          ATLAS
         </p>
 
-        <p className="font-semibold text-white">
-          Nihal
+        <h3 className="mt-3 font-semibold text-white">
+          Mission Control
+        </h3>
+
+        <p className="mt-1 text-sm text-slate-400">
+          Focused Session
         </p>
+
       </div>
+
+      {/* Profile */}
+
+      <div className="border-t border-slate-800 px-6 py-6">
+
+        <div className="flex items-center gap-4">
+
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 font-bold text-slate-950">
+
+            NA
+
+          </div>
+
+          <div>
+
+            <h3 className="font-semibold text-white">
+              Nihal Arfain Ahmed
+            </h3>
+
+            <p className="text-sm text-slate-400">
+              Builder Mode
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </aside>
   );
 }
-
-export default Sidebar;

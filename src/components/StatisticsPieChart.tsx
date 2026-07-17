@@ -36,7 +36,7 @@ export default function StatisticsPieChart() {
             dataKey="value"
             label
           >
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
               <Cell
                 key={index}
                 fill={COLORS[index % COLORS.length]}
