@@ -1,5 +1,19 @@
 import { useState } from "react";
+import {
+  FaFire,
+  FaCheckCircle,
+  FaChartLine,
+  FaBullseye,
+  FaPlus,
+} from "react-icons/fa";
+
 import { useApp } from "../context/AppContext";
+
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import PageHero from "../components/ui/PageHero";
+import StatCard from "../components/ui/StatCard";
 
 export default function Habits() {
   const {
@@ -12,106 +26,184 @@ export default function Habits() {
   const [newHabit, setNewHabit] = useState("");
 
   function handleAddHabit() {
+    if (!newHabit.trim()) return;
+
     addHabit(newHabit);
     setNewHabit("");
   }
 
+  const completedToday = habits.filter(
+    (habit) => habit.completedToday
+  ).length;
+
+  const progress =
+    habits.length === 0
+      ? 0
+      : Math.round(
+          (completedToday / habits.length) * 100
+        );
+
+  const totalStreak = habits.reduce(
+    (sum, habit) => sum + habit.streak,
+    0
+  );
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
 
-      {/* Header */}
-      <div>
-        <h1 className="text-4xl font-bold">
-          🔥 Habit Tracker
-        </h1>
+      <PageHero
+        badge="Daily Discipline"
+        title="Habit Tracker"
+        description="Small habits repeated every day create extraordinary results."
+      >
+        <Card className="border-orange-500/20 bg-orange-500/5">
 
-        <p className="mt-2 text-slate-400">
-          Build consistency one day at a time.
-        </p>
+          <p className="text-sm uppercase tracking-widest text-orange-300">
+            Today's Progress
+          </p>
+
+          <h2 className="mt-3 text-5xl font-black">
+            {progress}%
+          </h2>
+
+          <p className="mt-3 text-slate-400">
+            Habits Completed
+          </p>
+
+        </Card>
+      </PageHero>
+
+      <div className="grid gap-6 md:grid-cols-4">
+
+        <StatCard
+          icon={<FaBullseye />}
+          title="Habits"
+          value={habits.length}
+        />
+
+        <StatCard
+          icon={<FaCheckCircle />}
+          title="Completed"
+          value={completedToday}
+          color="text-green-400"
+        />
+
+        <StatCard
+          icon={<FaFire />}
+          title="Total Streak"
+          value={totalStreak}
+          color="text-orange-400"
+        />
+
+        <StatCard
+          icon={<FaChartLine />}
+          title="Progress"
+          value={`${progress}%`}
+          color="text-cyan-400"
+        />
+
       </div>
+            <Card>
 
-      {/* Add Habit */}
-      <div className="rounded-2xl bg-slate-900 p-6">
+        <h2 className="text-2xl font-bold">
+          Add New Habit
+        </h2>
 
-        <div className="flex gap-4">
+        <div className="mt-6 flex gap-3">
 
-          <input
-            type="text"
+          <Input
             value={newHabit}
-            onChange={(e) =>
-              setNewHabit(e.target.value)
-            }
-            placeholder="Enter a new habit..."
-            className="flex-1 rounded-xl bg-slate-800 p-3 outline-none"
+            onChange={(e) => setNewHabit(e.target.value)}
+            placeholder="Create a new habit..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleAddHabit();
+              }
+            }}
           />
 
-          <button
-            onClick={handleAddHabit}
-            className="rounded-xl bg-blue-600 px-6 py-3 font-bold hover:bg-blue-700"
-          >
+          <Button onClick={handleAddHabit}>
+            <FaPlus />
             Add
-          </button>
+          </Button>
 
         </div>
 
-      </div>
-
-      {/* Habits List */}
+      </Card>
 
       <div className="space-y-4">
 
         {habits.length === 0 ? (
-          <div className="rounded-2xl bg-slate-900 p-10 text-center text-slate-400">
-            No habits yet. Create your first habit!
-          </div>
+
+          <Card className="p-10 text-center">
+
+            <FaBullseye className="mx-auto text-5xl text-cyan-400" />
+
+            <h3 className="mt-6 text-2xl font-bold">
+              No Habits Yet
+            </h3>
+
+            <p className="mt-3 text-slate-400">
+              Build your future one habit at a time.
+              Create your first habit to begin your journey.
+            </p>
+
+          </Card>
+
         ) : (
+
           habits.map((habit) => (
-            <div
+
+            <Card
               key={habit.id}
-              className="rounded-2xl bg-slate-900 p-6 flex items-center justify-between"
+              className="p-6"
             >
-              <div>
 
-                <h2 className="text-2xl font-bold">
-                  {habit.name}
-                </h2>
+              <div className="flex items-center justify-between">
 
-                <p className="text-orange-400 mt-2">
-                  🔥 Streak: {habit.streak} day(s)
-                </p>
+                <div>
+
+                  <h2 className="text-2xl font-bold">
+                    {habit.name}
+                  </h2>
+
+                  <p className="mt-2 text-orange-400">
+                    🔥 Streak: {habit.streak} day(s)
+                  </p>
+
+                </div>
+
+                <div className="flex gap-3">
+                                  <Button
+                    onClick={() => toggleHabit(habit.id)}
+                    variant={
+                      habit.completedToday
+                        ? "primary"
+                        : "secondary"
+                    }
+                  >
+                    <FaCheckCircle />
+
+                    {habit.completedToday
+                      ? "Completed"
+                      : "Complete"}
+                  </Button>
+
+                  <Button
+                    variant="danger"
+                    onClick={() => deleteHabit(habit.id)}
+                  >
+                    Delete
+                  </Button>
+
+                </div>
 
               </div>
 
-              <div className="flex gap-3">
+            </Card>
 
-                <button
-                  onClick={() =>
-                    toggleHabit(habit.id)
-                  }
-                  className={`rounded-xl px-5 py-2 font-bold ${
-                    habit.completedToday
-                      ? "bg-green-600"
-                      : "bg-slate-700"
-                  }`}
-                >
-                  {habit.completedToday
-                    ? "Completed"
-                    : "Complete"}
-                </button>
-
-                <button
-                  onClick={() =>
-                    deleteHabit(habit.id)
-                  }
-                  className="rounded-xl bg-red-600 px-5 py-2 font-bold hover:bg-red-700"
-                >
-                  Delete
-                </button>
-
-              </div>
-
-            </div>
           ))
+
         )}
 
       </div>
