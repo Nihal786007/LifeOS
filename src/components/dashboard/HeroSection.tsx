@@ -103,17 +103,7 @@ export default function HeroSection({
   )}
 </h1>
 
-         <h1 className="mt-8 text-6xl xl:text-7xl font-black tracking-tight">
-  {greeting}
-  {name && (
-    <>
-      <br />
-      <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-        {name}
-      </span>
-    </>
-  )}
-</h1>
+
 
         </div>
 
