@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { AtlasEngine } from "../../atlas/atlasEngine";
 import { useApp } from "../../context/AppContext";
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  name: string;
+}
+
+export default function HeroSection({
+  name,
+}: HeroSectionProps) {
+
   const { tasks, habits } = useApp();
 
   const atlas = new AtlasEngine(tasks, habits);
@@ -85,13 +92,28 @@ export default function HeroSection() {
           </div>
 
           <h1 className="mt-8 text-6xl xl:text-7xl font-black tracking-tight">
-            {greeting}
-          </h1>
+  {greeting}
+  {name && (
+    <>
+      <br />
+      <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        {name}
+      </span>
+    </>
+  )}
+</h1>
 
-          <p className="mt-8 max-w-2xl text-2xl leading-10 text-slate-300">
-            Your personal operating system for focused work,
-            continuous growth, and intelligent decision-making.
-          </p>
+         <h1 className="mt-8 text-6xl xl:text-7xl font-black tracking-tight">
+  {greeting}
+  {name && (
+    <>
+      <br />
+      <span className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+        {name}
+      </span>
+    </>
+  )}
+</h1>
 
         </div>
 

@@ -7,11 +7,12 @@ import { AtlasEngine } from "../atlas/atlasEngine";
 import { useApp } from "../context/AppContext";
 
 export default function Dashboard() {
-  const {
-    tasks,
-    habits,
-    completedTasks,
-  } = useApp();
+ const {
+  tasks,
+  habits,
+  completedTasks,
+  profile,
+} = useApp();
 
   const atlas = new AtlasEngine(tasks, habits);
   const atlasData = atlas.run();
@@ -27,7 +28,7 @@ export default function Dashboard() {
     <div className="space-y-8">
 
       {/* Hero */}
-      <HeroSection />
+      <HeroSection name={profile.name} />
 
       {/* Performance Overview */}
       <PerformanceOverview
