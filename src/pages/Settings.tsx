@@ -1,4 +1,16 @@
 import { useEffect, useState } from "react";
+import {
+  FaUser,
+  FaDatabase,
+  FaInfoCircle,
+  FaCog,
+} from "react-icons/fa";
+
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import PageHero from "../components/ui/PageHero";
+import StatCard from "../components/ui/StatCard";
 
 function Settings() {
   const [name, setName] = useState("");
@@ -24,65 +36,87 @@ function Settings() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
+      <PageHero
+        badge="System Control"
+        title="Settings"
+        description="Configure your LifeOS experience and personalize your command center."
+      >
+        <Card className="border-cyan-500/20 bg-cyan-500/5">
+          <p className="text-sm uppercase tracking-widest text-cyan-300">
+            LifeOS
+          </p>
 
-      <div>
-        <h1 className="text-4xl font-bold">⚙️ Settings</h1>
+          <h2 className="mt-3 text-5xl font-black">
+            v1.0
+          </h2>
 
-        <p className="mt-2 text-slate-400">
-          Customize your LifeOS experience.
-        </p>
-      </div>
+          <p className="mt-3 text-slate-400">
+            Mission Control
+          </p>
+        </Card>
+      </PageHero>
 
-      <div className="rounded-2xl bg-slate-900 p-6">
-
-        <h2 className="text-xl font-bold mb-4">
-          👤 Your Name
-        </h2>
-
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Enter your name..."
-          className="w-full rounded-xl bg-slate-800 p-3 outline-none"
+      <div className="grid gap-6 md:grid-cols-4">
+        <StatCard
+          icon={<FaUser />}
+          title="Profile"
+          value="Ready"
         />
 
-        <button
-          onClick={saveName}
-          className="mt-4 rounded-xl bg-blue-600 px-5 py-3 hover:bg-blue-700"
-        >
-          Save Name
-        </button>
+        <StatCard
+          icon={<FaCog />}
+          title="Settings"
+          value="Active"
+          color="text-cyan-400"
+        />
 
+        <StatCard
+          icon={<FaDatabase />}
+          title="Storage"
+          value="Local"
+          color="text-green-400"
+        />
+
+        <StatCard
+          icon={<FaInfoCircle />}
+          title="Version"
+          value="1.0"
+          color="text-orange-400"
+        />
       </div>
 
-      <div className="rounded-2xl bg-slate-900 p-6">
+     <Card>
+  <h2 className="mb-6 text-xl font-bold">
+    Profile Settings
+  </h2>
+        <div className="space-y-4">
+          <div>
+  <p className="mb-2 text-sm font-medium">
+    Your Name
+  </p>
 
-        <h2 className="text-xl font-bold mb-4">
-          🗑 Reset Application
-        </h2>
+  <Input
+    value={name}
+    onChange={(e) => setName(e.target.value)}
+    placeholder="Enter your name"
+  />
+</div>
 
-        <button
-          onClick={resetData}
-          className="rounded-xl bg-red-600 px-5 py-3 hover:bg-red-700"
-        >
-          Delete All Data
-        </button>
+          <div className="flex gap-3">
+            <Button onClick={saveName}>
+              Save Name
+            </Button>
 
-      </div>
-
-      <div className="rounded-2xl bg-slate-900 p-6">
-
-        <h2 className="text-xl font-bold">
-          🚀 LifeOS Version
-        </h2>
-
-        <p className="mt-2 text-slate-400">
-          Version 1.0.0
-        </p>
-
-      </div>
-
+            <Button
+              variant="danger"
+              onClick={resetData}
+            >
+              Reset Data
+            </Button>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }

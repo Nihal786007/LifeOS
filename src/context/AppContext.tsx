@@ -1,29 +1,49 @@
 import {
   createContext,
   useContext,
-  useState,
   useEffect,
+  useState,
 } from "react";
 
 import type { ReactNode } from "react";
-import type { Task, Habit } from "../shared/types";
+import type {
+  Habit,
+  Task,
+  UserProfile,
+} from "../shared/types";
 
 type AppContextType = {
+  // =========================
   // Tasks
+  // =========================
+
   tasks: Task[];
   addTask: (text: string) => void;
   toggleTask: (id: number) => void;
   deleteTask: (id: number) => void;
   completedTasks: number;
 
+  // =========================
   // Habits
+  // =========================
+
   habits: Habit[];
   addHabit: (name: string) => void;
   toggleHabit: (id: number) => void;
   deleteHabit: (id: number) => void;
+
+  // =========================
+  // User Profile
+  // =========================
+
+  profile: UserProfile;
+  updateProfile: (
+    data: Partial<UserProfile>
+  ) => void;
 };
 
-const AppContext = createContext<AppContextType | null>(null);
+const AppContext =
+  createContext<AppContextType | null>(null);
 
 export function AppProvider({
   children,
@@ -35,7 +55,8 @@ export function AppProvider({
   // =========================
 
   const [tasks, setTasks] = useState<Task[]>(() => {
-    const saved = localStorage.getItem("lifeos-tasks");
+    const saved =
+      localStorage.getItem("lifeos-tasks");
 
     if (!saved) return [];
 
@@ -71,7 +92,8 @@ export function AppProvider({
       prev.map((task) => {
         if (task.id !== id) return task;
 
-        const completed = !task.completed;
+        const completed =
+          !task.completed;
 
         return {
           ...task,
@@ -86,11 +108,12 @@ export function AppProvider({
 
   function deleteTask(id: number) {
     setTasks((prev) =>
-      prev.filter((task) => task.id !== id)
+      prev.filter(
+        (task) => task.id !== id
+      )
     );
   }
-
-  // =========================
+    // =========================
   // HABITS
   // =========================
 
@@ -145,13 +168,63 @@ export function AppProvider({
 
   function deleteHabit(id: number) {
     setHabits((prev) =>
-      prev.filter((habit) => habit.id !== id)
+      prev.filter(
+        (habit) => habit.id !== id
+      )
     );
   }
 
-  return (
+  // =========================
+  // USER PROFILE
+  // =========================
+
+  const [profile, setProfile] =
+    useState<UserProfile>(() => {
+      const saved =
+        localStorage.getItem(
+          "lifeos-profile"
+        );
+
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch {
+          // Ignore invalid saved data
+        }
+      }
+
+      return {
+        name: "",
+        occupation: "",
+        timezone: "Asia/Kolkata",
+        theme: "dark",
+        atlasPersonality: "Professional",
+        level: 1,
+        xp: 0,
+      };
+    });
+
+  useEffect(() => {
+    localStorage.setItem(
+      "lifeos-profile",
+      JSON.stringify(profile)
+    );
+  }, [profile]);
+
+  function updateProfile(
+    data: Partial<UserProfile>
+  ) {
+    setProfile((prev) => ({
+      ...prev,
+      ...data,
+    }));
+  }
+    return (
     <AppContext.Provider
       value={{
+        // =========================
+        // Tasks
+        // =========================
         tasks,
         addTask,
         toggleTask,
@@ -160,10 +233,19 @@ export function AppProvider({
           (task) => task.completed
         ).length,
 
+        // =========================
+        // Habits
+        // =========================
         habits,
         addHabit,
         toggleHabit,
         deleteHabit,
+
+        // =========================
+        // User Profile
+        // =========================
+        profile,
+        updateProfile,
       }}
     >
       {children}
