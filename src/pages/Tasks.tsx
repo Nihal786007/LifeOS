@@ -1,3 +1,4 @@
+import { sortTasks } from "../utils/taskSorter";
 import TaskSection from "../components/tasks/TaskSection";
 import EmptyState from "../components/tasks/EmptyState";
 import { useState } from "react";
@@ -20,6 +21,13 @@ import StatCard from "../components/ui/StatCard";
 export default function Tasks() {
   const [task, setTask] = useState("");
   const [search, setSearch] = useState("");
+  const [priority, setPriority] = useState<
+  "low" | "medium" | "high"
+>("medium");
+
+const [dueDate, setDueDate] = useState(
+  new Date().toISOString().split("T")[0]
+);
 
   const {
     tasks,
@@ -28,7 +36,7 @@ export default function Tasks() {
     toggleTask,
     completedTasks,
   } = useApp();
-  console.log(tasks);
+  
 
   const remaining = tasks.length - completedTasks;
 
@@ -39,40 +47,46 @@ export default function Tasks() {
 );
 const today = new Date().toISOString().split("T")[0];
 
-const overdueTasks = filteredTasks.filter(
-  (task) =>
-    !task.completed &&
-    task.dueDate &&
-    task.dueDate < today
+const overdueTasks = sortTasks(
+  filteredTasks.filter(
+    (task) =>
+      !task.completed &&
+      task.dueDate &&
+      task.dueDate < today
+  )
 );
 
-const todayTasks = filteredTasks.filter(
-  (task) =>
-    !task.completed &&
-    task.dueDate === today
+const todayTasks = sortTasks(
+  filteredTasks.filter(
+    (task) =>
+      !task.completed &&
+      task.dueDate === today
+  )
 );
 
-const upcomingTasks = filteredTasks.filter(
-  (task) =>
-    !task.completed &&
-    task.dueDate &&
-    task.dueDate > today
+const upcomingTasks = sortTasks(
+  filteredTasks.filter(
+    (task) =>
+      !task.completed &&
+      task.dueDate &&
+      task.dueDate > today
+  )
 );
 
-const completedTaskList = filteredTasks.filter(
-  (task) => task.completed
+const completedTaskList = sortTasks(
+  filteredTasks.filter(
+    (task) => task.completed
+  )
 );
 
-console.log("All tasks:", tasks);
-console.log("Filtered:", filteredTasks);
-console.log("Today:", todayTasks);
 
 const handleAddTask = () => {
-    if (!task.trim()) return;
+  if (!task.trim()) return;
 
-    addTask(task.trim());
-    setTask("");
-  };
+  addTask(task.trim(), priority, dueDate);
+
+  setTask("");
+};
 
   return (
     <div className="space-y-10">
@@ -136,29 +150,72 @@ const handleAddTask = () => {
 
       </div>
 
-      <div className="flex flex-col gap-4 lg:flex-row">
+      <Card className="space-y-6">
 
-        <Input
-          value={task}
-          onChange={(e) => setTask(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              handleAddTask();
-            }
-          }}
-          placeholder="Create a new mission..."
-          className="flex-1 px-6 py-5 text-lg"
-        />
+  <h2 className="text-xl font-bold text-white">
+    Create New Mission
+  </h2>
 
-        <Button
-          onClick={handleAddTask}
-          className="px-8 py-5"
-        >
-          <FaPlus />
-          New Mission
-        </Button>
+  <Input
+    value={task}
+    onChange={(e) => setTask(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        handleAddTask();
+      }
+    }}
+    placeholder="Mission title..."
+    className="px-6 py-5 text-lg"
+  />
 
-      </div>
+  <div className="grid gap-4 md:grid-cols-2">
+
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-slate-300">
+        Priority
+      </label>
+
+      <select
+        value={priority}
+        onChange={(e) =>
+          setPriority(
+            e.target.value as
+              | "low"
+              | "medium"
+              | "high"
+          )
+        }
+        className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white"
+      >
+        <option value="low">🟢 Low</option>
+        <option value="medium">🟡 Medium</option>
+        <option value="high">🔴 High</option>
+      </select>
+    </div>
+
+    <div>
+      <label className="mb-2 block text-sm font-semibold text-slate-300">
+        Due Date
+      </label>
+
+      <Input
+        type="date"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
+    </div>
+
+  </div>
+
+  <Button
+    onClick={handleAddTask}
+    className="w-full py-4"
+  >
+    <FaPlus />
+    Create Mission
+  </Button>
+
+</Card>
 
       
             

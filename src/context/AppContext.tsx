@@ -18,7 +18,11 @@ type AppContextType = {
   // =========================
 
   tasks: Task[];
-  addTask: (text: string) => void;
+  addTask: (
+  title: string,
+  priority: "low" | "medium" | "high",
+  dueDate: string
+) => void;
   toggleTask: (id: number) => void;
   deleteTask: (id: number) => void;
   completedTasks: number;
@@ -74,7 +78,11 @@ export function AppProvider({
     );
   }, [tasks]);
 
-  function addTask(title: string) {
+ function addTask(
+  title: string,
+  priority: "low" | "medium" | "high",
+  dueDate: string
+) {
   if (!title.trim()) return;
 
   setTasks((prev) => [
@@ -88,14 +96,18 @@ export function AppProvider({
       completed: false,
       completedAt: undefined,
 
-      dueDate: new Date().toISOString().split("T")[0],
+      dueDate,
 
-      priority: "medium",
+priority,
 
-      missionId: undefined,
+missionId: undefined,
 
-      xp: 10,
-
+xp:
+  priority === "high"
+    ? 20
+    : priority === "medium"
+    ? 10
+    : 5,
       createdAt: new Date().toISOString(),
     },
   ]);
