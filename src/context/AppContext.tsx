@@ -74,18 +74,32 @@ export function AppProvider({
     );
   }, [tasks]);
 
-  function addTask(text: string) {
-    if (!text.trim()) return;
+  function addTask(title: string) {
+  if (!title.trim()) return;
 
-    setTasks((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        text,
-        completed: false,
-      },
-    ]);
-  }
+  setTasks((prev) => [
+    ...prev,
+    {
+      id: Date.now(),
+
+      title: title.trim(),
+      description: "",
+
+      completed: false,
+      completedAt: undefined,
+
+      dueDate: new Date().toISOString().split("T")[0],
+
+      priority: "medium",
+
+      missionId: undefined,
+
+      xp: 10,
+
+      createdAt: new Date().toISOString(),
+    },
+  ]);
+}
 
   function toggleTask(id: number) {
     setTasks((prev) =>

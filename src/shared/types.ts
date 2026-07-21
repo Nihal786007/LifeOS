@@ -9,9 +9,31 @@
 
 export interface Task {
   id: number;
-  text: string;
+
+  // Basic
+  title: string;
+  description?: string;
+
+  // Status
   completed: boolean;
   completedAt?: string;
+
+  // Planning
+  dueDate?: string;
+
+  priority:
+    | "low"
+    | "medium"
+    | "high";
+
+  // Mission Integration
+  missionId?: number;
+
+  // Rewards
+  xp: number;
+
+  // Metadata
+  createdAt: string;
 }
 
 /* =========================

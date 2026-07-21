@@ -11,7 +11,7 @@ export class MissionEngine {
       .filter((task) => !task.completed)
       .slice(0, 5)
       .map((task, index) => ({
-        title: task.text,
+        title: task.title,
         priority: index + 1,
         estimatedMinutes: 30,
         completed: false,

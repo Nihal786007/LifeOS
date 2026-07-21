@@ -1,3 +1,5 @@
+import TaskSection from "../components/tasks/TaskSection";
+import EmptyState from "../components/tasks/EmptyState";
 import { useState } from "react";
 import {
   FaPlus,
@@ -5,10 +7,6 @@ import {
   FaTasks,
   FaCheckCircle,
   FaClock,
-  FaTrash,
-  FaFlag,
-  FaChevronRight,
-  FaRegCircle,
 } from "react-icons/fa";
 
 import { useApp } from "../context/AppContext";
@@ -30,14 +28,46 @@ export default function Tasks() {
     toggleTask,
     completedTasks,
   } = useApp();
+  console.log(tasks);
 
   const remaining = tasks.length - completedTasks;
 
-  const filteredTasks = tasks.filter((item) =>
-    item.text.toLowerCase().includes(search.toLowerCase())
-  );
+ const filteredTasks = tasks.filter((item) =>
+  (item.title ?? "")
+    .toLowerCase()
+    .includes(search.toLowerCase())
+);
+const today = new Date().toISOString().split("T")[0];
 
-  const handleAddTask = () => {
+const overdueTasks = filteredTasks.filter(
+  (task) =>
+    !task.completed &&
+    task.dueDate &&
+    task.dueDate < today
+);
+
+const todayTasks = filteredTasks.filter(
+  (task) =>
+    !task.completed &&
+    task.dueDate === today
+);
+
+const upcomingTasks = filteredTasks.filter(
+  (task) =>
+    !task.completed &&
+    task.dueDate &&
+    task.dueDate > today
+);
+
+const completedTaskList = filteredTasks.filter(
+  (task) => task.completed
+);
+
+console.log("All tasks:", tasks);
+console.log("Filtered:", filteredTasks);
+console.log("Today:", todayTasks);
+
+const handleAddTask = () => {
     if (!task.trim()) return;
 
     addTask(task.trim());
@@ -130,122 +160,45 @@ export default function Tasks() {
 
       </div>
 
-      {/* Task List Starts Here */}
-            <div className="space-y-5">
+      
+            
+                    {/* Task Sections */}
 
+      <div className="space-y-10">
         {filteredTasks.length === 0 ? (
-
-          <Card className="border-dashed border-slate-700 bg-slate-900/50 p-14 text-center">
-
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-500/10">
-              <FaCheckCircle className="text-4xl text-cyan-400" />
-            </div>
-
-            <h2 className="mt-6 text-3xl font-bold">
-              All Missions Complete
-            </h2>
-
-            <p className="mt-4 text-slate-400">
-              Great work! There are no active missions right now.
-            </p>
-
-          </Card>
-
+          <EmptyState />
         ) : (
+          <>
+            <TaskSection
+              title="🔴 Overdue"
+              tasks={overdueTasks}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+            />
 
-          filteredTasks.map((item) => (
+            <TaskSection
+              title="🟢 Today"
+              tasks={todayTasks}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+            />
 
-            <Card
-              key={item.id}
-              className="group p-7 hover:-translate-y-1"
-            >
+            <TaskSection
+              title="🟡 Upcoming"
+              tasks={upcomingTasks}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+            />
 
-              <div className="flex items-start justify-between">
-
-                <div
-                  onClick={() => toggleTask(item.id)}
-                  className="flex cursor-pointer gap-5"
-                >
-
-                  <div className="mt-1 text-2xl">
-
-                    {item.completed ? (
-                      <FaCheckCircle className="text-green-400" />
-                    ) : (
-                      <FaRegCircle className="text-slate-500 transition-colors group-hover:text-cyan-400" />
-                    )}
-
-                  </div>
-
-                  <div>
-
-                    <h2
-                      className={`text-2xl font-bold transition ${
-                        item.completed
-                          ? "line-through text-slate-500"
-                          : "text-white"
-                      }`}
-                    >
-                      {item.text}
-                    </h2>
-
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-
-                      <span className="rounded-full bg-cyan-500/10 px-4 py-1 text-xs uppercase tracking-[0.25em] text-cyan-300">
-                        Personal Mission
-                      </span>
-
-                      <span className="flex items-center gap-2 rounded-full bg-red-500/10 px-4 py-1 text-xs uppercase tracking-[0.25em] text-red-300">
-                        <FaFlag />
-                        High Priority
-                      </span>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-                <Button
-                  variant="danger"
-                  onClick={() => deleteTask(item.id)}
-                  className="rounded-2xl p-4"
-                >
-                  <FaTrash />
-                </Button>
-
-              </div>
-
-              <div className="mt-7 flex items-center justify-between border-t border-slate-800 pt-5">
-
-                <div className="flex items-center gap-3 text-sm text-slate-400">
-
-                  <FaChevronRight />
-
-                  {item.completed
-                    ? "Mission Completed"
-                    : "Ready to Execute"}
-
-                </div>
-
-                                <Button
-                  variant="secondary"
-                  onClick={() => toggleTask(item.id)}
-                  className="px-5 py-2 text-sm"
-                >
-                  {item.completed ? "Completed" : "Complete"}
-                </Button>
-
-              </div>
-
-            </Card>
-
-          ))
-
+            <TaskSection
+              title="⚪ Completed"
+              tasks={completedTaskList}
+              toggleTask={toggleTask}
+              deleteTask={deleteTask}
+            />
+          </>
         )}
-
       </div>
-
     </div>
   );
 }
