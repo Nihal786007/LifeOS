@@ -1,3 +1,5 @@
+import type { AtlasResult } from "../../atlas/types";
+
 import AtlasGreeting from "./AtlasGreeting";
 import AtlasBriefing from "./AtlasBriefing";
 import AtlasPrediction from "./AtlasPrediction";
@@ -7,40 +9,36 @@ import AtlasMission from "./AtlasMission";
 import AtlasRecommendations from "./AtlasRecommendations";
 import AtlasStats from "./AtlasStats";
 
-import { AtlasEngine } from "../../atlas/atlasEngine";
-import { useApp } from "../../context/AppContext";
+interface Props {
+  atlas: AtlasResult;
+}
 
-export default function AtlasCommandCenter() {
-  const { tasks, habits, completedTasks } = useApp();
-
-  const atlas = new AtlasEngine(tasks, habits);
-  const ai = atlas.run();
-
+export default function AtlasCommandCenter({ atlas }: Props) {
   return (
     <div className="space-y-8">
 
       <AtlasGreeting
-        greeting={ai.greeting}
-        motivation={ai.motivation}
+        greeting={atlas.greeting}
+        motivation={atlas.motivation}
       />
 
       <AtlasStats
-        productivity={ai.analysis.completionRate}
-        completed={completedTasks}
-        total={tasks.length}
-        remaining={tasks.length - completedTasks}
+        productivity={atlas.analysis.completionRate}
+        completed={atlas.analysis.completedTasks}
+        total={atlas.analysis.totalTasks}
+        remaining={atlas.analysis.pendingTasks}
       />
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         <AtlasBriefing
-          summary={ai.briefing.summary}
-          recommendation={ai.briefing.recommendation}
+          summary={atlas.briefing.summary}
+          recommendation={atlas.briefing.recommendation}
         />
 
         <AtlasXP
-          xp={ai.xp.xp}
-          level={ai.xp.level}
+          xp={atlas.xp.xp}
+          level={atlas.xp.level}
         />
 
       </div>
@@ -48,12 +46,12 @@ export default function AtlasCommandCenter() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         <AtlasMission
-          missions={ai.missions}
+          missions={atlas.missions}
         />
 
         <AtlasPrediction
-          successChance={ai.prediction.successChance}
-          burnoutRisk={ai.prediction.burnoutRisk}
+          successChance={atlas.prediction.successChance}
+          burnoutRisk={atlas.prediction.burnoutRisk}
         />
 
       </div>
@@ -61,12 +59,12 @@ export default function AtlasCommandCenter() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         <AtlasTrend
-          trend={ai.trend}
-          averageCompletion={ai.averageCompletion}
+          trend={atlas.trend}
+          averageCompletion={atlas.averageCompletion}
         />
 
         <AtlasRecommendations
-          recommendations={ai.recommendations}
+          recommendations={atlas.recommendations}
         />
 
       </div>

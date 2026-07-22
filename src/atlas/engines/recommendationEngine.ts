@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Recommendation Engine
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 import type {
@@ -12,29 +12,66 @@ export class RecommendationEngine {
   generate(
     analysis: ProductivityAnalysis
   ): Recommendation[] {
+
     const recommendations: Recommendation[] = [];
 
-    if (analysis.completionRate < 40) {
+    // Focus Score
+    if (analysis.focusScore < 50) {
       recommendations.push({
-        title: "Focus on One Task",
+        title: "Improve Your Focus",
         description:
-          "Complete one important task before starting another.",
+          "Complete an important mission before starting something new.",
+
+        missionTitle: "Highest Priority Mission",
+
+        priority: "high",
+
+        reason: "Your current Focus Score is low.",
       });
     }
 
-    if (analysis.completionRate >= 40) {
+    // Overdue Tasks
+    if (analysis.overdueTasks > 0) {
       recommendations.push({
-        title: "Keep Going",
+        title: "Clear Overdue Missions",
         description:
-          "You're making steady progress today.",
+          "Finish overdue work before taking on new missions.",
+
+        missionTitle: "Overdue Mission",
+
+        priority: "high",
+
+        reason: `${analysis.overdueTasks} overdue mission(s) detected.`,
       });
     }
 
-    if (analysis.completionRate >= 80) {
+    // Due Today
+    if (analysis.dueTodayTasks > 0) {
       recommendations.push({
-        title: "Excellent Work",
+        title: "Finish Today's Missions",
         description:
-          "Your productivity is outstanding today.",
+          "Complete tasks that are due today.",
+
+        missionTitle: "Today's Mission",
+
+        priority: "medium",
+
+        reason: `${analysis.dueTodayTasks} mission(s) are due today.`,
+      });
+    }
+
+    // Everything looks good
+    if (recommendations.length === 0) {
+      recommendations.push({
+        title: "Great Progress",
+        description:
+          "You're managing your missions well. Keep the momentum going.",
+
+        missionTitle: "Continue Current Work",
+
+        priority: "low",
+
+        reason: "No urgent missions detected.",
       });
     }
 

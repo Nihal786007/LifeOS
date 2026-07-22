@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Engine
-// Version: 4.0
+// Version: 5.0
 // Central Intelligence Coordinator
 // ==========================================
 
@@ -54,10 +54,10 @@ export class AtlasEngine {
   // ==========================
 
   public run(): AtlasResult {
-    // Analyze productivity
+    // Productivity Analysis
     const analysis = this.productivity.analyze(this.tasks);
 
-    // Save current snapshot
+    // Memory Snapshot
     const snapshot = this.memory.createSnapshot(
       this.tasks,
       this.habits
@@ -65,10 +65,10 @@ export class AtlasEngine {
 
     this.memory.saveSnapshot(snapshot);
 
-    // Load history
+    // History
     const history = this.memory.getHistory();
 
-    // Generate AI output
+    // Final Report
     return {
       analysis,
 
@@ -97,14 +97,13 @@ export class AtlasEngine {
       averageCompletion:
         this.trend.averageCompletion(history),
 
-      greeting: this.personality.greeting(
+     greeting: this.personality.greeting(
   analysis.completedTasks,
   analysis.totalTasks,
   analysis.completionRate
 ),
 
-      motivation:
-        this.personality.motivation(),
+motivation: this.personality.motivation(),
     };
   }
 }

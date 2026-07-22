@@ -25,9 +25,18 @@ export interface DailyBriefing {
   greeting: string;
   summary: string;
   recommendation: string;
-  productivityScore: number;
-  focusTime: string;
-  missionDifficulty: "Easy" | "Medium" | "Hard";
+
+  focusScore: number;
+
+  overdueTasks: number;
+  dueTodayTasks: number;
+  upcomingTasks: number;
+
+  potentialXP: number;
+
+  recommendedMission: string;
+
+  motivation: string;
 }
 
 // ==========================================
@@ -36,11 +45,21 @@ export interface DailyBriefing {
 
 export interface SmartMission {
   title: string;
-  priority: number;
-  estimatedMinutes: number;
-  completed: boolean;
-}
 
+  priority: "low" | "medium" | "high";
+
+  estimatedMinutes: number;
+
+  completed: boolean;
+
+  xp: number;
+
+  dueDate?: string;
+
+  score: number;
+
+  reason: string;
+}
 // ==========================================
 // Productivity Analysis
 // ==========================================
@@ -48,8 +67,20 @@ export interface SmartMission {
 export interface ProductivityAnalysis {
   completedTasks: number;
   totalTasks: number;
+
   completionRate: number;
+
   productivityLevel: "Low" | "Average" | "High";
+
+  overdueTasks: number;
+  dueTodayTasks: number;
+  upcomingTasks: number;
+
+  pendingTasks: number;
+
+  potentialXP: number;
+
+  focusScore: number;
 }
 
 // ==========================================
@@ -68,8 +99,18 @@ export interface ProductivityPrediction {
 
 export interface XPData {
   xp: number;
+
+  todayXP: number;
+
+  weeklyXP: number;
+
   level: number;
+
+  nextLevelXP: number;
+
   streak: number;
+
+  longestStreak: number;
 }
 
 // ==========================================
@@ -89,8 +130,16 @@ export interface Achievement {
 
 export interface Recommendation {
   title: string;
+
   description: string;
+
+  missionTitle: string;
+
+  priority: "low" | "medium" | "high";
+
+  reason: string;
 }
+
 // ==========================================
 // ATLAS Result
 // ==========================================

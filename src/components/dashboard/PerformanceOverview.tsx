@@ -1,18 +1,15 @@
+import type { AtlasResult } from "../../atlas/types";
 import ProgressRing from "./ProgressRing";
 
-type PerformanceOverviewProps = {
-  total: number;
-  completed: number;
-  productivity: number;
-  remaining: number;
-};
+interface PerformanceOverviewProps {
+  atlas: AtlasResult;
+}
 
 export default function PerformanceOverview({
-  total,
-  completed,
-  productivity,
-  remaining,
+  atlas,
 }: PerformanceOverviewProps) {
+  const analysis = atlas.analysis;
+
   return (
     <section className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
 
@@ -22,11 +19,11 @@ export default function PerformanceOverview({
 
       <div className="mt-10 grid grid-cols-1 gap-10 lg:grid-cols-4 items-center">
 
-        {/* Tasks */}
+        {/* Total Tasks */}
         <div className="text-center">
 
           <h2 className="text-5xl font-black">
-            {total}
+            {analysis.totalTasks}
           </h2>
 
           <p className="mt-3 text-sm uppercase tracking-widest text-slate-500">
@@ -39,7 +36,7 @@ export default function PerformanceOverview({
         <div className="text-center">
 
           <h2 className="text-5xl font-black text-green-400">
-            {completed}
+            {analysis.completedTasks}
           </h2>
 
           <p className="mt-3 text-sm uppercase tracking-widest text-slate-500">
@@ -48,10 +45,12 @@ export default function PerformanceOverview({
 
         </div>
 
-        {/* Progress Ring */}
+        {/* Progress */}
         <div className="flex justify-center">
 
-          <ProgressRing value={productivity} />
+          <ProgressRing
+            value={analysis.completionRate}
+          />
 
         </div>
 
@@ -59,7 +58,7 @@ export default function PerformanceOverview({
         <div className="text-center">
 
           <h2 className="text-5xl font-black text-orange-400">
-            {remaining}
+            {analysis.pendingTasks}
           </h2>
 
           <p className="mt-3 text-sm uppercase tracking-widest text-slate-500">

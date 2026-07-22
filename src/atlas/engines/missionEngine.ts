@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Mission Engine
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 import type { AtlasTask, SmartMission } from "../types";
@@ -10,11 +10,24 @@ export class MissionEngine {
     return tasks
       .filter((task) => !task.completed)
       .slice(0, 5)
-      .map((task, index) => ({
+      .map((task) => ({
         title: task.title,
-        priority: index + 1,
+
+        priority: task.priority,
+
         estimatedMinutes: 30,
-        completed: false,
+
+        completed: task.completed,
+
+        xp: task.xp,
+
+        dueDate: task.dueDate,
+
+        // Temporary scoring logic.
+        // We'll replace this with the real Mission Score algorithm later.
+        score: task.xp,
+
+        reason: "Highest priority unfinished mission",
       }));
   }
 }

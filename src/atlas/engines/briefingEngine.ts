@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Briefing Engine
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 import type {
@@ -12,23 +12,29 @@ export class BriefingEngine {
   create(
     analysis: ProductivityAnalysis
   ): DailyBriefing {
-
-    let difficulty: "Easy" | "Medium" | "Hard" = "Medium";
-
-    if (analysis.completionRate >= 80)
-      difficulty = "Hard";
-
-    if (analysis.completionRate < 40)
-      difficulty = "Easy";
-
     return {
       greeting: "Welcome Back!",
+
       summary: `You completed ${analysis.completedTasks} of ${analysis.totalTasks} tasks.`,
+
       recommendation:
         "Stay focused on your highest priority mission.",
-      productivityScore: analysis.completionRate,
-      focusTime: "4 PM - 7 PM",
-      missionDifficulty: difficulty,
+
+      focusScore: analysis.focusScore,
+
+      overdueTasks: analysis.overdueTasks,
+
+      dueTodayTasks: analysis.dueTodayTasks,
+
+      upcomingTasks: analysis.upcomingTasks,
+
+      potentialXP: analysis.potentialXP,
+
+      recommendedMission:
+        "Complete your highest priority task",
+
+      motivation:
+        "Every mission completed brings you closer to your goals.",
     };
   }
 }

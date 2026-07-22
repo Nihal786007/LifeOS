@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Productivity Engine
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 import type { AtlasTask, ProductivityAnalysis } from "../types";
@@ -13,10 +13,24 @@ export class ProductivityEngine {
       (task) => task.completed
     ).length;
 
+    const pendingTasks = totalTasks - completedTasks;
+
+    // Temporary values (we'll make these smart in the next step)
+    const overdueTasks = 0;
+    const dueTodayTasks = 0;
+    const upcomingTasks = 0;
+
     const completionRate =
       totalTasks === 0
         ? 0
         : Math.round((completedTasks / totalTasks) * 100);
+
+    const potentialXP = tasks
+      .filter((task) => !task.completed)
+      .reduce((sum, task) => sum + task.xp, 0);
+
+    // Temporary Focus Score
+    const focusScore = completionRate;
 
     let productivityLevel: "Low" | "Average" | "High";
 
@@ -31,8 +45,17 @@ export class ProductivityEngine {
     return {
       completedTasks,
       totalTasks,
+      pendingTasks,
+
       completionRate,
       productivityLevel,
+      focusScore,
+
+      overdueTasks,
+      dueTodayTasks,
+      upcomingTasks,
+
+      potentialXP,
     };
   }
 

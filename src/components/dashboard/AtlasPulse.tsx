@@ -1,14 +1,26 @@
-type AtlasPulseProps = {
-  productivity: number;
-  focus: string;
-  missions: number;
-};
+import type { AtlasResult } from "../../atlas/types";
+
+interface AtlasPulseProps {
+  atlas: AtlasResult;
+}
 
 export default function AtlasPulse({
-  productivity,
-  focus,
-  missions,
+  atlas,
 }: AtlasPulseProps) {
+  const productivity = atlas.analysis.completionRate;
+
+  const focus =
+    atlas.missions.length > 0
+      ? atlas.missions[0].title
+      : "No Active Mission";
+
+  const missions = atlas.analysis.pendingTasks;
+
+  const recommendation =
+    atlas.recommendations.length > 0
+      ? atlas.recommendations[0].description
+      : "You're all caught up. Keep up the great work!";
+
   return (
     <aside className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
 
@@ -68,12 +80,11 @@ export default function AtlasPulse({
       <div className="mt-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
 
         <p className="text-xs uppercase tracking-[0.3em] text-cyan-400">
-          Next Step
+          ATLAS Recommendation
         </p>
 
         <p className="mt-3 leading-7 text-slate-300">
-          Complete your highest-priority mission before creating new tasks.
-          Maintaining focus on one objective at a time leads to more consistent progress.
+          {recommendation}
         </p>
 
       </div>
