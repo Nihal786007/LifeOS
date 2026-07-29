@@ -22,19 +22,10 @@ export default function AtlasCommandCenter({ atlas }: Props) {
         motivation={atlas.motivation}
       />
 
-      <AtlasStats
-        productivity={atlas.analysis.completionRate}
-        completed={atlas.analysis.completedTasks}
-        total={atlas.analysis.totalTasks}
-        remaining={atlas.analysis.pendingTasks}
-      />
-
+    <AtlasStats atlas={atlas} />
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
-        <AtlasBriefing
-          summary={atlas.briefing.summary}
-          recommendation={atlas.briefing.recommendation}
-        />
+      <AtlasBriefing briefing={atlas.briefing} />
 
         <AtlasXP
           xp={atlas.xp.xp}
