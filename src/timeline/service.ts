@@ -30,7 +30,7 @@ const demoActivities: Activity[] = [
     priority: "high",
     xpReward: 180,
     estimatedMinutes: 120,
-    completedAt: null,
+    completedAt: undefined,
     notes: "",
     createdAt: new Date(),
     updatedAt: new Date(),

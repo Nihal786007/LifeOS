@@ -11,11 +11,12 @@ export class Timeline {
     return this.activities;
   }
 
-  getByDate(date: string): Activity[] {
-    return this.activities.filter((activity) =>
-      activity.start.startsWith(date)
-    );
-  }
+ getByDate(date: Date): Activity[] {
+  return this.activities.filter(
+    (activity) =>
+      activity.start.toDateString() === date.toDateString()
+  );
+}
 
   getCompleted(): Activity[] {
     return this.activities.filter(
