@@ -5,7 +5,7 @@ import {
   FaClock,
 } from "react-icons/fa";
 
-import ProgressRing from "../components/ProgressRing";
+import ProgressRing from "../components/dashboard/ProgressRing";
 import WeeklyProductivityChart from "../components/WeeklyProductivityChart";
 import StatisticsPieChart from "../components/StatisticsPieChart";
 
@@ -138,8 +138,8 @@ function Statistics() {
         <Card className="flex items-center justify-center">
 
           <ProgressRing
-            percentage={completionRate}
-          />
+  value={completionRate}
+/>
 
         </Card>
 
