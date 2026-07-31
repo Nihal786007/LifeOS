@@ -1,11 +1,11 @@
 import { useState } from "react";
-
 import { AppProvider } from "./context/AppContext";
 
 import Sidebar from "./components/Sidebar";
 import TopBar from "./components/TopBar";
 
 import Dashboard from "./pages/Dashboard";
+import Calendar from "./pages/Calendar";
 import MonthlyTracker from "./pages/MonthlyTracker";
 import Tasks from "./pages/Tasks";
 import Statistics from "./pages/Statistics";
@@ -27,6 +27,7 @@ export default function App() {
           <TopBar />
 
           {currentPage === "dashboard" && <Dashboard />}
+          {currentPage === "calendar" && <Calendar />}
           {currentPage === "monthly" && <MonthlyTracker />}
           {currentPage === "tasks" && <Tasks />}
           {currentPage === "statistics" && <Statistics />}
