@@ -141,10 +141,7 @@ export default function TaskCard({
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
 
-              <span className="rounded-full bg-cyan-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-cyan-300">
-                Personal Mission
-              </span>
-
+             
               <span
                 className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${priority.bg} ${priority.text}`}
               >

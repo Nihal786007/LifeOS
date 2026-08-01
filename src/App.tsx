@@ -1,12 +1,12 @@
 import { useState } from "react";
+
+import Calendar from "./pages/Calendar";
 import { AppProvider } from "./context/AppContext";
 
 import Sidebar from "./components/Sidebar";
-import TopBar from "./components/TopBar";
+
 
 import Dashboard from "./pages/Dashboard";
-import Calendar from "./pages/Calendar";
-import MonthlyTracker from "./pages/MonthlyTracker";
 import Tasks from "./pages/Tasks";
 import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
@@ -24,11 +24,10 @@ export default function App() {
         />
 
         <main className="flex-1 overflow-auto p-8 space-y-8">
-          <TopBar />
+          
 
           {currentPage === "dashboard" && <Dashboard />}
-          {currentPage === "calendar" && <Calendar />}
-          {currentPage === "monthly" && <MonthlyTracker />}
+         {currentPage === "calendar" && <Calendar />}
           {currentPage === "tasks" && <Tasks />}
           {currentPage === "statistics" && <Statistics />}
           {currentPage === "habits" && <Habits />}

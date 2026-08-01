@@ -27,11 +27,11 @@ export default function Sidebar({
       label: "Tasks",
       icon: <FaListCheck />,
     },
-    {
-      id: "monthly",
-      label: "Monthly Planner",
-      icon: <FaCalendarDays />,
-    },
+   {
+  id: "calendar",
+  label: "Calendar",
+  icon: <FaCalendarDays />,
+},
     {
       id: "statistics",
       label: "Analytics",

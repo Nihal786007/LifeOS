@@ -1,5 +1,4 @@
 import {
-  FaChartLine,
   FaCheckCircle,
   FaClipboardList,
   FaClock,
@@ -8,6 +7,7 @@ import {
 import ProgressRing from "../components/dashboard/ProgressRing";
 import WeeklyProductivityChart from "../components/WeeklyProductivityChart";
 import StatisticsPieChart from "../components/StatisticsPieChart";
+import AtlasReport from "../components/statistics/AtlasReport";
 
 import { useApp } from "../context/AppContext";
 
@@ -15,7 +15,7 @@ import Card from "../components/ui/Card";
 import PageHero from "../components/ui/PageHero";
 import StatCard from "../components/ui/StatCard";
 
-function Statistics() {
+export default function Statistics() {
   const { tasks, completedTasks } = useApp();
 
   const totalTasks = tasks.length;
@@ -36,7 +36,6 @@ function Statistics() {
         title="Statistics"
         description="Monitor your productivity, analyze your performance, and let ATLAS reveal how your mission is progressing."
       >
-
         <Card className="border-cyan-500/20 bg-cyan-500/5">
 
           <p className="text-sm uppercase tracking-widest text-cyan-300">
@@ -52,10 +51,11 @@ function Statistics() {
           </p>
 
         </Card>
-
       </PageHero>
 
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      {/* Statistics */}
+
+      <div className="grid gap-6 md:grid-cols-3">
 
         <StatCard
           icon={<FaClipboardList />}
@@ -77,15 +77,11 @@ function Statistics() {
           color="text-yellow-400"
         />
 
-        <StatCard
-          icon={<FaChartLine />}
-          title="Completion"
-          value={`${completionRate}%`}
-          color="text-cyan-400"
-        />
-
       </div>
-            <div className="grid gap-6 xl:grid-cols-2">
+
+      {/* Progress */}
+
+      <div className="grid gap-6 xl:grid-cols-2">
 
         <Card>
 
@@ -104,24 +100,19 @@ function Statistics() {
 
           </div>
 
-          <p className="mt-6 text-slate-400 leading-7">
+          <p className="mt-6 leading-7 text-slate-400">
+
             You've completed{" "}
             <strong>{completedTasks}</strong> out of{" "}
             <strong>{totalTasks}</strong> tasks.
 
             {completionRate >= 80 && (
-              <>
-                {" "}
-                Outstanding productivity today.
-              </>
+              <> Outstanding productivity today.</>
             )}
 
             {completionRate >= 50 &&
               completionRate < 80 && (
-                <>
-                  {" "}
-                  You're making solid progress.
-                </>
+                <> You're making solid progress.</>
               )}
 
             {completionRate < 50 && (
@@ -138,71 +129,16 @@ function Statistics() {
         <Card className="flex items-center justify-center">
 
           <ProgressRing
-  value={completionRate}
-/>
+            value={completionRate}
+          />
 
         </Card>
 
       </div>
+
+      {/* Charts */}
 
       <div className="grid gap-6 xl:grid-cols-2">
-
-        <Card>
-
-          <h2 className="mb-6 text-2xl font-bold">
-            📈 Productivity Summary
-          </h2>
-
-          <div className="space-y-4 text-lg">
-
-            <div className="flex justify-between">
-              <span>Total Tasks</span>
-              <strong>{totalTasks}</strong>
-            </div>
-
-            <div className="flex justify-between text-green-400">
-              <span>Completed</span>
-              <strong>{completedTasks}</strong>
-            </div>
-
-            <div className="flex justify-between text-yellow-400">
-              <span>Pending</span>
-              <strong>{pendingTasks}</strong>
-            </div>
-
-            <div className="flex justify-between text-cyan-400">
-              <span>Completion</span>
-              <strong>{completionRate}%</strong>
-            </div>
-
-          </div>
-
-        </Card>
-
-        <Card>
-
-          <h2 className="mb-6 text-2xl font-bold">
-            🤖 ATLAS Insight
-          </h2>
-
-          <p className="leading-8 text-slate-400">
-
-            {completionRate >= 80 &&
-              "Excellent consistency detected. Keep this momentum to maximize long-term productivity."}
-
-            {completionRate >= 50 &&
-              completionRate < 80 &&
-              "You're progressing well. Completing a few remaining tasks today will significantly improve your efficiency."}
-
-            {completionRate < 50 &&
-              "Current productivity is below your potential. Completing your highest-priority tasks will quickly improve today's performance."}
-
-          </p>
-
-        </Card>
-
-      </div>
-            <div className="grid gap-6 xl:grid-cols-2">
 
         <Card>
 
@@ -226,8 +162,13 @@ function Statistics() {
 
       </div>
 
+      {/* ATLAS */}
+
+      <AtlasReport
+        completionRate={completionRate}
+        pendingTasks={pendingTasks}
+      />
+
     </div>
   );
 }
-
-export default Statistics;
