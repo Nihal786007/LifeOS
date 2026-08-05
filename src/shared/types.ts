@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 2.0
+// Version: 3.0
 // ==========================================
 
 /* =========================
@@ -21,16 +21,36 @@ export interface Task {
   // Planning
   dueDate?: string;
 
-  priority:
-    | "low"
-    | "medium"
-    | "high";
+  priority: "low" | "medium" | "high";
 
-  // Mission Integration
-  missionId?: number;
+  // Goal Connection
+  goalId?: number;
 
   // Rewards
   xp: number;
+
+  // Metadata
+  createdAt: string;
+}
+
+/* =========================
+   LIFE GOALS
+========================= */
+
+export interface LifeGoal {
+  id: number;
+
+  // Basic
+  title: string;
+  description?: string;
+
+  // Progress
+  progress: number;
+
+  completed: boolean;
+
+  // Planning
+  targetDate?: string;
 
   // Metadata
   createdAt: string;
@@ -42,19 +62,24 @@ export interface Task {
 
 export interface Habit {
   id: number;
+
   name: string;
+
   streak: number;
+
   completedToday: boolean;
 }
 
 /* =========================
-   GOALS
+   QUICK CAPTURE
 ========================= */
 
-export interface Goal {
+export interface Capture {
   id: number;
-  title: string;
-  completed: boolean;
+
+  text: string;
+
+  createdAt: string;
 }
 
 /* =========================
@@ -64,13 +89,15 @@ export interface Goal {
 export interface UserProfile {
   // Basic Profile
   name: string;
+
   occupation: string;
+
   timezone: string;
 
   // Appearance
   theme: "dark" | "light";
 
-  // ATLAS
+  // ATLAS Personality
   atlasPersonality:
     | "Professional"
     | "Friendly"
@@ -78,5 +105,6 @@ export interface UserProfile {
 
   // Progress
   level: number;
+
   xp: number;
 }

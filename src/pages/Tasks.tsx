@@ -2,12 +2,10 @@ import { sortTasks } from "../utils/taskSorter";
 import TaskSection from "../components/tasks/TaskSection";
 import EmptyState from "../components/tasks/EmptyState";
 import { useState } from "react";
+
 import {
   FaPlus,
   FaSearch,
-  FaTasks,
-  FaCheckCircle,
-  FaClock,
 } from "react-icons/fa";
 
 import { useApp } from "../context/AppContext";
@@ -16,7 +14,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import PageHero from "../components/ui/PageHero";
-import StatCard from "../components/ui/StatCard";
+
 
 export default function Tasks() {
   const [task, setTask] = useState("");
@@ -38,7 +36,6 @@ const [dueDate, setDueDate] = useState(
   } = useApp();
   
 
-  const remaining = tasks.length - completedTasks;
 
  const filteredTasks = tasks.filter((item) =>
   (item.title ?? "")
@@ -113,29 +110,7 @@ const handleAddTask = () => {
         </Card>
       </PageHero>
 
-      <div className="grid gap-6 md:grid-cols-3">
-
-        <StatCard
-          icon={<FaTasks />}
-          title="Total Tasks"
-          value={tasks.length}
-        />
-
-        <StatCard
-          icon={<FaCheckCircle />}
-          title="Completed"
-          value={completedTasks}
-          color="text-green-400"
-        />
-
-        <StatCard
-          icon={<FaClock />}
-          title="Remaining"
-          value={remaining}
-          color="text-orange-400"
-        />
-
-      </div>
+      
 
       <div className="relative">
 

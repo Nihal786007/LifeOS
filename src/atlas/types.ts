@@ -157,3 +157,59 @@ export interface AtlasResult {
   greeting: string;
   motivation: string;
 }
+// ==========================================
+// Intent Engine
+// ==========================================
+
+export type AtlasDecisionType =
+  | "task"
+  | "calendar"
+  | "habit";
+
+export interface IntentResult {
+  type: AtlasDecisionType;
+
+  confidence: number;
+
+  title: string;
+
+  actionId:
+    | "create-task"
+    | "create-calendar-event"
+    | "create-habit";
+
+  actionLabel: string;
+
+  reason: string;
+}
+// ==========================================
+// Intent Package
+// Shared object used by all ATLAS engines
+// ==========================================
+
+export interface IntentPackage {
+  // Original user input
+  originalText: string;
+
+  // Intent detected by IntentEngine
+  intent:
+    | "task"
+    | "calendar"
+    | "habit"
+    | "unknown";
+
+  // Confidence of the detected intent
+  confidence: number;
+
+  // Parsed information (filled by ParserEngine)
+  title?: string;
+
+  dueDate?: string;
+
+  time?: string;
+
+  priority?:
+    | "low"
+    | "medium"
+    | "high";
+}

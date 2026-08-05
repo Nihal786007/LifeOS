@@ -1,14 +1,15 @@
 // ==========================================
 // LifeOS ATLAS Engine
-// Version: 5.0
+// Version: 5.1
 // Central Intelligence Coordinator
 // ==========================================
 
 import type {
   AtlasHabit,
-  AtlasTask,
   AtlasResult,
+  AtlasTask,
 } from "./types";
+
 
 import { AchievementEngine } from "./engines/achievementEngine";
 import { BriefingEngine } from "./engines/briefingEngine";
@@ -27,15 +28,15 @@ export class AtlasEngine {
   // ==========================
 
   private memory = new MemoryEngine();
-  private productivity = new ProductivityEngine();
-  private recommendation = new RecommendationEngine();
-  private prediction = new PredictionEngine();
-  private mission = new MissionEngine();
-  private briefing = new BriefingEngine();
-  private trend = new TrendEngine();
-  private xp = new XPEngine();
-  private achievement = new AchievementEngine();
-  private personality = new PersonalityEngine();
+private productivity = new ProductivityEngine();
+private recommendation = new RecommendationEngine();
+private prediction = new PredictionEngine();
+private mission = new MissionEngine();
+private briefing = new BriefingEngine();
+private trend = new TrendEngine();
+private xp = new XPEngine();
+private achievement = new AchievementEngine();
+private personality = new PersonalityEngine();
 
   // ==========================
   // Shared Data
@@ -44,7 +45,10 @@ export class AtlasEngine {
   private tasks: AtlasTask[];
   private habits: AtlasHabit[];
 
-  constructor(tasks: AtlasTask[], habits: AtlasHabit[]) {
+  constructor(
+    tasks: AtlasTask[],
+    habits: AtlasHabit[]
+  ) {
     this.tasks = tasks;
     this.habits = habits;
   }
@@ -55,33 +59,43 @@ export class AtlasEngine {
 
   public run(): AtlasResult {
     // Productivity Analysis
-    const analysis = this.productivity.analyze(this.tasks);
+    const analysis =
+      this.productivity.analyze(this.tasks);
 
     // Memory Snapshot
-    const snapshot = this.memory.createSnapshot(
-      this.tasks,
-      this.habits
-    );
+    const snapshot =
+      this.memory.createSnapshot(
+        this.tasks,
+        this.habits
+      );
 
     this.memory.saveSnapshot(snapshot);
 
     // History
-    const history = this.memory.getHistory();
+    const history =
+      this.memory.getHistory();
 
     // Final Report
     return {
       analysis,
 
-      briefing: this.briefing.create(analysis),
+      briefing:
+        this.briefing.create(analysis),
 
-      prediction: this.prediction.predict(
-        analysis.completionRate
-      ),
+      prediction:
+        this.prediction.predict(
+          analysis.completionRate
+        ),
 
       recommendations:
-        this.recommendation.generate(analysis),
+        this.recommendation.generate(
+          analysis
+        ),
 
-      missions: this.mission.generate(this.tasks),
+      missions:
+        this.mission.generate(
+          this.tasks
+        ),
 
       xp: this.xp.calculate(
         analysis.completedTasks
@@ -92,18 +106,25 @@ export class AtlasEngine {
           analysis.completedTasks
         ),
 
-      trend: this.trend.latestTrend(history),
+      trend:
+        this.trend.latestTrend(
+          history
+        ),
 
       averageCompletion:
-        this.trend.averageCompletion(history),
+        this.trend.averageCompletion(
+          history
+        ),
 
-     greeting: this.personality.greeting(
-  analysis.completedTasks,
-  analysis.totalTasks,
-  analysis.completionRate
-),
+      greeting:
+        this.personality.greeting(
+          analysis.completedTasks,
+          analysis.totalTasks,
+          analysis.completionRate
+        ),
 
-motivation: this.personality.motivation(),
+      motivation:
+        this.personality.motivation(),
     };
   }
 }

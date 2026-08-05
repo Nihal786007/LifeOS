@@ -1,4 +1,11 @@
 import {
+  getTaskAnalytics,
+  getTodayAnalytics,
+  getWeeklyAnalytics,
+} from "../analytics/taskAnalytics";
+import WeeklyReview from "../components/statistics/WeeklyReview";
+import DailyReview from "../components/statistics/DailyReview";
+import {
   FaCheckCircle,
   FaClipboardList,
   FaClock,
@@ -16,17 +23,17 @@ import PageHero from "../components/ui/PageHero";
 import StatCard from "../components/ui/StatCard";
 
 export default function Statistics() {
-  const { tasks, completedTasks } = useApp();
+ const { tasks } = useApp();
 
-  const totalTasks = tasks.length;
-  const pendingTasks = totalTasks - completedTasks;
+ const {
+  totalTasks,
+  completedTasks,
+  pendingTasks,
+  completionRate,
+} = getTaskAnalytics(tasks);
+const today = getTodayAnalytics(tasks);
 
-  const completionRate =
-    totalTasks === 0
-      ? 0
-      : Math.round(
-          (completedTasks / totalTasks) * 100
-        );
+const week = getWeeklyAnalytics(tasks);
 
   return (
     <div className="space-y-10">
@@ -168,7 +175,16 @@ export default function Statistics() {
         completionRate={completionRate}
         pendingTasks={pendingTasks}
       />
-
+<DailyReview
+ completedTasks={today.completedTasks}
+pendingTasks={pendingTasks}
+xpEarned={today.xpEarned}
+/>
+<WeeklyReview
+  completedTasks={week.completedTasks}
+completionRate={completionRate}
+xpEarned={week.xpEarned}
+/>
     </div>
   );
 }

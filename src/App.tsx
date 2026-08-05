@@ -1,39 +1,82 @@
 import { useState } from "react";
 
-import Calendar from "./pages/Calendar";
-import { AppProvider } from "./context/AppContext";
+import { useApp } from "./context/AppContext";
 
 import Sidebar from "./components/Sidebar";
 
+import CaptureFab from "./components/capture/CaptureFab";
+import CaptureModal from "./components/capture/CaptureModal";
 
 import Dashboard from "./pages/Dashboard";
-import Tasks from "./pages/Tasks";
+import Planning from "./pages/Planning";
+import Calendar from "./pages/Calendar";
 import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState("dashboard");
+function AppContent() {
+  const [currentPage, setCurrentPage] =
+    useState("dashboard");
+
+  const [captureOpen, setCaptureOpen] =
+    useState(false);
+
+  const { addCapture } = useApp();
 
   return (
-    <AppProvider>
-      <div className="flex h-screen bg-slate-950 text-white">
-        <Sidebar
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-        />
+    <div className="flex h-screen bg-slate-950 text-white">
 
-        <main className="flex-1 overflow-auto p-8 space-y-8">
-          
+      <Sidebar
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
 
-          {currentPage === "dashboard" && <Dashboard />}
-         {currentPage === "calendar" && <Calendar />}
-          {currentPage === "tasks" && <Tasks />}
-          {currentPage === "statistics" && <Statistics />}
-          {currentPage === "habits" && <Habits />}
-          {currentPage === "settings" && <Settings />}
-        </main>
-      </div>
-    </AppProvider>
+      <main className="flex-1 overflow-auto p-8 space-y-8">
+
+        {currentPage === "dashboard" && (
+          <Dashboard />
+        )}
+
+        {currentPage === "planning" && (
+          <Planning />
+        )}
+
+        {currentPage === "calendar" && (
+          <Calendar />
+        )}
+
+        {currentPage === "statistics" && (
+          <Statistics />
+        )}
+
+        {currentPage === "habits" && (
+          <Habits />
+        )}
+
+        {currentPage === "settings" && (
+          <Settings />
+        )}
+
+      </main>
+
+      <CaptureFab
+        onClick={() =>
+          setCaptureOpen(true)
+        }
+      />
+
+      <CaptureModal
+        open={captureOpen}
+        onClose={() =>
+          setCaptureOpen(false)
+        }
+        onCapture={addCapture}
+      />
+
+    </div>
   );
+}
+
+export default function App() {
+  return <AppContent />;
 }

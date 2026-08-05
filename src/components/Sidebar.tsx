@@ -23,10 +23,10 @@ export default function Sidebar({
       icon: <FaHouse />,
     },
     {
-      id: "tasks",
-      label: "Tasks",
-      icon: <FaListCheck />,
-    },
+  id: "planning",
+  label: "Planning",
+  icon: <FaListCheck />,
+},
    {
   id: "calendar",
   label: "Calendar",
