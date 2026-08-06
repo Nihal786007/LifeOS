@@ -1,24 +1,63 @@
 # 🚀 LifeOS
 
-A modern productivity dashboard built with React, TypeScript, and Vite to manage goals, tasks, habits, and long-term personal growth.
+> **LifeOS is an AI-powered personal operating system that helps people transform their long-term life goals into daily action.**
 
-## ✨ Features
+Built with **React, TypeScript, and Vite**, LifeOS combines planning, productivity, analytics, and an intelligent assistant called **ATLAS** into one unified experience.
 
-- 📊 Interactive Dashboard
-- ✅ Task Management
-- 📅 Monthly Goal Tracker
-- 📈 Statistics & Progress Tracking
-- 🎯 Daily Focus
-- 📝 Quick Notes
+---
 
-## 🛠️ Tech Stack
+# ✨ Current Features
+
+## 🎯 Planning
+- Life Goals
+- Goal Creation & Management
+- Goal Progress Tracking
+- Goal Persistence (Local Storage)
+
+## 📊 Dashboard
+- Productivity Overview
+- Daily Insights
+- Progress Widgets
+
+## 📝 Capture
+- Quick Capture
+- Save Ideas Instantly
+
+## 🔥 Habits
+- Habit Tracking
+- Daily Completion
+- Streak System
+
+---
+
+# 🤖 ATLAS (In Development)
+
+ATLAS is the intelligent core of LifeOS.
+
+It will eventually:
+
+- Recommend your next task
+- Build daily plans automatically
+- Analyze productivity
+- Track long-term progress
+- Connect tasks to life goals
+- Predict burnout
+- Generate daily briefings
+
+---
+
+# 🛠 Tech Stack
 
 - React
 - TypeScript
 - Vite
-- CSS
+- Context API
+- Local Storage
+- Tailwind CSS
 
-## 🚀 Installation
+---
+
+# 🚀 Installation
 
 ```bash
 git clone https://github.com/Nihal786007/LifeOS.git
@@ -36,17 +75,63 @@ npm install
 npm run dev
 ```
 
-## 🌟 Future Roadmap
+---
 
-- AI Assistant
-- Habit Tracker
-- Expense Tracker
+# 🗺 Roadmap
+
+## ✅ Completed
+
+- Planning Foundation
+- Life Goals
+- Goal Modal
+- Goal Persistence
+- Goal Progress Component
+- Goal Cards
+- Habit Tracking
+- Quick Capture
+
+## 🚧 In Progress
+
+- Milestones
+- Monthly Planning
+- Weekly Planning
+- Today's Planning
+
+## 🔜 Upcoming
+
 - Calendar Integration
+- Advanced Analytics
+- AI Planning
+- ATLAS Intelligence
 - Cloud Sync
-- Mobile Version
+- Mobile App
+- Notifications
+- Team Collaboration
 
-## 👨‍💻 Author
+---
+
+# 🎯 Vision
+
+LifeOS is designed around one simple philosophy:
+
+> **Every daily action should move you closer to your biggest life goals.**
+
+Instead of managing isolated tasks, LifeOS connects:
+
+Life Goals
+→ Milestones
+→ Monthly Planning
+→ Weekly Planning
+→ Daily Tasks
+→ Analytics
+→ ATLAS Intelligence
+
+to create a complete personal operating system.
+
+---
+
+# 👨‍💻 Author
 
 **Nihal Arfain Ahmed**
 
-Building **LifeOS** as a complete personal operating system for productivity, learning, and life management.
+Building LifeOS as a next-generation personal operating system for students, professionals, creators, and lifelong learners.

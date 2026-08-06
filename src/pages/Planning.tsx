@@ -1,5 +1,4 @@
 import GoalsCard from "../components/planning/GoalsCard";
-import MilestoneCard from "../components/planning/MilestoneCard";
 import MonthlyPlanner from "../components/planning/MonthlyPlanner";
 import WeeklyPlanner from "../components/planning/WeeklyPlanner";
 import TodayTasks from "../components/planning/TodayTasks";
@@ -22,8 +21,6 @@ export default function Planning() {
       </div>
 
       <GoalsCard />
-
-      <MilestoneCard />
 
       <MonthlyPlanner />
 

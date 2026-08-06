@@ -108,3 +108,20 @@ export interface UserProfile {
 
   xp: number;
 }
+export interface MonthlyPlan {
+  id: number;
+
+  title: string;
+
+  month: number;
+
+  year: number;
+
+  goalId?: number;
+
+  completed: boolean;
+
+  completedAt?: string;
+
+  createdAt: string;
+}
