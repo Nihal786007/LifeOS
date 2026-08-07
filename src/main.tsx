@@ -8,13 +8,20 @@ import App from "./App";
 import { AppProvider } from "./context/AppContext";
 import { LifeGoalsProvider } from "./context/LifeGoalsContext";
 import { MonthlyPlanningProvider } from "./context/MonthlyPlanningContext";
+import { WeeklyPlanningProvider } from "./context/WeeklyPlanningContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AppProvider>
       <LifeGoalsProvider>
         <MonthlyPlanningProvider>
-          <App />
+
+          <WeeklyPlanningProvider>
+
+            <App />
+
+          </WeeklyPlanningProvider>
+
         </MonthlyPlanningProvider>
       </LifeGoalsProvider>
     </AppProvider>

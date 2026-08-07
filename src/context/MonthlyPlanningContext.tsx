@@ -6,10 +6,10 @@ import {
 } from "react";
 
 import type { ReactNode } from "react";
-import type { MonthlyPlan } from "../shared/types";
+import type { MonthlyTarget } from "../shared/types";
 
 interface MonthlyPlanningContextType {
-  monthlyPlans: MonthlyPlan[];
+  monthlyPlans: MonthlyTarget[];
 
   addMonthlyPlan: (
     title: string,
@@ -38,7 +38,7 @@ export function MonthlyPlanningProvider({
   children: ReactNode;
 }) {
   const [monthlyPlans, setMonthlyPlans] =
-    useState<MonthlyPlan[]>(() => {
+    useState<MonthlyTarget[]>(() => {
       const saved = localStorage.getItem(
         "lifeos-monthly-plans"
       );

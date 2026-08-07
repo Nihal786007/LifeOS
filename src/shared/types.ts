@@ -108,7 +108,7 @@ export interface UserProfile {
 
   xp: number;
 }
-export interface MonthlyPlan {
+export interface MonthlyTarget {
   id: number;
 
   title: string;
@@ -118,6 +118,21 @@ export interface MonthlyPlan {
   year: number;
 
   goalId?: number;
+
+  completed: boolean;
+
+  completedAt?: string;
+
+  createdAt: string;
+}
+export interface WeeklyTarget {
+  id: number;
+
+  title: string;
+
+ monthlyTargetId: number;
+
+  week: 1 | 2 | 3 | 4 | 5;
 
   completed: boolean;
 
