@@ -1,48 +1,130 @@
 # 🚀 LifeOS
 
-> **LifeOS is an AI-powered personal operating system that helps people transform their long-term life goals into daily action.**
+> **LifeOS is an AI-powered Personal Operating System designed to help people transform long-term dreams into consistent daily action.**
 
-Built with **React, TypeScript, and Vite**, LifeOS combines planning, productivity, analytics, and an intelligent assistant called **ATLAS** into one unified experience.
+LifeOS is more than a productivity app. It connects your biggest life goals to monthly planning, weekly execution, and daily tasks, creating a complete system for personal growth.
+
+Built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, LifeOS focuses on clean architecture, beautiful UI, intelligent planning, and future AI assistance through **ATLAS**.
+
+---
+
+# 🌍 Vision
+
+Most productivity apps manage tasks.
+
+LifeOS manages lives.
+
+Instead of isolated to-do lists, LifeOS builds a complete execution system where every action contributes toward meaningful long-term goals.
+
+```
+Dream
+      ↓
+Life Goal
+      ↓
+Monthly Target
+      ↓
+Weekly Target
+      ↓
+Today's Tasks
+      ↓
+Timeline
+      ↓
+Analytics
+      ↓
+ATLAS Intelligence
+```
+
+Every completed task becomes progress toward something bigger.
 
 ---
 
 # ✨ Current Features
 
-## 🎯 Planning
+## 🎯 Goal Planning
+
+- ✅ Life Goals
+- ✅ Goal Progress Tracking
+- ✅ Monthly Targets
+- ✅ Weekly Targets
+- ✅ Today's Tasks
+- ✅ Goal Persistence (Local Storage)
+
+---
+
+## 📅 Planning System
+
+Create a complete planning hierarchy.
+
 - Life Goals
-- Goal Creation & Management
-- Goal Progress Tracking
-- Goal Persistence (Local Storage)
+- Monthly Planning
+- Weekly Planning
+- Daily Task Planning
+
+Tasks can be:
+
+- Linked to Weekly Targets
+- Standalone daily tasks
+
+making LifeOS flexible for students, professionals, families, and anyone managing daily life.
+
+---
 
 ## 📊 Dashboard
-- Productivity Overview
-- Daily Insights
-- Progress Widgets
 
-## 📝 Capture
-- Quick Capture
-- Save Ideas Instantly
+- Productivity Overview
+- Progress Widgets
+- Daily Insights
+- Clean Modern UI
+
+---
 
 ## 🔥 Habits
+
 - Habit Tracking
 - Daily Completion
 - Streak System
 
 ---
 
-# 🤖 ATLAS (In Development)
+## 📝 Quick Capture
 
-ATLAS is the intelligent core of LifeOS.
+Quickly save ideas before you forget them.
 
-It will eventually:
+Perfect for:
 
-- Recommend your next task
-- Build daily plans automatically
-- Analyze productivity
-- Track long-term progress
-- Connect tasks to life goals
-- Predict burnout
-- Generate daily briefings
+- Ideas
+- Notes
+- Thoughts
+- Inspiration
+
+---
+
+## 💾 Persistence
+
+All planning modules are stored locally using Local Storage.
+
+Your data remains available after refreshing the application.
+
+---
+
+# 🤖 ATLAS (Currently Under Development)
+
+ATLAS is the intelligent assistant powering LifeOS.
+
+Future capabilities include:
+
+- Intelligent Daily Planning
+- Task Recommendations
+- Weekly Reviews
+- Monthly Reviews
+- Productivity Analytics
+- Goal Suggestions
+- Smart Notifications
+- Daily Briefings
+- AI Coaching
+- Long-term Progress Analysis
+
+ATLAS is designed to become your personal productivity partner rather than just another chatbot.
 
 ---
 
@@ -51,87 +133,149 @@ It will eventually:
 - React
 - TypeScript
 - Vite
+- Tailwind CSS
 - Context API
 - Local Storage
-- Tailwind CSS
+
+---
+
+# 📂 Project Structure
+
+```
+src/
+
+├── assets/
+├── components/
+│
+├── context/
+│
+├── pages/
+│
+├── shared/
+│
+├── hooks/
+│
+├── App.tsx
+├── main.tsx
+│
+└── index.css
+```
+
+The project follows a modular architecture, making every feature easy to maintain and scale.
 
 ---
 
 # 🚀 Installation
 
+Clone the repository
+
 ```bash
 git clone https://github.com/Nihal786007/LifeOS.git
 ```
+
+Go into the project
 
 ```bash
 cd LifeOS
 ```
 
+Install dependencies
+
 ```bash
 npm install
 ```
+
+Run the development server
 
 ```bash
 npm run dev
 ```
 
+Build for production
+
+```bash
+npm run build
+```
+
 ---
 
-# 🗺 Roadmap
+# 🗺 Development Roadmap
 
 ## ✅ Completed
 
-- Planning Foundation
+- Dashboard
 - Life Goals
-- Goal Modal
-- Goal Persistence
-- Goal Progress Component
-- Goal Cards
+- Goal Progress Tracking
+- Monthly Targets
+- Weekly Targets
+- Today's Tasks
 - Habit Tracking
 - Quick Capture
-
-## 🚧 In Progress
-
-- Milestones
-- Monthly Planning
-- Weekly Planning
-- Today's Planning
-
-## 🔜 Upcoming
-
-- Calendar Integration
-- Advanced Analytics
-- AI Planning
-- ATLAS Intelligence
-- Cloud Sync
-- Mobile App
-- Notifications
-- Team Collaboration
+- Local Storage Persistence
+- Modular Context Architecture
 
 ---
 
-# 🎯 Vision
+## 🚧 Currently Building
 
-LifeOS is designed around one simple philosophy:
+- Timeline
+- Analytics Dashboard
+- XP & Level System
+
+---
+
+## 🔜 Planned
+
+- ATLAS AI
+- Calendar Integration
+- Focus Mode
+- Smart Notifications
+- Cloud Synchronization
+- Mobile Version
+- Data Backup
+- Advanced Productivity Insights
+
+---
+
+# 💡 Design Philosophy
+
+LifeOS is built around one simple idea:
 
 > **Every daily action should move you closer to your biggest life goals.**
 
-Instead of managing isolated tasks, LifeOS connects:
+The application combines planning, execution, tracking, and intelligent assistance into one seamless workflow.
 
-Life Goals
-→ Milestones
-→ Monthly Planning
-→ Weekly Planning
-→ Daily Tasks
-→ Analytics
-→ ATLAS Intelligence
+Rather than overwhelming users with productivity features, LifeOS aims to simplify decision-making and encourage consistent progress.
 
-to create a complete personal operating system.
+---
+
+# 🚀 Future Vision
+
+LifeOS is being developed as a complete Personal Operating System.
+
+The long-term goal is to create software that can help:
+
+- Students
+- Professionals
+- Entrepreneurs
+- Creators
+- Families
+- Lifelong Learners
+
+plan, execute, and achieve meaningful goals through intelligent assistance.
 
 ---
 
 # 👨‍💻 Author
 
-**Nihal Arfain Ahmed**
+## Nihal Arfain Ahmed
 
-Building LifeOS as a next-generation personal operating system for students, professionals, creators, and lifelong learners.
+Building **LifeOS** as a next-generation AI-powered Personal Operating System with the vision of helping millions of people transform their dreams into daily action.
+
+---
+
+# ⭐ Support
+
+If you like this project, consider giving it a ⭐ on GitHub.
+
+It motivates future development and helps more people discover LifeOS.
