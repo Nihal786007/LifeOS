@@ -14,17 +14,16 @@ export interface Task {
   title: string;
   description?: string;
 
+  // Planning
+dueDate?: string;
+  priority: "low" | "medium" | "high";
+
+  // Optional Connection
+  weeklyTargetId?: number;
+
   // Status
   completed: boolean;
   completedAt?: string;
-
-  // Planning
-  dueDate?: string;
-
-  priority: "low" | "medium" | "high";
-
-  // Goal Connection
-  goalId?: number;
 
   // Rewards
   xp: number;
@@ -32,7 +31,6 @@ export interface Task {
   // Metadata
   createdAt: string;
 }
-
 /* =========================
    LIFE GOALS
 ========================= */
