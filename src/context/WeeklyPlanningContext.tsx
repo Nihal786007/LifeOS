@@ -13,7 +13,7 @@ interface WeeklyPlanningContextType {
 
   addWeeklyTarget: (
     title: string,
-    monthlyTargetId: number,
+    monthlyTargetId: number | undefined,
     week: 1 | 2 | 3 | 4 | 5
   ) => void;
 
@@ -60,7 +60,7 @@ export function WeeklyPlanningProvider({
 
   function addWeeklyTarget(
     title: string,
-    monthlyTargetId: number,
+    monthlyTargetId: number | undefined,
     week: 1 | 2 | 3 | 4 | 5
   ) {
     if (!title.trim()) {

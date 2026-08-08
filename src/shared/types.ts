@@ -130,7 +130,7 @@ export interface WeeklyTarget {
 
   title: string;
 
- monthlyTargetId: number;
+ monthlyTargetId?: number;
 
   week: 1 | 2 | 3 | 4 | 5;
 

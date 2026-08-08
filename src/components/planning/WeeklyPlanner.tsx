@@ -1,6 +1,5 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 
 import Button from "../ui/Button";
@@ -10,38 +9,22 @@ import WeeklyTargetModal from "./WeeklyTargetModal";
 import WeeklyTargetEmptyState from "./WeeklyTargetEmptyState";
 
 export default function WeeklyPlanner() {
-  const { monthlyPlans } =
-    useMonthlyPlanning();
-
   const { weeklyTargets } =
     useWeeklyPlanning();
 
   const [open, setOpen] =
     useState(false);
 
-  const [selectedMonthlyTarget, setSelectedMonthlyTarget] =
-    useState("");
-
-  const selectedTarget = useMemo(
-    () =>
-      monthlyPlans.find(
-        (plan) =>
-          plan.id ===
-          Number(selectedMonthlyTarget)
-      ),
-    [monthlyPlans, selectedMonthlyTarget]
-  );
-
   const weeks = [1, 2, 3, 4, 5] as const;
 
-  const filteredTargets =
+  const standaloneTargets =
     weeklyTargets.filter(
       (target) =>
-        target.monthlyTargetId ===
-        Number(selectedMonthlyTarget)
+        !target.monthlyTargetId
     );
-      return (
-    <section className="rounded-3xl border border-slate-700 bg-slate-900 p-8">
+
+  return (
+    <section className="space-y-8">
 
       <div className="flex items-center justify-between">
 
@@ -52,7 +35,7 @@ export default function WeeklyPlanner() {
           </h2>
 
           <p className="mt-2 text-slate-400">
-            Break Monthly Targets into weekly milestones.
+            Break your goals into weekly action.
           </p>
 
         </div>
@@ -67,103 +50,71 @@ export default function WeeklyPlanner() {
 
       </div>
 
-      <div className="mt-8">
+      {standaloneTargets.length === 0 ? (
 
-        {monthlyPlans.length === 0 ? (
+        <WeeklyTargetEmptyState
+          hasMonthlyTargets={true}
+          onAdd={() =>
+            setOpen(true)
+          }
+        />
 
-          <WeeklyTargetEmptyState
-            hasMonthlyTargets={false}
-            onAdd={() => {}}
-          />
+      ) : (
 
-        ) : (
+        <div className="space-y-8">
 
-          <>
+          <div>
 
-            <label className="mb-2 block text-sm text-slate-400">
-              Monthly Target
-            </label>
+            <h3 className="mb-6 text-2xl font-semibold text-cyan-400">
+              ⭐ Standalone Weekly Targets
+            </h3>
 
-            <select
-              value={selectedMonthlyTarget}
-              onChange={(e) =>
-                setSelectedMonthlyTarget(
-                  e.target.value
-                )
-              }
-              className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none focus:border-cyan-500"
-            >
-              <option value="">
-                Select Monthly Target
-              </option>
+            {weeks.map((week) => {
 
-              {monthlyPlans.map((plan) => (
-                <option
-                  key={plan.id}
-                  value={plan.id}
+              const targets =
+                standaloneTargets.filter(
+                  (target) =>
+                    target.week === week
+                );
+
+              if (targets.length === 0)
+                return null;
+
+              return (
+
+                <div
+                  key={week}
+                  className="mb-8"
                 >
-                  {plan.title}
-                </option>
-              ))}
 
-            </select>
+                  <h4 className="mb-4 text-lg font-semibold text-white">
+                    Week {week}
+                  </h4>
 
-            {selectedTarget && (
+                  <div className="space-y-4">
 
-              <div className="mt-8 space-y-8">
+                    {targets.map(
+                      (target) => (
+                        <WeeklyTargetCard
+                          key={target.id}
+                          id={target.id}
+                        />
+                      )
+                    )}
 
-                {weeks.map((week) => {
+                  </div>
 
-                  const targets =
-                    filteredTargets.filter(
-                      (target) =>
-                        target.week === week
-                    );
+                </div>
 
-                  return (
-                    <div key={week}>
+              );
 
-                      <h3 className="mb-4 text-xl font-semibold text-white">
-                        Week {week}
-                      </h3>
+            })}
 
-                      {targets.length === 0 ? (
+          </div>
 
-                        <p className="rounded-2xl border border-dashed border-slate-700 py-6 text-center text-slate-500">
-                          No Weekly Targets
-                        </p>
+        </div>
 
-                      ) : (
-
-                        <div className="space-y-4">
-
-                          {targets.map(
-                            (target) => (
-                              <WeeklyTargetCard
-                                key={target.id}
-                                id={target.id}
-                              />
-                            )
-                          )}
-
-                        </div>
-
-                      )}
-
-                    </div>
-                  );
-
-                })}
-
-              </div>
-
-            )}
-
-          </>
-
-        )}
-
-      </div>
+      )}
 
       <WeeklyTargetModal
         open={open}

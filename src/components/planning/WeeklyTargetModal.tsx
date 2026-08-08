@@ -37,16 +37,11 @@ export default function WeeklyTargetModal({
       return;
     }
 
-    if (!monthlyTargetId) {
-      alert(
-        "Please select a Monthly Target."
-      );
-      return;
-    }
-
     addWeeklyTarget(
       title.trim(),
-      Number(monthlyTargetId),
+      monthlyTargetId
+        ? Number(monthlyTargetId)
+        : undefined,
       week
     );
 
@@ -83,7 +78,7 @@ export default function WeeklyTargetModal({
 
         <div>
           <label className="mb-2 block text-sm text-slate-400">
-            Monthly Target
+            Monthly Target (Optional)
           </label>
 
           <select
@@ -96,7 +91,7 @@ export default function WeeklyTargetModal({
             className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none focus:border-cyan-500"
           >
             <option value="">
-              Select Monthly Target
+              Standalone Weekly Target
             </option>
 
             {monthlyPlans.map((plan) => (
