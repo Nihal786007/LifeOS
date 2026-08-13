@@ -7,6 +7,8 @@ import {
 
 import { useLifeGoals } from "../../context/LifeGoalsContext";
 import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
+import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
+import { useTasks } from "../../context/TaskContext";
 
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -39,6 +41,17 @@ export default function MonthlyTargetCard({
     deleteMonthlyPlan,
   } = useMonthlyPlanning();
 
+  const {
+    completeWeeklyTargetsByMonthlyTarget,
+    uncompleteWeeklyTargetsByMonthlyTarget,
+    weeklyTargets,
+  } = useWeeklyPlanning();
+
+  const {
+    completeTasksByWeeklyTarget,
+    uncompleteTasksByWeeklyTarget,
+  } = useTasks();
+
   const { lifeGoals } =
     useLifeGoals();
 
@@ -49,6 +62,13 @@ export default function MonthlyTargetCard({
 
   if (!plan) return null;
 
+  const linkedWeeklyTargets =
+    weeklyTargets.filter(
+      (target) =>
+        target.monthlyTargetId ===
+        plan.id
+    );
+ 
   const goal =
     lifeGoals.find(
       (g) => g.id === plan.goalId
@@ -144,23 +164,52 @@ export default function MonthlyTargetCard({
 
         </div>
 
-        <Button
-          variant={
-            plan.completed
-              ? "secondary"
-              : "primary"
-          }
-          onClick={() =>
-            toggleMonthlyPlan(
-              plan.id
-            )
-          }
-        >
-          {plan.completed
-            ? "✅ Completed"
-            : "Mark Complete"}
-        </Button>
+       <Button
+  variant={
+    plan.completed
+      ? "secondary"
+      : "primary"
+  }
+  onClick={() => {
+    if (plan.completed) {
+      linkedWeeklyTargets.forEach(
+        (target) => {
+          uncompleteTasksByWeeklyTarget(
+            target.id
+          );
+        }
+      );
 
+      uncompleteWeeklyTargetsByMonthlyTarget(
+        plan.id
+      );
+
+      toggleMonthlyPlan(
+        plan.id
+      );
+    } else {
+      linkedWeeklyTargets.forEach(
+        (target) => {
+          completeTasksByWeeklyTarget(
+            target.id
+          );
+        }
+      );
+
+      completeWeeklyTargetsByMonthlyTarget(
+        plan.id
+      );
+
+      toggleMonthlyPlan(
+        plan.id
+      );
+    }
+  }}
+>
+  {plan.completed
+    ? "✅ Completed"
+    : "Mark Complete"}
+</Button>
       </div>
 
     </Card>

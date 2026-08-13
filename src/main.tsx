@@ -16,11 +16,11 @@ createRoot(document.getElementById("root")!).render(
     <AppProvider>
       <LifeGoalsProvider>
         <MonthlyPlanningProvider>
-          <WeeklyPlanningProvider>
-            <TaskProvider>
+          <TaskProvider>
+            <WeeklyPlanningProvider>
               <App />
-            </TaskProvider>
-          </WeeklyPlanningProvider>
+            </WeeklyPlanningProvider>
+          </TaskProvider>
         </MonthlyPlanningProvider>
       </LifeGoalsProvider>
     </AppProvider>

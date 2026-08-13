@@ -2,6 +2,8 @@ import { useState } from "react";
 
 import { useApp } from "./context/AppContext";
 
+import ProgressEngine from "./context/ProgressEngine";
+
 import Sidebar from "./components/Sidebar";
 
 import CaptureFab from "./components/capture/CaptureFab";
@@ -25,6 +27,8 @@ function AppContent() {
 
   return (
     <div className="flex h-screen bg-slate-950 text-white">
+
+      <ProgressEngine />
 
       <Sidebar
         currentPage={currentPage}

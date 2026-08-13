@@ -17,12 +17,6 @@ export default function WeeklyPlanner() {
 
   const weeks = [1, 2, 3, 4, 5] as const;
 
-  const standaloneTargets =
-    weeklyTargets.filter(
-      (target) =>
-        !target.monthlyTargetId
-    );
-
   return (
     <section className="space-y-8">
 
@@ -35,7 +29,7 @@ export default function WeeklyPlanner() {
           </h2>
 
           <p className="mt-2 text-slate-400">
-            Break your goals into weekly action.
+            Break your monthly goals into weekly execution.
           </p>
 
         </div>
@@ -50,7 +44,7 @@ export default function WeeklyPlanner() {
 
       </div>
 
-      {standaloneTargets.length === 0 ? (
+      {weeklyTargets.length === 0 ? (
 
         <WeeklyTargetEmptyState
           hasMonthlyTargets={true}
@@ -61,56 +55,49 @@ export default function WeeklyPlanner() {
 
       ) : (
 
-        <div className="space-y-8">
+        <div className="space-y-10">
 
-          <div>
+          {weeks.map((week) => {
 
-            <h3 className="mb-6 text-2xl font-semibold text-cyan-400">
-              ⭐ Standalone Weekly Targets
-            </h3>
+            const targets =
+              weeklyTargets.filter(
+                (target) =>
+                  target.week === week
+              );
 
-            {weeks.map((week) => {
+            if (targets.length === 0) {
+              return null;
+            }
 
-              const targets =
-                standaloneTargets.filter(
-                  (target) =>
-                    target.week === week
-                );
+            return (
 
-              if (targets.length === 0)
-                return null;
+              <div
+                key={week}
+                className="space-y-5"
+              >
 
-              return (
+                <h3 className="text-2xl font-semibold text-cyan-400">
+                  Week {week}
+                </h3>
 
-                <div
-                  key={week}
-                  className="mb-8"
-                >
+                <div className="space-y-4">
 
-                  <h4 className="mb-4 text-lg font-semibold text-white">
-                    Week {week}
-                  </h4>
+                  {targets.map((target) => (
 
-                  <div className="space-y-4">
+                    <WeeklyTargetCard
+                      key={target.id}
+                      id={target.id}
+                    />
 
-                    {targets.map(
-                      (target) => (
-                        <WeeklyTargetCard
-                          key={target.id}
-                          id={target.id}
-                        />
-                      )
-                    )}
-
-                  </div>
+                  ))}
 
                 </div>
 
-              );
+              </div>
 
-            })}
+            );
 
-          </div>
+          })}
 
         </div>
 

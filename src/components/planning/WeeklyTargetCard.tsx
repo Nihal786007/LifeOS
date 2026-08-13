@@ -6,6 +6,7 @@ import {
 
 import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
+import { useTasks } from "../../context/TaskContext";
 
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -22,6 +23,11 @@ export default function WeeklyTargetCard({
     toggleWeeklyTarget,
     deleteWeeklyTarget,
   } = useWeeklyPlanning();
+
+  const {
+  completeTasksByWeeklyTarget,
+  uncompleteTasksByWeeklyTarget,
+} = useTasks();
 
   const { monthlyPlans } =
     useMonthlyPlanning();
@@ -42,11 +48,8 @@ export default function WeeklyTargetCard({
 
   return (
     <Card hover glow>
-
       <div className="flex items-start justify-between">
-
         <div>
-
           <h3 className="text-xl font-bold text-white">
             {target.title}
           </h3>
@@ -55,13 +58,12 @@ export default function WeeklyTargetCard({
             🎯{" "}
             {monthlyTarget
               ? monthlyTarget.title
-              : "Unknown Monthly Target"}
+              : "Standalone Weekly Target"}
           </p>
 
           <p className="mt-2 text-sm text-slate-400">
             Week {target.week}
           </p>
-
         </div>
 
         <button
@@ -80,13 +82,10 @@ export default function WeeklyTargetCard({
         >
           <FaTrash />
         </button>
-
       </div>
 
       <div className="mt-6 flex items-center justify-between">
-
         <div>
-
           <div className="flex items-center gap-2 text-sm text-slate-400">
             <FaCalendarAlt />
 
@@ -110,28 +109,38 @@ export default function WeeklyTargetCard({
               </span>
             </div>
           )}
-
         </div>
+                <Button
+  variant={
+    target.completed
+      ? "secondary"
+      : "primary"
+  }
+  onClick={() => {
+    if (target.completed) {
+      uncompleteTasksByWeeklyTarget(
+        target.id
+      );
 
-        <Button
-          variant={
-            target.completed
-              ? "secondary"
-              : "primary"
-          }
-          onClick={() =>
-            toggleWeeklyTarget(
-              target.id
-            )
-          }
-        >
-          {target.completed
-            ? "✅ Completed"
-            : "Mark Complete"}
-        </Button>
+      toggleWeeklyTarget(
+        target.id
+      );
+    } else {
+      completeTasksByWeeklyTarget(
+        target.id
+      );
 
+      toggleWeeklyTarget(
+        target.id
+      );
+    }
+  }}
+>
+  {target.completed
+    ? "✅ Completed"
+    : "Mark Complete"}
+</Button>
       </div>
-
     </Card>
   );
 }

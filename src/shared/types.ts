@@ -42,12 +42,15 @@ export interface LifeGoal {
   title: string;
   description?: string;
 
-  // Progress
+  // Temporary (will become calculated by the Execution Engine)
   progress: number;
 
+  // Status
   completed: boolean;
+  completedAt?: string;
 
-  // Planning
+  // Timeline
+  startDate: string;
   targetDate?: string;
 
   // Metadata
@@ -117,6 +120,8 @@ export interface MonthlyTarget {
 
   goalId?: number;
 
+  progress: number;
+
   completed: boolean;
 
   completedAt?: string;
@@ -128,9 +133,11 @@ export interface WeeklyTarget {
 
   title: string;
 
- monthlyTargetId?: number;
+  monthlyTargetId?: number;
 
   week: 1 | 2 | 3 | 4 | 5;
+
+  progress: number;
 
   completed: boolean;
 
