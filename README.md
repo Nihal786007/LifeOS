@@ -1,6 +1,6 @@
 # 🚀 LifeOS
 
-> **LifeOS is an AI-powered Personal Operating System designed to help people transform long-term dreams into consistent daily action.**
+> **LifeOS is an AI-powered Personal Operating System designed to transform long-term dreams into consistent daily action.**
 
 LifeOS is more than a productivity app. It connects your biggest life goals to monthly planning, weekly execution, and daily tasks, creating a complete system for personal growth.
 
@@ -12,7 +12,7 @@ Built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, LifeOS foc
 
 Most productivity apps manage tasks.
 
-LifeOS manages lives.
+**LifeOS manages lives.**
 
 Instead of isolated to-do lists, LifeOS builds a complete execution system where every action contributes toward meaningful long-term goals.
 
@@ -38,16 +38,49 @@ Every completed task becomes progress toward something bigger.
 
 ---
 
+# 🚧 Project Status
+
+**Current Version:** v0.7.0
+
+🟢 Active Development
+
+### Latest Milestone
+
+- ✅ Progress Engine
+- ✅ Cascading Completion
+- ✅ Cascading Delete
+- ✅ Green Build
+
+### Next Milestone
+
+🏆 XP & Level System
+
+---
+
 # ✨ Current Features
 
 ## 🎯 Goal Planning
 
 - ✅ Life Goals
-- ✅ Goal Progress Tracking
 - ✅ Monthly Targets
 - ✅ Weekly Targets
-- ✅ Today's Tasks
-- ✅ Goal Persistence (Local Storage)
+- ✅ Daily Tasks
+- ✅ Goal Progress Tracking
+- ✅ Local Storage Persistence
+
+---
+
+## ⚙️ Automation Engine
+
+LifeOS automatically keeps planning synchronized.
+
+- ✅ Automatic Weekly Progress Calculation
+- ✅ Automatic Monthly Progress Calculation
+- ✅ Automatic Life Goal Progress Calculation
+- ✅ Cascading Completion
+- ✅ Cascading Delete
+
+No manual progress updates are required.
 
 ---
 
@@ -65,7 +98,7 @@ Tasks can be:
 - Linked to Weekly Targets
 - Standalone daily tasks
 
-making LifeOS flexible for students, professionals, families, and anyone managing daily life.
+making LifeOS flexible for students, professionals, creators, and anyone managing daily life.
 
 ---
 
@@ -80,15 +113,19 @@ making LifeOS flexible for students, professionals, families, and anyone managin
 
 ## 🔥 Habits
 
+(Currently Basic)
+
 - Habit Tracking
 - Daily Completion
 - Streak System
+
+A complete spreadsheet-style Habit Engine is planned.
 
 ---
 
 ## 📝 Quick Capture
 
-Quickly save ideas before you forget them.
+Capture ideas instantly before they disappear.
 
 Perfect for:
 
@@ -101,20 +138,53 @@ Perfect for:
 
 ## 💾 Persistence
 
-All planning modules are stored locally using Local Storage.
+All planning data is stored locally using Local Storage.
 
-Your data remains available after refreshing the application.
+Refreshing the application never loses your work.
 
 ---
 
-# 🤖 ATLAS (Currently Under Development)
+# 🏗 Architecture
+
+LifeOS follows a modular architecture where every system is isolated and easy to maintain.
+
+```
+Life Goal
+      ↓
+Monthly Target
+      ↓
+Weekly Target
+      ↓
+Task
+
+      ↓
+
+Progress Engine
+
+      ↓
+
+Automatic Progress Calculation
+```
+
+Future engines include:
+
+- XP Engine
+- Analytics Engine
+- Habit Engine
+- Timeline Engine
+- Notification Engine
+- ATLAS AI Engine
+
+---
+
+# 🤖 ATLAS (Under Development)
 
 ATLAS is the intelligent assistant powering LifeOS.
 
 Future capabilities include:
 
 - Intelligent Daily Planning
-- Task Recommendations
+- Smart Task Recommendations
 - Weekly Reviews
 - Monthly Reviews
 - Productivity Analytics
@@ -124,7 +194,7 @@ Future capabilities include:
 - AI Coaching
 - Long-term Progress Analysis
 
-ATLAS is designed to become your personal productivity partner rather than just another chatbot.
+ATLAS is designed to become your personal productivity partner rather than simply another chatbot.
 
 ---
 
@@ -146,18 +216,14 @@ src/
 
 ├── assets/
 ├── components/
-│
 ├── context/
-│
-├── pages/
-│
-├── shared/
-│
+├── engines/
 ├── hooks/
-│
+├── pages/
+├── shared/
+
 ├── App.tsx
 ├── main.tsx
-│
 └── index.css
 ```
 
@@ -205,34 +271,38 @@ npm run build
 
 - Dashboard
 - Life Goals
-- Goal Progress Tracking
 - Monthly Targets
 - Weekly Targets
-- Today's Tasks
-- Habit Tracking
+- Daily Tasks
+- Goal Progress Tracking
+- Habit Tracking (Basic)
 - Quick Capture
 - Local Storage Persistence
 - Modular Context Architecture
+- Progress Engine
+- Cascading Completion
+- Cascading Delete
 
 ---
 
 ## 🚧 Currently Building
 
-- Timeline
-- Analytics Dashboard
 - XP & Level System
+- Statistics Dashboard
+- Habit Engine
 
 ---
 
 ## 🔜 Planned
 
-- ATLAS AI
+- Timeline
 - Calendar Integration
 - Focus Mode
 - Smart Notifications
 - Cloud Synchronization
 - Mobile Version
 - Data Backup
+- ATLAS AI
 - Advanced Productivity Insights
 
 ---
@@ -243,17 +313,15 @@ LifeOS is built around one simple idea:
 
 > **Every daily action should move you closer to your biggest life goals.**
 
-The application combines planning, execution, tracking, and intelligent assistance into one seamless workflow.
-
-Rather than overwhelming users with productivity features, LifeOS aims to simplify decision-making and encourage consistent progress.
+Instead of overwhelming users with endless productivity features, LifeOS connects planning, execution, tracking, and intelligent automation into one seamless experience.
 
 ---
 
-# 🚀 Future Vision
+# 🚀 Long-Term Vision
 
 LifeOS is being developed as a complete Personal Operating System.
 
-The long-term goal is to create software that can help:
+The goal is to help:
 
 - Students
 - Professionals
@@ -262,7 +330,7 @@ The long-term goal is to create software that can help:
 - Families
 - Lifelong Learners
 
-plan, execute, and achieve meaningful goals through intelligent assistance.
+plan, execute, and achieve meaningful goals through intelligent software.
 
 ---
 
