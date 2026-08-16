@@ -1,15 +1,9 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-
+import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 
-import type { LifeGoal } from "../shared/types";
+import { ExecutionService } from "../services/ExecutionService";
 
-import { useMonthlyPlanning } from "./MonthlyPlanningContext";
+import type { LifeGoal } from "../shared/types";
 
 interface LifeGoalsContextType {
   lifeGoals: LifeGoal[];
@@ -20,65 +14,43 @@ interface LifeGoalsContextType {
     targetDate?: string
   ) => void;
 
-  updateGoal: (
-    goal: LifeGoal
-  ) => void;
+  updateGoal: (goal: LifeGoal) => void;
 
   updateGoalProgress: (
     id: number,
     progress: number
   ) => void;
 
-  toggleLifeGoal: (
-    id: number
-  ) => void;
+  toggleLifeGoal: (id: number) => void;
 
-  completeLifeGoal: (
-    id: number
-  ) => void;
+  completeLifeGoal: (id: number) => void;
 
-  uncompleteLifeGoal: (
-    id: number
-  ) => void;
+  uncompleteLifeGoal: (id: number) => void;
 
-  completeLifeGoals: (
-    ids: number[]
-  ) => void;
+  completeLifeGoals: (ids: number[]) => void;
 
-  deleteGoal: (
-    id: number
-  ) => void;
+  deleteGoal: (id: number) => void;
 }
 
 const LifeGoalsContext =
-  createContext<LifeGoalsContextType | null>(
-    null
-  );
+  createContext<LifeGoalsContextType | null>(null);
 
 export function LifeGoalsProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const {
-    deleteMonthlyPlansByLifeGoal,
-  } = useMonthlyPlanning();
+  const [lifeGoals, setLifeGoals] = useState<LifeGoal[]>(() => {
+    const saved = localStorage.getItem("lifeos-life-goals");
 
-  const [lifeGoals, setLifeGoals] =
-    useState<LifeGoal[]>(() => {
-      const saved =
-        localStorage.getItem(
-          "lifeos-life-goals"
-        );
+    if (!saved) return [];
 
-      if (!saved) return [];
-
-      try {
-        return JSON.parse(saved);
-      } catch {
-        return [];
-      }
-    });
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return [];
+    }
+  });
 
   useEffect(() => {
     localStorage.setItem(
@@ -103,23 +75,17 @@ export function LifeGoalsProvider({
         progress: 0,
         completed: false,
         completedAt: undefined,
-        startDate:
-          new Date().toISOString(),
+        startDate: new Date().toISOString(),
         targetDate,
-        createdAt:
-          new Date().toISOString(),
+        createdAt: new Date().toISOString(),
       },
     ]);
   }
 
-  function updateGoal(
-    goal: LifeGoal
-  ) {
+  function updateGoal(goal: LifeGoal) {
     setLifeGoals((prev) =>
       prev.map((item) =>
-        item.id === goal.id
-          ? goal
-          : item
+        item.id === goal.id ? goal : item
       )
     );
   }
@@ -134,8 +100,7 @@ export function LifeGoalsProvider({
           return goal;
         }
 
-        const completed =
-          progress >= 100;
+        const completed = progress >= 100;
 
         return {
           ...goal,
@@ -148,8 +113,7 @@ export function LifeGoalsProvider({
       })
     );
   }
-
-  function toggleLifeGoal(
+    function toggleLifeGoal(
     id: number
   ) {
     setLifeGoals((prev) =>
@@ -157,12 +121,10 @@ export function LifeGoalsProvider({
         goal.id === id
           ? {
               ...goal,
-              completed:
-                !goal.completed,
-              completedAt:
-                !goal.completed
-                  ? new Date().toISOString()
-                  : undefined,
+              completed: !goal.completed,
+              completedAt: !goal.completed
+                ? new Date().toISOString()
+                : undefined,
             }
           : goal
       )
@@ -172,77 +134,52 @@ export function LifeGoalsProvider({
   function completeLifeGoal(
     id: number
   ) {
-    setLifeGoals((prev) =>
-      prev.map((goal) => {
-        if (
-          goal.id !== id ||
-          goal.completed
-        ) {
-          return goal;
-        }
+    setLifeGoals((prev) => {
+      const result =
+        ExecutionService.completeLifeGoal(
+          {
+            lifeGoals: prev,
+            monthlyTargets: [],
+            weeklyTargets: [],
+            tasks: [],
+          },
+          id
+        );
 
-        return {
-          ...goal,
-          progress: 100,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
-    );
+      return result.lifeGoals;
+    });
   }
-    function uncompleteLifeGoal(
+
+  function uncompleteLifeGoal(
     id: number
   ) {
-    setLifeGoals((prev) =>
-      prev.map((goal) => {
-        if (
-          goal.id !== id ||
-          !goal.completed
-        ) {
-          return goal;
-        }
+    setLifeGoals((prev) => {
+      const result =
+        ExecutionService.uncompleteLifeGoal(
+          {
+            lifeGoals: prev,
+            monthlyTargets: [],
+            weeklyTargets: [],
+            tasks: [],
+          },
+          id
+        );
 
-        return {
-          ...goal,
-          progress: 0,
-          completed: false,
-          completedAt: undefined,
-        };
-      })
-    );
+      return result.lifeGoals;
+    });
   }
 
   function completeLifeGoals(
     ids: number[]
   ) {
-    setLifeGoals((prev) =>
-      prev.map((goal) => {
-        if (
-          !ids.includes(goal.id) ||
-          goal.completed
-        ) {
-          return goal;
-        }
-
-        return {
-          ...goal,
-          progress: 100,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
+    ids.forEach((id) =>
+      completeLifeGoal(id)
     );
   }
 
   function deleteGoal(
     id: number
   ) {
-    deleteMonthlyPlansByLifeGoal(
-      id
-    );
-
     setLifeGoals((prev) =>
       prev.filter(
         (goal) =>
@@ -268,13 +205,11 @@ export function LifeGoalsProvider({
       {children}
     </LifeGoalsContext.Provider>
   );
-}
+  }
 
 export function useLifeGoals() {
   const context =
-    useContext(
-      LifeGoalsContext
-    );
+    useContext(LifeGoalsContext);
 
   if (!context) {
     throw new Error(

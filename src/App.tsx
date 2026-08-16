@@ -2,8 +2,7 @@ import { useState } from "react";
 
 import { useApp } from "./context/AppContext";
 
-import ProgressEngine from "./context/ProgressEngine";
-
+import ProgressEngine from "./engines/ProgressEngine";
 import Sidebar from "./components/Sidebar";
 
 import CaptureFab from "./components/capture/CaptureFab";

@@ -6,6 +6,9 @@ import {
 } from "react";
 
 import type { ReactNode } from "react";
+
+import { ExecutionService } from "../services/ExecutionService";
+
 import type { Task } from "../shared/types";
 
 interface TaskContextType {
@@ -23,6 +26,10 @@ interface TaskContextType {
   ) => void;
 
   completeTask: (
+    id: number
+  ) => void;
+
+  uncompleteTask: (
     id: number
   ) => void;
 
@@ -82,10 +89,7 @@ export function TaskProvider({
     priority: "low" | "medium" | "high" = "medium",
     weeklyTargetId?: number
   ) {
-    if (!title.trim()) {
-      alert("Please enter a task.");
-      return;
-    }
+    if (!title.trim()) return;
 
     setTasks((prev) => [
       ...prev,
@@ -113,93 +117,103 @@ export function TaskProvider({
         task.id === id
           ? {
               ...task,
-              completed:
-                !task.completed,
-              completedAt:
-                !task.completed
-                  ? new Date().toISOString()
-                  : undefined,
+              completed: !task.completed,
+              completedAt: !task.completed
+                ? new Date().toISOString()
+                : undefined,
             }
           : task
       )
     );
   }
-
-  function completeTask(
+    function completeTask(
     id: number
   ) {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (
-          task.id !== id ||
-          task.completed
-        ) {
-          return task;
-        }
+    setTasks((prev) => {
+      const result =
+        ExecutionService.completeTask(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: [],
+            tasks: prev,
+          },
+          id
+        );
 
-        return {
-          ...task,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
-    );
+      return result.tasks;
+    });
+  }
+
+  function uncompleteTask(
+    id: number
+  ) {
+    setTasks((prev) => {
+      const result =
+        ExecutionService.uncompleteTask(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: [],
+            tasks: prev,
+          },
+          id
+        );
+
+      return result.tasks;
+    });
   }
 
   function completeTasksByWeeklyTarget(
     weeklyTargetId: number
   ) {
     setTasks((prev) =>
-      prev.map((task) => {
-        if (
-          task.weeklyTargetId !==
-            weeklyTargetId ||
-          task.completed
-        ) {
-          return task;
-        }
-
-        return {
-          ...task,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
+      prev.map((task) =>
+        task.weeklyTargetId === weeklyTargetId
+          ? {
+              ...task,
+              completed: true,
+              completedAt:
+                new Date().toISOString(),
+            }
+          : task
+      )
     );
   }
-    function uncompleteTasksByWeeklyTarget(
+
+  function uncompleteTasksByWeeklyTarget(
     weeklyTargetId: number
   ) {
     setTasks((prev) =>
-      prev.map((task) => {
-        if (
-          task.weeklyTargetId !==
-            weeklyTargetId ||
-          !task.completed
-        ) {
-          return task;
-        }
-
-        return {
-          ...task,
-          completed: false,
-          completedAt: undefined,
-        };
-      })
+      prev.map((task) =>
+        task.weeklyTargetId === weeklyTargetId
+          ? {
+              ...task,
+              completed: false,
+              completedAt: undefined,
+            }
+          : task
+      )
     );
   }
 
   function deleteTask(
     id: number
   ) {
-    setTasks((prev) =>
-      prev.filter(
-        (task) =>
-          task.id !== id
-      )
-    );
+    setTasks((prev) => {
+      const result =
+        ExecutionService.deleteTask(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: [],
+            tasks: prev,
+          },
+          id
+        );
+
+      return result.tasks;
+    });
   }
 
   function deleteTasksByWeeklyTarget(
@@ -221,6 +235,7 @@ export function TaskProvider({
         addTask,
         toggleTask,
         completeTask,
+        uncompleteTask,
         completeTasksByWeeklyTarget,
         uncompleteTasksByWeeklyTarget,
         deleteTask,
@@ -230,7 +245,7 @@ export function TaskProvider({
       {children}
     </TaskContext.Provider>
   );
-}
+  }
 
 export function useTasks() {
   const context =

@@ -6,7 +6,12 @@ import {
 } from "react";
 
 import type { ReactNode } from "react";
-import type { WeeklyTarget } from "../shared/types";
+
+import { ExecutionService } from "../services/ExecutionService";
+
+import type {
+  WeeklyTarget,
+} from "../shared/types";
 
 interface WeeklyPlanningContextType {
   weeklyTargets: WeeklyTarget[];
@@ -22,6 +27,10 @@ interface WeeklyPlanningContextType {
   ) => void;
 
   completeWeeklyTarget: (
+    id: number
+  ) => void;
+
+  uncompleteWeeklyTarget: (
     id: number
   ) => void;
 
@@ -84,28 +93,7 @@ export function WeeklyPlanningProvider({
     monthlyTargetId: number | undefined,
     week: 1 | 2 | 3 | 4 | 5
   ) {
-    if (!title.trim()) {
-      alert("Please enter a weekly target.");
-      return;
-    }
-
-    const exists = weeklyTargets.some(
-      (target) =>
-        target.monthlyTargetId ===
-          monthlyTargetId &&
-        target.week === week &&
-        target.title
-          .trim()
-          .toLowerCase() ===
-          title.trim().toLowerCase()
-    );
-
-    if (exists) {
-      alert(
-        "This weekly target already exists."
-      );
-      return;
-    }
+    if (!title.trim()) return;
 
     setWeeklyTargets((prev) => [
       ...prev,
@@ -143,29 +131,6 @@ export function WeeklyPlanningProvider({
     );
   }
 
-  function completeWeeklyTarget(
-    id: number
-  ) {
-    setWeeklyTargets((prev) =>
-      prev.map((target) => {
-        if (
-          target.id !== id ||
-          target.completed
-        ) {
-          return target;
-        }
-
-        return {
-          ...target,
-          completed: true,
-          progress: 100,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
-    );
-  }
-
   function updateWeeklyProgress(
     id: number,
     progress: number
@@ -190,27 +155,59 @@ export function WeeklyPlanningProvider({
       })
     );
   }
-    function completeWeeklyTargetsByMonthlyTarget(
+    function completeWeeklyTarget(
+    id: number
+  ) {
+    setWeeklyTargets((prev) => {
+      const result =
+        ExecutionService.completeWeeklyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: prev,
+            tasks: [],
+          },
+          id
+        );
+
+      return result.weeklyTargets;
+    });
+  }
+
+  function uncompleteWeeklyTarget(
+    id: number
+  ) {
+    setWeeklyTargets((prev) => {
+      const result =
+        ExecutionService.uncompleteWeeklyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: prev,
+            tasks: [],
+          },
+          id
+        );
+
+      return result.weeklyTargets;
+    });
+  }
+
+  function completeWeeklyTargetsByMonthlyTarget(
     monthlyTargetId: number
   ) {
     setWeeklyTargets((prev) =>
-      prev.map((target) => {
-        if (
-          target.monthlyTargetId !==
-            monthlyTargetId ||
-          target.completed
-        ) {
-          return target;
-        }
-
-        return {
-          ...target,
-          progress: 100,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
+      prev.map((target) =>
+        target.monthlyTargetId === monthlyTargetId
+          ? {
+              ...target,
+              progress: 100,
+              completed: true,
+              completedAt:
+                new Date().toISOString(),
+            }
+          : target
+      )
     );
   }
 
@@ -218,33 +215,36 @@ export function WeeklyPlanningProvider({
     monthlyTargetId: number
   ) {
     setWeeklyTargets((prev) =>
-      prev.map((target) => {
-        if (
-          target.monthlyTargetId !==
-          monthlyTargetId
-        ) {
-          return target;
-        }
-
-        return {
-          ...target,
-          progress: 0,
-          completed: false,
-          completedAt: undefined,
-        };
-      })
+      prev.map((target) =>
+        target.monthlyTargetId === monthlyTargetId
+          ? {
+              ...target,
+              progress: 0,
+              completed: false,
+              completedAt: undefined,
+            }
+          : target
+      )
     );
   }
 
   function deleteWeeklyTarget(
     id: number
   ) {
-    setWeeklyTargets((prev) =>
-      prev.filter(
-        (target) =>
-          target.id !== id
-      )
-    );
+    setWeeklyTargets((prev) => {
+      const result =
+        ExecutionService.deleteWeeklyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: [],
+            weeklyTargets: prev,
+            tasks: [],
+          },
+          id
+        );
+
+      return result.weeklyTargets;
+    });
   }
 
   function deleteWeeklyTargetsByMonthlyTarget(
@@ -266,6 +266,7 @@ export function WeeklyPlanningProvider({
         addWeeklyTarget,
         toggleWeeklyTarget,
         completeWeeklyTarget,
+        uncompleteWeeklyTarget,
         updateWeeklyProgress,
         completeWeeklyTargetsByMonthlyTarget,
         uncompleteWeeklyTargetsByMonthlyTarget,
@@ -276,13 +277,12 @@ export function WeeklyPlanningProvider({
       {children}
     </WeeklyPlanningContext.Provider>
   );
-}
+  }
 
 export function useWeeklyPlanning() {
-  const context =
-    useContext(
-      WeeklyPlanningContext
-    );
+  const context = useContext(
+    WeeklyPlanningContext
+  );
 
   if (!context) {
     throw new Error(

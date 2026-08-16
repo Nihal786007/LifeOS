@@ -6,7 +6,12 @@ import {
 } from "react";
 
 import type { ReactNode } from "react";
-import type { MonthlyTarget } from "../shared/types";
+
+import { ExecutionService } from "../services/ExecutionService";
+
+import type {
+  MonthlyTarget,
+} from "../shared/types";
 
 interface MonthlyPlanningContextType {
   monthlyPlans: MonthlyTarget[];
@@ -23,6 +28,10 @@ interface MonthlyPlanningContextType {
   ) => void;
 
   completeMonthlyPlan: (
+    id: number
+  ) => void;
+
+  uncompleteMonthlyPlan: (
     id: number
   ) => void;
 
@@ -60,10 +69,9 @@ export function MonthlyPlanningProvider({
 }) {
   const [monthlyPlans, setMonthlyPlans] =
     useState<MonthlyTarget[]>(() => {
-      const saved =
-        localStorage.getItem(
-          "lifeos-monthly-plans"
-        );
+      const saved = localStorage.getItem(
+        "lifeos-monthly-plans"
+      );
 
       if (!saved) return [];
 
@@ -87,27 +95,7 @@ export function MonthlyPlanningProvider({
     year: number,
     goalId?: number
   ) {
-    if (!title.trim()) {
-      alert("Please enter a target title.");
-      return;
-    }
-
-    const exists = monthlyPlans.some(
-      (plan) =>
-        plan.month === month &&
-        plan.year === year &&
-        plan.title
-          .trim()
-          .toLowerCase() ===
-          title.trim().toLowerCase()
-    );
-
-    if (exists) {
-      alert(
-        "A Monthly Target with this title already exists."
-      );
-      return;
-    }
+    if (!title.trim()) return;
 
     setMonthlyPlans((prev) => [
       ...prev,
@@ -146,29 +134,6 @@ export function MonthlyPlanningProvider({
     );
   }
 
-  function completeMonthlyPlan(
-    id: number
-  ) {
-    setMonthlyPlans((prev) =>
-      prev.map((plan) => {
-        if (
-          plan.id !== id ||
-          plan.completed
-        ) {
-          return plan;
-        }
-
-        return {
-          ...plan,
-          progress: 100,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
-    );
-  }
-
   function updateMonthlyProgress(
     id: number,
     progress: number
@@ -193,26 +158,59 @@ export function MonthlyPlanningProvider({
       })
     );
   }
-    function completeMonthlyPlansByLifeGoal(
+    function completeMonthlyPlan(
+    id: number
+  ) {
+    setMonthlyPlans((prev) => {
+      const result =
+        ExecutionService.completeMonthlyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: prev,
+            weeklyTargets: [],
+            tasks: [],
+          },
+          id
+        );
+
+      return result.monthlyTargets;
+    });
+  }
+
+  function uncompleteMonthlyPlan(
+    id: number
+  ) {
+    setMonthlyPlans((prev) => {
+      const result =
+        ExecutionService.uncompleteMonthlyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: prev,
+            weeklyTargets: [],
+            tasks: [],
+          },
+          id
+        );
+
+      return result.monthlyTargets;
+    });
+  }
+
+  function completeMonthlyPlansByLifeGoal(
     goalId: number
   ) {
     setMonthlyPlans((prev) =>
-      prev.map((plan) => {
-        if (
-          plan.goalId !== goalId ||
-          plan.completed
-        ) {
-          return plan;
-        }
-
-        return {
-          ...plan,
-          progress: 100,
-          completed: true,
-          completedAt:
-            new Date().toISOString(),
-        };
-      })
+      prev.map((plan) =>
+        plan.goalId === goalId
+          ? {
+              ...plan,
+              progress: 100,
+              completed: true,
+              completedAt:
+                new Date().toISOString(),
+            }
+          : plan
+      )
     );
   }
 
@@ -220,32 +218,36 @@ export function MonthlyPlanningProvider({
     goalId: number
   ) {
     setMonthlyPlans((prev) =>
-      prev.map((plan) => {
-        if (
-          plan.goalId !== goalId
-        ) {
-          return plan;
-        }
-
-        return {
-          ...plan,
-          progress: 0,
-          completed: false,
-          completedAt: undefined,
-        };
-      })
+      prev.map((plan) =>
+        plan.goalId === goalId
+          ? {
+              ...plan,
+              progress: 0,
+              completed: false,
+              completedAt: undefined,
+            }
+          : plan
+      )
     );
   }
 
   function deleteMonthlyPlan(
     id: number
   ) {
-    setMonthlyPlans((prev) =>
-      prev.filter(
-        (plan) =>
-          plan.id !== id
-      )
-    );
+    setMonthlyPlans((prev) => {
+      const result =
+        ExecutionService.deleteMonthlyTarget(
+          {
+            lifeGoals: [],
+            monthlyTargets: prev,
+            weeklyTargets: [],
+            tasks: [],
+          },
+          id
+        );
+
+      return result.monthlyTargets;
+    });
   }
 
   function deleteMonthlyPlansByLifeGoal(
@@ -266,6 +268,7 @@ export function MonthlyPlanningProvider({
         addMonthlyPlan,
         toggleMonthlyPlan,
         completeMonthlyPlan,
+        uncompleteMonthlyPlan,
         updateMonthlyProgress,
         completeMonthlyPlansByLifeGoal,
         uncompleteMonthlyPlansByLifeGoal,
@@ -276,13 +279,12 @@ export function MonthlyPlanningProvider({
       {children}
     </MonthlyPlanningContext.Provider>
   );
-}
+  }
 
 export function useMonthlyPlanning() {
-  const context =
-    useContext(
-      MonthlyPlanningContext
-    );
+  const context = useContext(
+    MonthlyPlanningContext
+  );
 
   if (!context) {
     throw new Error(
