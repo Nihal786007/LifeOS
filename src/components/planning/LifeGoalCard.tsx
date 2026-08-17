@@ -1,8 +1,9 @@
 import {
   FaCalendarAlt,
-  FaCheckCircle,
   FaTrash,
 } from "react-icons/fa";
+
+import { ProgressEngine } from "../../engines/ProgressEngine";
 
 import type { LifeGoal } from "../../shared/types";
 
@@ -16,7 +17,6 @@ import GoalProgress from "./GoalProgress";
 
 interface LifeGoalCardProps {
   goal: LifeGoal;
-
   onDelete: (id: number) => void;
 }
 
@@ -26,6 +26,7 @@ export default function LifeGoalCard({
 }: LifeGoalCardProps) {
   const {
     toggleLifeGoal,
+    lifeGoals,
   } = useLifeGoals();
 
   const {
@@ -41,17 +42,36 @@ export default function LifeGoalCard({
   } = useWeeklyPlanning();
 
   const {
+    tasks,
     completeTasksByWeeklyTarget,
     uncompleteTasksByWeeklyTarget,
   } = useTasks();
 
-  return (
+  const progress =
+    ProgressEngine.getLifeGoalProgress(
+      {
+        lifeGoals,
+        monthlyTargets: monthlyPlans,
+        weeklyTargets,
+        tasks,
+      },
+      goal.id
+    );
+
+  const completed =
+    ProgressEngine.isLifeGoalCompleted(
+      {
+        lifeGoals,
+        monthlyTargets: monthlyPlans,
+        weeklyTargets,
+        tasks,
+      },
+      goal.id
+    );
+      return (
     <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6 transition hover:border-cyan-500/50">
-
       <div className="flex items-start justify-between">
-
         <div>
-
           <h3 className="text-2xl font-bold text-white">
             {goal.title}
           </h3>
@@ -61,7 +81,6 @@ export default function LifeGoalCard({
               {goal.description}
             </p>
           )}
-
         </div>
 
         <button
@@ -78,19 +97,15 @@ export default function LifeGoalCard({
         >
           <FaTrash />
         </button>
-
       </div>
 
       <GoalProgress
-        progress={goal.progress}
+        progress={progress}
       />
 
       <div className="mt-6 flex items-center justify-between">
-
         <div>
-
           <div className="flex items-center gap-2 text-sm text-slate-400">
-
             <FaCalendarAlt />
 
             <span>
@@ -99,111 +114,104 @@ export default function LifeGoalCard({
                 goal.createdAt
               ).toLocaleDateString()}
             </span>
-
           </div>
 
-          {goal.completedAt && (
-
-            <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
-
-              <FaCheckCircle />
-
-              <span>
-                Completed{" "}
-                {new Date(
-                  goal.completedAt
-                ).toLocaleDateString()}
-              </span>
-
+          {completed && (
+            <div className="mt-2 text-sm font-medium text-green-400">
+              ✅ Completed
             </div>
-
           )}
 
           {goal.targetDate && (
-
             <div className="mt-2 flex items-center gap-2 text-sm text-slate-400">
-
               <FaCalendarAlt />
 
               <span>
                 Target: {goal.targetDate}
               </span>
-
             </div>
-
           )}
-
         </div>
-                <Button
+
+        <Button
           variant={
-            goal.completed
+            completed
               ? "secondary"
               : "primary"
           }
           onClick={() => {
-  const linkedMonthlyPlans =
-    monthlyPlans.filter(
-      (plan) => plan.goalId === goal.id
-    );
+            const linkedMonthlyPlans =
+              monthlyPlans.filter(
+                (plan) =>
+                  plan.goalId === goal.id
+              );
 
-  if (goal.completed) {
-    linkedMonthlyPlans.forEach((plan) => {
-      const linkedWeeklyTargets =
-        weeklyTargets.filter(
-          (target) =>
-            target.monthlyTargetId === plan.id
-        );
+            if (completed) {
+              linkedMonthlyPlans.forEach(
+                (plan) => {
+                  const linkedWeeklyTargets =
+                    weeklyTargets.filter(
+                      (target) =>
+                        target.monthlyTargetId ===
+                        plan.id
+                    );
 
-      linkedWeeklyTargets.forEach((target) => {
-        uncompleteTasksByWeeklyTarget(
-          target.id
-        );
-      });
+                  linkedWeeklyTargets.forEach(
+                    (target) => {
+                      uncompleteTasksByWeeklyTarget(
+                        target.id
+                      );
+                    }
+                  );
 
-      uncompleteWeeklyTargetsByMonthlyTarget(
-        plan.id
-      );
-    });
+                  uncompleteWeeklyTargetsByMonthlyTarget(
+                    plan.id
+                  );
+                }
+              );
 
-    uncompleteMonthlyPlansByLifeGoal(
-      goal.id
-    );
+              uncompleteMonthlyPlansByLifeGoal(
+                goal.id
+              );
 
-    toggleLifeGoal(goal.id);
-  } else {
-    linkedMonthlyPlans.forEach((plan) => {
-      const linkedWeeklyTargets =
-        weeklyTargets.filter(
-          (target) =>
-            target.monthlyTargetId === plan.id
-        );
+              toggleLifeGoal(goal.id);
+            } else {
+              linkedMonthlyPlans.forEach(
+                (plan) => {
+                  const linkedWeeklyTargets =
+                    weeklyTargets.filter(
+                      (target) =>
+                        target.monthlyTargetId ===
+                        plan.id
+                    );
 
-      linkedWeeklyTargets.forEach((target) => {
-        completeTasksByWeeklyTarget(
-          target.id
-        );
-      });
+                  linkedWeeklyTargets.forEach(
+                    (target) => {
+                      completeTasksByWeeklyTarget(
+                        target.id
+                      );
+                    }
+                  );
 
-      completeWeeklyTargetsByMonthlyTarget(
-        plan.id
-      );
-    });
+                  completeWeeklyTargetsByMonthlyTarget(
+                    plan.id
+                  );
+                }
+              );
 
-    completeMonthlyPlansByLifeGoal(
-      goal.id
-    );
+              completeMonthlyPlansByLifeGoal(
+                goal.id
+              );
 
-    toggleLifeGoal(goal.id);
-  }
-}}
+              toggleLifeGoal(goal.id);
+            }
+          }}
         >
-          {goal.completed
-            ? "✅ Completed"
+          {completed
+            ? "Completed"
             : "Mark Complete"}
         </Button>
-
       </div>
-
     </div>
   );
 }

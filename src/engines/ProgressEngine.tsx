@@ -1,171 +1,219 @@
-import { useEffect } from "react";
+// ==========================================
+// LifeOS Progress Engine
+// Architecture v2
+// ==========================================
 
-import { useTasks } from "../context/TaskContext";
-import { useWeeklyPlanning } from "../context/WeeklyPlanningContext";
-import { useMonthlyPlanning } from "../context/MonthlyPlanningContext";
-import { useLifeGoals } from "../context/LifeGoalsContext";
+import type {
+  LifeGoal,
+  MonthlyTarget,
+  Task,
+  WeeklyTarget,
+} from "../shared/types";
 
-export default function ProgressEngine() {
-  const { tasks } = useTasks();
+export interface ProgressState {
+  lifeGoals: LifeGoal[];
 
-  const {
-    weeklyTargets,
-    updateWeeklyProgress,
-  } = useWeeklyPlanning();
+  monthlyTargets: MonthlyTarget[];
 
-  const {
-    monthlyPlans,
-    updateMonthlyProgress,
-  } = useMonthlyPlanning();
+  weeklyTargets: WeeklyTarget[];
 
-  const {
-    lifeGoals,
-    updateGoalProgress,
-  } = useLifeGoals();
+  tasks: Task[];
+}
 
-  // ===========================
+export class ProgressEngine {
+  // ==========================================
   // Weekly Progress
-  // ===========================
+  // ==========================================
 
-  useEffect(() => {
-    weeklyTargets.forEach(
-      (weeklyTarget) => {
-        const linkedTasks =
-          tasks.filter(
-            (task) =>
-              task.weeklyTargetId ===
-              weeklyTarget.id
-          );
+  static getWeeklyProgress(
+    state: ProgressState,
+    weeklyTargetId: number
+  ): number {
+    const tasks =
+      state.tasks.filter(
+        (task) =>
+          task.weeklyTargetId ===
+          weeklyTargetId
+      );
 
-        if (
-          linkedTasks.length === 0
-        ) {
-          updateWeeklyProgress(
-            weeklyTarget.id,
-            0
-          );
+    if (tasks.length === 0) {
+      return 0;
+    }
 
-          return;
-        }
+    const completed =
+      tasks.filter(
+        (task) => task.completed
+      ).length;
 
-        const completed =
-          linkedTasks.filter(
-            (task) =>
-              task.completed
-          ).length;
-
-        const progress =
-          Math.round(
-            (completed /
-              linkedTasks.length) *
-              100
-          );
-
-        updateWeeklyProgress(
-          weeklyTarget.id,
-          progress
-        );
-      }
+    return Math.round(
+      (completed / tasks.length) * 100
     );
-  }, [
-    tasks,
-    weeklyTargets,
-    updateWeeklyProgress,
-  ]);
+  }
 
-  // ===========================
+  // ==========================================
   // Monthly Progress
-  // ===========================
+  // ==========================================
 
-  useEffect(() => {
-    monthlyPlans.forEach(
-      (monthlyPlan) => {
-        const linkedWeeklyTargets =
-          weeklyTargets.filter(
-            (weeklyTarget) =>
-              weeklyTarget.monthlyTargetId ===
-              monthlyPlan.id
-          );
+  static getMonthlyProgress(
+    state: ProgressState,
+    monthlyTargetId: number
+  ): number {
+    const weeklyTargets =
+      state.weeklyTargets.filter(
+        (target) =>
+          target.monthlyTargetId ===
+          monthlyTargetId
+      );
 
-        if (
-          linkedWeeklyTargets.length === 0
-        ) {
-          updateMonthlyProgress(
-            monthlyPlan.id,
-            0
-          );
+    if (
+      weeklyTargets.length === 0
+    ) {
+      return 0;
+    }
+        let total = 0;
 
-          return;
-        }
+    for (const weeklyTarget of weeklyTargets) {
+      total += this.getWeeklyProgress(
+        state,
+        weeklyTarget.id
+      );
+    }
 
-        const totalProgress =
-          linkedWeeklyTargets.reduce(
-            (
-              sum,
-              weeklyTarget
-            ) =>
-              sum +
-              (weeklyTarget.progress ??
-                0),
-            0
-          );
-
-        const progress =
-          Math.round(
-            totalProgress /
-              linkedWeeklyTargets.length
-          );
-
-        updateMonthlyProgress(
-          monthlyPlan.id,
-          progress
-        );
-      }
+    return Math.round(
+      total / weeklyTargets.length
     );
-  }, [
-    weeklyTargets,
-    monthlyPlans,
-    updateMonthlyProgress,
-  ]);
-      // ===========================
+  }
+
+  // ==========================================
   // Life Goal Progress
-  // ===========================
+  // ==========================================
 
-  useEffect(() => {
-    lifeGoals.forEach((goal) => {
-      const linkedMonthlyPlans =
-        monthlyPlans.filter(
-          (monthlyPlan) =>
-            monthlyPlan.goalId === goal.id
-        );
-
-      if (linkedMonthlyPlans.length === 0) {
-        updateGoalProgress(goal.id, 0);
-        return;
-      }
-
-      const totalProgress =
-        linkedMonthlyPlans.reduce(
-          (sum, monthlyPlan) =>
-            sum + (monthlyPlan.progress ?? 0),
-          0
-        );
-
-      const progress = Math.round(
-        totalProgress /
-          linkedMonthlyPlans.length
+  static getLifeGoalProgress(
+    state: ProgressState,
+    lifeGoalId: number
+  ): number {
+    const monthlyTargets =
+      state.monthlyTargets.filter(
+        (target) =>
+          target.goalId ===
+          lifeGoalId
       );
 
-      updateGoalProgress(
-        goal.id,
-        progress
-      );
-    });
-  }, [
-    monthlyPlans,
-    lifeGoals,
-    updateGoalProgress,
-  ]);
+    if (
+      monthlyTargets.length === 0
+    ) {
+      return 0;
+    }
 
-  return null;
+    let total = 0;
+
+    for (const monthlyTarget of monthlyTargets) {
+      total += this.getMonthlyProgress(
+        state,
+        monthlyTarget.id
+      );
+    }
+
+    return Math.round(
+      total / monthlyTargets.length
+    );
+  }
+
+  // ==========================================
+  // Completion Helpers
+  // ==========================================
+
+  static isWeeklyCompleted(
+    state: ProgressState,
+    weeklyTargetId: number
+  ): boolean {
+    return (
+      this.getWeeklyProgress(
+        state,
+        weeklyTargetId
+      ) === 100
+    );
+  }
+
+  static isMonthlyCompleted(
+    state: ProgressState,
+    monthlyTargetId: number
+  ): boolean {
+    return (
+      this.getMonthlyProgress(
+        state,
+        monthlyTargetId
+      ) === 100
+    );
+  }
+
+  static isLifeGoalCompleted(
+    state: ProgressState,
+    lifeGoalId: number
+  ): boolean {
+    return (
+      this.getLifeGoalProgress(
+        state,
+        lifeGoalId
+      ) === 100
+    );
+  }
+    // ==========================================
+  // Progress Summary Helpers
+  // ==========================================
+
+  static getSummary(
+    state: ProgressState
+  ) {
+    return {
+      lifeGoals:
+        state.lifeGoals.map((goal) => ({
+          id: goal.id,
+          progress:
+            this.getLifeGoalProgress(
+              state,
+              goal.id
+            ),
+          completed:
+            this.isLifeGoalCompleted(
+              state,
+              goal.id
+            ),
+        })),
+
+      monthlyTargets:
+        state.monthlyTargets.map(
+          (target) => ({
+            id: target.id,
+            progress:
+              this.getMonthlyProgress(
+                state,
+                target.id
+              ),
+            completed:
+              this.isMonthlyCompleted(
+                state,
+                target.id
+              ),
+          })
+        ),
+
+      weeklyTargets:
+        state.weeklyTargets.map(
+          (target) => ({
+            id: target.id,
+            progress:
+              this.getWeeklyProgress(
+                state,
+                target.id
+              ),
+            completed:
+              this.isWeeklyCompleted(
+                state,
+                target.id
+              ),
+          })
+        ),
+    };
+  }
 }

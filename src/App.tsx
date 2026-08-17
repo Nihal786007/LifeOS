@@ -2,7 +2,6 @@ import { useState } from "react";
 
 import { useApp } from "./context/AppContext";
 
-import ProgressEngine from "./engines/ProgressEngine";
 import Sidebar from "./components/Sidebar";
 
 import CaptureFab from "./components/capture/CaptureFab";
@@ -26,16 +25,12 @@ function AppContent() {
 
   return (
     <div className="flex h-screen bg-slate-950 text-white">
-
-      <ProgressEngine />
-
       <Sidebar
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
       />
 
       <main className="flex-1 overflow-auto p-8 space-y-8">
-
         {currentPage === "dashboard" && (
           <Dashboard />
         )}
@@ -59,7 +54,6 @@ function AppContent() {
         {currentPage === "settings" && (
           <Settings />
         )}
-
       </main>
 
       <CaptureFab
@@ -75,7 +69,6 @@ function AppContent() {
         }
         onCapture={addCapture}
       />
-
     </div>
   );
 }

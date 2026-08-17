@@ -4,6 +4,8 @@ import {
   FaTrash,
 } from "react-icons/fa";
 
+import { ProgressEngine } from "../../engines/ProgressEngine";
+
 import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { useTasks } from "../../context/TaskContext";
@@ -25,9 +27,10 @@ export default function WeeklyTargetCard({
   } = useWeeklyPlanning();
 
   const {
-  completeTasksByWeeklyTarget,
-  uncompleteTasksByWeeklyTarget,
-} = useTasks();
+    completeTasksByWeeklyTarget,
+    uncompleteTasksByWeeklyTarget,
+    tasks,
+  } = useTasks();
 
   const { monthlyPlans } =
     useMonthlyPlanning();
@@ -46,6 +49,28 @@ export default function WeeklyTargetCard({
         target.monthlyTargetId
     );
 
+  const progress =
+    ProgressEngine.getWeeklyProgress(
+      {
+        lifeGoals: [],
+        monthlyTargets: monthlyPlans,
+        weeklyTargets,
+        tasks,
+      },
+      target.id
+    );
+
+  const completed =
+    ProgressEngine.isWeeklyCompleted(
+      {
+        lifeGoals: [],
+        monthlyTargets: monthlyPlans,
+        weeklyTargets,
+        tasks,
+      },
+      target.id
+    );
+
   return (
     <Card hover glow>
       <div className="flex items-start justify-between">
@@ -61,7 +86,7 @@ export default function WeeklyTargetCard({
               : "Standalone Weekly Target"}
           </p>
 
-          <p className="mt-2 text-sm text-slate-400">
+                    <p className="mt-2 text-sm text-slate-400">
             Week {target.week}
           </p>
         </div>
@@ -84,6 +109,46 @@ export default function WeeklyTargetCard({
         </button>
       </div>
 
+      <div className="mt-6">
+        <button
+          onClick={() => {
+            if (
+              window.confirm(
+                `Delete "${target.title}"?`
+              )
+            ) {
+              deleteWeeklyTarget(
+                target.id
+              );
+            }
+          }}
+          className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+        >
+          <FaTrash />
+        </button>
+      </div>
+
+      <div className="mt-6">
+        <div className="mb-2 flex items-center justify-between text-sm">
+          <span className="text-slate-400">
+            Progress
+          </span>
+
+          <span className="font-semibold text-cyan-400">
+            {progress}%
+          </span>
+        </div>
+
+        <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+          <div
+            className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+            style={{
+              width: `${progress}%`,
+            }}
+          />
+        </div>
+      </div>
+
       <div className="mt-6 flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2 text-sm text-slate-400">
@@ -97,49 +162,47 @@ export default function WeeklyTargetCard({
             </span>
           </div>
 
-          {target.completedAt && (
+          {completed && (
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
               <FaCheckCircle />
 
               <span>
-                Completed{" "}
-                {new Date(
-                  target.completedAt
-                ).toLocaleDateString()}
+                Completed
               </span>
             </div>
           )}
         </div>
-                <Button
-  variant={
-    target.completed
-      ? "secondary"
-      : "primary"
-  }
-  onClick={() => {
-    if (target.completed) {
-      uncompleteTasksByWeeklyTarget(
-        target.id
-      );
 
-      toggleWeeklyTarget(
-        target.id
-      );
-    } else {
-      completeTasksByWeeklyTarget(
-        target.id
-      );
+        <Button
+          variant={
+            completed
+              ? "secondary"
+              : "primary"
+          }
+          onClick={() => {
+            if (completed) {
+              uncompleteTasksByWeeklyTarget(
+                target.id
+              );
 
-      toggleWeeklyTarget(
-        target.id
-      );
-    }
-  }}
->
-  {target.completed
-    ? "✅ Completed"
-    : "Mark Complete"}
-</Button>
+              toggleWeeklyTarget(
+                target.id
+              );
+            } else {
+              completeTasksByWeeklyTarget(
+                target.id
+              );
+
+              toggleWeeklyTarget(
+                target.id
+              );
+            }
+          }}
+        >
+          {completed
+            ? "✅ Completed"
+            : "Mark Complete"}
+        </Button>
       </div>
     </Card>
   );
