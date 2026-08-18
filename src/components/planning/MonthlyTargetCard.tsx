@@ -11,7 +11,6 @@ import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { useTasks } from "../../context/TaskContext";
 
-import Button from "../ui/Button";
 import Card from "../ui/Card";
 
 interface Props {
@@ -38,23 +37,20 @@ export default function MonthlyTargetCard({
 }: Props) {
   const {
     monthlyPlans,
-    toggleMonthlyPlan,
     deleteMonthlyPlan,
   } = useMonthlyPlanning();
 
   const {
-    completeWeeklyTargetsByMonthlyTarget,
-    uncompleteWeeklyTargetsByMonthlyTarget,
     weeklyTargets,
   } = useWeeklyPlanning();
 
   const {
-    completeTasksByWeeklyTarget,
-    uncompleteTasksByWeeklyTarget,
+    tasks,
   } = useTasks();
 
-  const { lifeGoals } =
-    useLifeGoals();
+  const {
+    lifeGoals,
+  } = useLifeGoals();
 
   const plan =
     monthlyPlans.find(
@@ -62,13 +58,6 @@ export default function MonthlyTargetCard({
     );
 
   if (!plan) return null;
-
-  const linkedWeeklyTargets =
-    weeklyTargets.filter(
-      (target) =>
-        target.monthlyTargetId ===
-        plan.id
-    );
 
   const goal =
     lifeGoals.find(
@@ -81,22 +70,12 @@ export default function MonthlyTargetCard({
         lifeGoals,
         monthlyTargets: monthlyPlans,
         weeklyTargets,
-        tasks: [],
+        tasks,
       },
       plan.id
     );
 
-  const completed =
-    ProgressEngine.isMonthlyCompleted(
-      {
-        lifeGoals,
-        monthlyTargets: monthlyPlans,
-        weeklyTargets,
-        tasks: [],
-      },
-      plan.id
-    );
-      return (
+  return (
     <Card hover glow>
       <div className="flex items-start justify-between">
         <div>
@@ -158,74 +137,15 @@ export default function MonthlyTargetCard({
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
-            <FaCalendarAlt />
+      <div className="mt-6 flex items-center gap-2 text-sm text-slate-400">
+        <FaCalendarAlt />
 
-            <span>
-              Created{" "}
-              {new Date(
-                plan.createdAt
-              ).toLocaleDateString()}
-            </span>
-          </div>
-
-          {completed && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
-              <span>
-                ✅ Completed
-              </span>
-            </div>
-          )}
-        </div>
-
-        <Button
-          variant={
-            completed
-              ? "secondary"
-              : "primary"
-          }
-          onClick={() => {
-            if (completed) {
-              linkedWeeklyTargets.forEach(
-                (target) => {
-                  uncompleteTasksByWeeklyTarget(
-                    target.id
-                  );
-                }
-              );
-
-              uncompleteWeeklyTargetsByMonthlyTarget(
-                plan.id
-              );
-
-              toggleMonthlyPlan(
-                plan.id
-              );
-            } else {
-              linkedWeeklyTargets.forEach(
-                (target) => {
-                  completeTasksByWeeklyTarget(
-                    target.id
-                  );
-                }
-              );
-
-              completeWeeklyTargetsByMonthlyTarget(
-                plan.id
-              );
-
-              toggleMonthlyPlan(
-                plan.id
-              );
-            }
-          }}
-        >
-          {completed
-            ? "Completed"
-            : "Mark Complete"}
-        </Button>
+        <span>
+          Created{" "}
+          {new Date(
+            plan.createdAt
+          ).toLocaleDateString()}
+        </span>
       </div>
     </Card>
   );

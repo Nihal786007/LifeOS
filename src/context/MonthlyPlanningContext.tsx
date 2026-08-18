@@ -23,29 +23,9 @@ interface MonthlyPlanningContextType {
     goalId?: number
   ) => void;
 
-  toggleMonthlyPlan: (
-    id: number
-  ) => void;
-
-  completeMonthlyPlan: (
-    id: number
-  ) => void;
-
-  uncompleteMonthlyPlan: (
-    id: number
-  ) => void;
-
   updateMonthlyProgress: (
     id: number,
     progress: number
-  ) => void;
-
-  completeMonthlyPlansByLifeGoal: (
-    goalId: number
-  ) => void;
-
-  uncompleteMonthlyPlansByLifeGoal: (
-    goalId: number
   ) => void;
 
   deleteMonthlyPlan: (
@@ -114,117 +94,16 @@ export function MonthlyPlanningProvider({
     ]);
   }
 
-  function toggleMonthlyPlan(
-    id: number
+  function updateMonthlyProgress(
+    id: number,
+    progress: number
   ) {
     setMonthlyPlans((prev) =>
       prev.map((plan) =>
         plan.id === id
           ? {
               ...plan,
-              completed:
-                !plan.completed,
-              completedAt:
-                !plan.completed
-                  ? new Date().toISOString()
-                  : undefined,
-            }
-          : plan
-      )
-    );
-  }
-
-  function updateMonthlyProgress(
-    id: number,
-    progress: number
-  ) {
-    setMonthlyPlans((prev) =>
-      prev.map((plan) => {
-        if (plan.id !== id) {
-          return plan;
-        }
-
-        const completed =
-          progress >= 100;
-
-        return {
-          ...plan,
-          progress,
-          completed,
-          completedAt: completed
-            ? new Date().toISOString()
-            : undefined,
-        };
-      })
-    );
-  }
-    function completeMonthlyPlan(
-    id: number
-  ) {
-    setMonthlyPlans((prev) => {
-      const result =
-        ExecutionService.completeMonthlyTarget(
-          {
-            lifeGoals: [],
-            monthlyTargets: prev,
-            weeklyTargets: [],
-            tasks: [],
-          },
-          id
-        );
-
-      return result.monthlyTargets;
-    });
-  }
-
-  function uncompleteMonthlyPlan(
-    id: number
-  ) {
-    setMonthlyPlans((prev) => {
-      const result =
-        ExecutionService.uncompleteMonthlyTarget(
-          {
-            lifeGoals: [],
-            monthlyTargets: prev,
-            weeklyTargets: [],
-            tasks: [],
-          },
-          id
-        );
-
-      return result.monthlyTargets;
-    });
-  }
-
-  function completeMonthlyPlansByLifeGoal(
-    goalId: number
-  ) {
-    setMonthlyPlans((prev) =>
-      prev.map((plan) =>
-        plan.goalId === goalId
-          ? {
-              ...plan,
-              progress: 100,
-              completed: true,
-              completedAt:
-                new Date().toISOString(),
-            }
-          : plan
-      )
-    );
-  }
-
-  function uncompleteMonthlyPlansByLifeGoal(
-    goalId: number
-  ) {
-    setMonthlyPlans((prev) =>
-      prev.map((plan) =>
-        plan.goalId === goalId
-          ? {
-              ...plan,
-              progress: 0,
-              completed: false,
-              completedAt: undefined,
+              progress,
             }
           : plan
       )
@@ -266,12 +145,7 @@ export function MonthlyPlanningProvider({
       value={{
         monthlyPlans,
         addMonthlyPlan,
-        toggleMonthlyPlan,
-        completeMonthlyPlan,
-        uncompleteMonthlyPlan,
         updateMonthlyProgress,
-        completeMonthlyPlansByLifeGoal,
-        uncompleteMonthlyPlansByLifeGoal,
         deleteMonthlyPlan,
         deleteMonthlyPlansByLifeGoal,
       }}
@@ -279,7 +153,7 @@ export function MonthlyPlanningProvider({
       {children}
     </MonthlyPlanningContext.Provider>
   );
-  }
+}
 
 export function useMonthlyPlanning() {
   const context = useContext(
