@@ -10,6 +10,7 @@ import type { ReactNode } from "react";
 import type {
   LifeGoal,
 } from "../shared/types";
+import { STORAGE_KEYS } from "../constants/storage";
 
 interface LifeGoalsContextType {
   lifeGoals: LifeGoal[];
@@ -47,9 +48,7 @@ export function LifeGoalsProvider({
   const [lifeGoals, setLifeGoals] =
     useState<LifeGoal[]>(() => {
       const saved =
-        localStorage.getItem(
-          "lifeos-life-goals"
-        );
+       localStorage.getItem(STORAGE_KEYS.LIFE_GOALS);
 
       if (!saved) return [];
 
@@ -61,8 +60,8 @@ export function LifeGoalsProvider({
     });
 
   useEffect(() => {
-    localStorage.setItem(
-      "lifeos-life-goals",
+   localStorage.setItem(
+  STORAGE_KEYS.LIFE_GOALS,
       JSON.stringify(lifeGoals)
     );
   }, [lifeGoals]);

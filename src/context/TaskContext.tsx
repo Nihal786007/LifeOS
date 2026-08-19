@@ -7,8 +7,8 @@ import {
 
 import type { ReactNode } from "react";
 
-import { ExecutionService } from "../services/ExecutionService";
-
+import { ExecutionCoordinator } from "../engines/ExecutionCoordinator";
+import { STORAGE_KEYS } from "../constants/storage";
 import type { Task } from "../shared/types";
 
 interface TaskContextType {
@@ -64,7 +64,7 @@ export function TaskProvider({
     useState<Task[]>(() => {
       const saved =
         localStorage.getItem(
-          "lifeos-tasks"
+          STORAGE_KEYS.TASKS
         );
 
       if (!saved) return [];
@@ -77,10 +77,10 @@ export function TaskProvider({
     });
 
   useEffect(() => {
-    localStorage.setItem(
-      "lifeos-tasks",
-      JSON.stringify(tasks)
-    );
+   localStorage.setItem(
+  STORAGE_KEYS.TASKS,
+  JSON.stringify(tasks)
+);
   }, [tasks]);
 
   function addTask(
@@ -131,7 +131,7 @@ export function TaskProvider({
   ) {
     setTasks((prev) => {
       const result =
-        ExecutionService.completeTask(
+        ExecutionCoordinator.completeTask(
           {
             lifeGoals: [],
             monthlyTargets: [],
@@ -150,7 +150,7 @@ export function TaskProvider({
   ) {
     setTasks((prev) => {
       const result =
-        ExecutionService.uncompleteTask(
+        ExecutionCoordinator.uncompleteTask(
           {
             lifeGoals: [],
             monthlyTargets: [],
@@ -202,7 +202,7 @@ export function TaskProvider({
   ) {
     setTasks((prev) => {
       const result =
-        ExecutionService.deleteTask(
+        ExecutionCoordinator.deleteTask(
           {
             lifeGoals: [],
             monthlyTargets: [],

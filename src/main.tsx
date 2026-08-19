@@ -4,25 +4,12 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 
 import App from "./App";
-
-import { AppProvider } from "./context/AppContext";
-import { LifeGoalsProvider } from "./context/LifeGoalsContext";
-import { MonthlyPlanningProvider } from "./context/MonthlyPlanningContext";
-import { WeeklyPlanningProvider } from "./context/WeeklyPlanningContext";
-import { TaskProvider } from "./context/TaskContext";
+import { AppProviders } from "./providers/AppProviders";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AppProvider>
-      <LifeGoalsProvider>
-        <MonthlyPlanningProvider>
-          <TaskProvider>
-            <WeeklyPlanningProvider>
-              <App />
-            </WeeklyPlanningProvider>
-          </TaskProvider>
-        </MonthlyPlanningProvider>
-      </LifeGoalsProvider>
-    </AppProvider>
+    <AppProviders>
+      <App />
+    </AppProviders>
   </StrictMode>
 );

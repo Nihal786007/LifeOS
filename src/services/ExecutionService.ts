@@ -1,5 +1,7 @@
 // ==========================================
 // LifeOS Execution Service
+// Version: 2.0
+// Part 1/4
 // ==========================================
 
 import type {
@@ -8,6 +10,15 @@ import type {
   WeeklyTarget,
   Task,
 } from "../shared/types";
+
+import type {
+  ExecutionRecord,
+  ExecutionType,
+} from "../shared/execution";
+
+// ==========================================
+// Execution State
+// ==========================================
 
 export interface ExecutionState {
   lifeGoals: LifeGoal[];
@@ -21,7 +32,12 @@ export interface ExecutionResult {
   monthlyTargets: MonthlyTarget[];
   weeklyTargets: WeeklyTarget[];
   tasks: Task[];
+  executionRecords: ExecutionRecord[];
 }
+
+// ==========================================
+// Execution Service
+// ==========================================
 
 export class ExecutionService {
   // ==========================================
@@ -30,6 +46,24 @@ export class ExecutionService {
 
   private static now(): string {
     return new Date().toISOString();
+  }
+
+  private static createExecutionRecord(
+    type: ExecutionType,
+    entityId: number,
+    title: string,
+    xpAwarded = 0,
+    metadata?: Record<string, unknown>
+  ): ExecutionRecord {
+    return {
+      id: Date.now(),
+      type,
+      entityId,
+      title,
+      createdAt: this.now(),
+      xpAwarded,
+      metadata,
+    };
   }
 
   private static getMonthlyTargetIds(
@@ -47,18 +81,16 @@ export class ExecutionService {
   ): number[] {
     return state.weeklyTargets
       .filter((target) =>
-        monthlyTargetIds.includes(
-          target.monthlyTargetId ?? -1
-        )
+        monthlyTargetIds.includes(target.monthlyTargetId ?? -1)
       )
       .map((target) => target.id);
   }
 
   // ==========================================
-  // Life Goals
+  // Life Goal Methods
+  // (Part 2 starts here)
   // ==========================================
-
-  static completeLifeGoal(
+    static completeLifeGoal(
     state: ExecutionState,
     goalId: number
   ): ExecutionResult {
@@ -85,34 +117,30 @@ export class ExecutionService {
           : goal
       ),
 
-      monthlyTargets:
-        state.monthlyTargets.map((target) =>
-          monthlyTargetIds.includes(target.id)
-            ? {
-                ...target,
-                progress: 100,
-                completed: true,
-                completedAt,
-              }
-            : target
-        ),
+      monthlyTargets: state.monthlyTargets.map((target) =>
+        monthlyTargetIds.includes(target.id)
+          ? {
+              ...target,
+              progress: 100,
+              completed: true,
+              completedAt,
+            }
+          : target
+      ),
 
-      weeklyTargets:
-        state.weeklyTargets.map((target) =>
-          weeklyTargetIds.includes(target.id)
-            ? {
-                ...target,
-                progress: 100,
-                completed: true,
-                completedAt,
-              }
-            : target
-        ),
+      weeklyTargets: state.weeklyTargets.map((target) =>
+        weeklyTargetIds.includes(target.id)
+          ? {
+              ...target,
+              progress: 100,
+              completed: true,
+              completedAt,
+            }
+          : target
+      ),
 
       tasks: state.tasks.map((task) =>
-        weeklyTargetIds.includes(
-          task.weeklyTargetId ?? -1
-        )
+        weeklyTargetIds.includes(task.weeklyTargetId ?? -1)
           ? {
               ...task,
               completed: true,
@@ -120,6 +148,15 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "life_goal_completed",
+          goalId,
+          state.lifeGoals.find((g) => g.id === goalId)?.title ??
+            "Life Goal"
+        ),
+      ],
     };
   }
 
@@ -148,34 +185,30 @@ export class ExecutionService {
           : goal
       ),
 
-      monthlyTargets:
-        state.monthlyTargets.map((target) =>
-          monthlyTargetIds.includes(target.id)
-            ? {
-                ...target,
-                progress: 0,
-                completed: false,
-                completedAt: undefined,
-              }
-            : target
-        ),
+      monthlyTargets: state.monthlyTargets.map((target) =>
+        monthlyTargetIds.includes(target.id)
+          ? {
+              ...target,
+              progress: 0,
+              completed: false,
+              completedAt: undefined,
+            }
+          : target
+      ),
 
-      weeklyTargets:
-        state.weeklyTargets.map((target) =>
-          weeklyTargetIds.includes(target.id)
-            ? {
-                ...target,
-                progress: 0,
-                completed: false,
-                completedAt: undefined,
-              }
-            : target
-        ),
+      weeklyTargets: state.weeklyTargets.map((target) =>
+        weeklyTargetIds.includes(target.id)
+          ? {
+              ...target,
+              progress: 0,
+              completed: false,
+              completedAt: undefined,
+            }
+          : target
+      ),
 
       tasks: state.tasks.map((task) =>
-        weeklyTargetIds.includes(
-          task.weeklyTargetId ?? -1
-        )
+        weeklyTargetIds.includes(task.weeklyTargetId ?? -1)
           ? {
               ...task,
               completed: false,
@@ -183,13 +216,23 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "life_goal_uncompleted",
+          goalId,
+          state.lifeGoals.find((g) => g.id === goalId)?.title ??
+            "Life Goal"
+        ),
+      ],
     };
   }
-    // ==========================================
-  // Monthly Targets
-  // ==========================================
 
-  static completeMonthlyTarget(
+  // ==========================================
+  // Monthly Target Methods
+  // (Part 3 starts here)
+  // ==========================================
+    static completeMonthlyTarget(
     state: ExecutionState,
     monthlyTargetId: number
   ): ExecutionResult {
@@ -228,9 +271,7 @@ export class ExecutionService {
       ),
 
       tasks: state.tasks.map((task) =>
-        weeklyTargetIds.includes(
-          task.weeklyTargetId ?? -1
-        )
+        weeklyTargetIds.includes(task.weeklyTargetId ?? -1)
           ? {
               ...task,
               completed: true,
@@ -238,6 +279,16 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "monthly_completed",
+          monthlyTargetId,
+          state.monthlyTargets.find(
+            (m) => m.id === monthlyTargetId
+          )?.title ?? "Monthly Target"
+        ),
+      ],
     };
   }
 
@@ -278,9 +329,7 @@ export class ExecutionService {
       ),
 
       tasks: state.tasks.map((task) =>
-        weeklyTargetIds.includes(
-          task.weeklyTargetId ?? -1
-        )
+        weeklyTargetIds.includes(task.weeklyTargetId ?? -1)
           ? {
               ...task,
               completed: false,
@@ -288,6 +337,16 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "monthly_uncompleted",
+          monthlyTargetId,
+          state.monthlyTargets.find(
+            (m) => m.id === monthlyTargetId
+          )?.title ?? "Monthly Target"
+        ),
+      ],
     };
   }
 
@@ -320,13 +379,22 @@ export class ExecutionService {
             task.weeklyTargetId ?? -1
           )
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "monthly_deleted",
+          monthlyTargetId,
+          "Monthly Target"
+        ),
+      ],
     };
   }
-    // ==========================================
-  // Weekly Targets
-  // ==========================================
 
-  static completeWeeklyTarget(
+  // ==========================================
+  // Weekly Target Methods
+  // (Part 4 starts here)
+  // ==========================================
+    static completeWeeklyTarget(
     state: ExecutionState,
     weeklyTargetId: number
   ): ExecutionResult {
@@ -334,7 +402,6 @@ export class ExecutionService {
 
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
 
       weeklyTargets: state.weeklyTargets.map((target) =>
@@ -357,6 +424,16 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "weekly_completed",
+          weeklyTargetId,
+          state.weeklyTargets.find(
+            (w) => w.id === weeklyTargetId
+          )?.title ?? "Weekly Target"
+        ),
+      ],
     };
   }
 
@@ -366,7 +443,6 @@ export class ExecutionService {
   ): ExecutionResult {
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
 
       weeklyTargets: state.weeklyTargets.map((target) =>
@@ -389,6 +465,16 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "weekly_uncompleted",
+          weeklyTargetId,
+          state.weeklyTargets.find(
+            (w) => w.id === weeklyTargetId
+          )?.title ?? "Weekly Target"
+        ),
+      ],
     };
   }
 
@@ -398,7 +484,6 @@ export class ExecutionService {
   ): ExecutionResult {
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
 
       weeklyTargets: state.weeklyTargets.filter(
@@ -409,12 +494,16 @@ export class ExecutionService {
         (task) =>
           task.weeklyTargetId !== weeklyTargetId
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "weekly_deleted",
+          weeklyTargetId,
+          "Weekly Target"
+        ),
+      ],
     };
   }
-
-  // ==========================================
-  // Tasks
-  // ==========================================
 
   static completeTask(
     state: ExecutionState,
@@ -424,9 +513,7 @@ export class ExecutionService {
 
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
-
       weeklyTargets: state.weeklyTargets,
 
       tasks: state.tasks.map((task) =>
@@ -438,6 +525,14 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "task_completed",
+          taskId,
+          state.tasks.find((t) => t.id === taskId)?.title ?? "Task"
+        ),
+      ],
     };
   }
 
@@ -447,9 +542,7 @@ export class ExecutionService {
   ): ExecutionResult {
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
-
       weeklyTargets: state.weeklyTargets,
 
       tasks: state.tasks.map((task) =>
@@ -461,6 +554,14 @@ export class ExecutionService {
             }
           : task
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "task_uncompleted",
+          taskId,
+          state.tasks.find((t) => t.id === taskId)?.title ?? "Task"
+        ),
+      ],
     };
   }
 
@@ -470,18 +571,22 @@ export class ExecutionService {
   ): ExecutionResult {
     return {
       lifeGoals: state.lifeGoals,
-
       monthlyTargets: state.monthlyTargets,
-
       weeklyTargets: state.weeklyTargets,
 
       tasks: state.tasks.filter(
         (task) => task.id !== taskId
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "task_deleted",
+          taskId,
+          "Task"
+        ),
+      ],
     };
-  }  // ==========================================
-  // Delete Life Goal
-  // ==========================================
+  }
 
   static deleteLifeGoal(
     state: ExecutionState,
@@ -501,19 +606,16 @@ export class ExecutionService {
         (goal) => goal.id !== goalId
       ),
 
-      monthlyTargets:
-        state.monthlyTargets.filter(
-          (target) =>
-            target.goalId !== goalId
-        ),
+      monthlyTargets: state.monthlyTargets.filter(
+        (target) => target.goalId !== goalId
+      ),
 
-      weeklyTargets:
-        state.weeklyTargets.filter(
-          (target) =>
-            !monthlyTargetIds.includes(
-              target.monthlyTargetId ?? -1
-            )
-        ),
+      weeklyTargets: state.weeklyTargets.filter(
+        (target) =>
+          !monthlyTargetIds.includes(
+            target.monthlyTargetId ?? -1
+          )
+      ),
 
       tasks: state.tasks.filter(
         (task) =>
@@ -521,6 +623,14 @@ export class ExecutionService {
             task.weeklyTargetId ?? -1
           )
       ),
+
+      executionRecords: [
+        this.createExecutionRecord(
+          "life_goal_deleted",
+          goalId,
+          "Life Goal"
+        ),
+      ],
     };
   }
 }

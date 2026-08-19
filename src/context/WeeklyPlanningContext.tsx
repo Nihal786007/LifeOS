@@ -8,7 +8,7 @@ import {
 import type { ReactNode } from "react";
 
 import { ExecutionService } from "../services/ExecutionService";
-
+import { STORAGE_KEYS } from "../constants/storage";
 import type {
   WeeklyTarget,
 } from "../shared/types";
@@ -49,7 +49,7 @@ export function WeeklyPlanningProvider({
   const [weeklyTargets, setWeeklyTargets] =
     useState<WeeklyTarget[]>(() => {
       const saved = localStorage.getItem(
-        "lifeos-weekly-targets"
+        STORAGE_KEYS.WEEKLY_TARGETS
       );
 
       if (!saved) return [];
@@ -63,7 +63,7 @@ export function WeeklyPlanningProvider({
 
   useEffect(() => {
     localStorage.setItem(
-      "lifeos-weekly-targets",
+      STORAGE_KEYS.WEEKLY_TARGETS,
       JSON.stringify(weeklyTargets)
     );
   }, [weeklyTargets]);

@@ -8,10 +8,11 @@ import {
 import type { ReactNode } from "react";
 
 import { ExecutionService } from "../services/ExecutionService";
-
+import { STORAGE_KEYS } from "../constants/storage";
 import type {
   MonthlyTarget,
 } from "../shared/types";
+
 
 interface MonthlyPlanningContextType {
   monthlyPlans: MonthlyTarget[];
@@ -50,8 +51,8 @@ export function MonthlyPlanningProvider({
   const [monthlyPlans, setMonthlyPlans] =
     useState<MonthlyTarget[]>(() => {
       const saved = localStorage.getItem(
-        "lifeos-monthly-plans"
-      );
+  STORAGE_KEYS.MONTHLY_TARGETS
+);
 
       if (!saved) return [];
 
@@ -64,7 +65,7 @@ export function MonthlyPlanningProvider({
 
   useEffect(() => {
     localStorage.setItem(
-      "lifeos-monthly-plans",
+      STORAGE_KEYS.MONTHLY_TARGETS,
       JSON.stringify(monthlyPlans)
     );
   }, [monthlyPlans]);
