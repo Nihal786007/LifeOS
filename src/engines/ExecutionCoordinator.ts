@@ -2,6 +2,7 @@
 // LifeOS Execution Coordinator
 // Kernel v1.1
 // ==========================================
+
 import { ExecutionKernel } from "./ExecutionKernel";
 import { ExecutionService } from "../services/ExecutionService";
 
@@ -33,11 +34,7 @@ export class ExecutionCoordinator {
   ): ExecutionResult {
     const result = action();
 
-    ExecutionKernel.process(
-    result.executionRecords
-);
-
-    return result;
+    return ExecutionKernel.execute(result);
   }
 
   // ==========================================

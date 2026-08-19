@@ -3,46 +3,48 @@
 // Kernel v1.0
 // ==========================================
 
-import type {
-  ExecutionRecord,
-} from "../shared/execution";
+import type { ExecutionResult } from "../services/ExecutionService";
 
 import { ExecutionHistoryService } from "../services/ExecutionHistoryService";
 
 export class ExecutionKernel {
   // ==========================================
-  // Process Execution Records
+  // Execute Kernel
   // ==========================================
 
-  static process(
-    executionRecords: ExecutionRecord[]
-  ): void {
-    if (executionRecords.length === 0) {
-      return;
+  static execute(
+    result: ExecutionResult
+  ): ExecutionResult {
+    if (result.executionRecords.length === 0) {
+      return result;
     }
 
     // ==========================================
-    // Persist History
+    // Persist Execution History
     // ==========================================
 
     ExecutionHistoryService.append(
-      executionRecords
+      result.executionRecords
     );
 
     // ==========================================
     // Future Kernel Modules
     // ==========================================
 
-    // XPKernel.process(executionRecords);
+    // PlanningKernel.process(result);
     //
-    // AchievementKernel.process(executionRecords);
+    // XPKernel.process(result);
     //
-    // TimelineKernel.process(executionRecords);
+    // AchievementKernel.process(result);
     //
-    // NotificationKernel.process(executionRecords);
+    // TimelineKernel.process(result);
     //
-    // AnalyticsKernel.process(executionRecords);
+    // NotificationKernel.process(result);
     //
-    // AtlasKernel.process(executionRecords);
+    // AnalyticsKernel.process(result);
+    //
+    // AtlasKernel.process(result);
+
+    return result;
   }
 }
