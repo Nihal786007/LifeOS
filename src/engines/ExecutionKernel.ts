@@ -1,7 +1,9 @@
 // ==========================================
 // LifeOS Execution Kernel
-// Kernel v1.0
+// Kernel v2.0
 // ==========================================
+
+import { PlanningKernel } from "./PlanningKernel";
 
 import type { ExecutionResult } from "../services/ExecutionService";
 
@@ -28,11 +30,33 @@ export class ExecutionKernel {
     );
 
     // ==========================================
+    // Planning Kernel
+    // ==========================================
+
+    const planningState =
+      PlanningKernel.recalculateAll({
+        lifeGoals: result.lifeGoals,
+        monthlyTargets: result.monthlyTargets,
+        weeklyTargets: result.weeklyTargets,
+        tasks: result.tasks,
+      });
+
+    result.lifeGoals =
+      planningState.lifeGoals;
+
+    result.monthlyTargets =
+      planningState.monthlyTargets;
+
+    result.weeklyTargets =
+      planningState.weeklyTargets;
+
+    result.tasks =
+      planningState.tasks;
+
+    // ==========================================
     // Future Kernel Modules
     // ==========================================
 
-    // PlanningKernel.process(result);
-    //
     // XPKernel.process(result);
     //
     // AchievementKernel.process(result);
