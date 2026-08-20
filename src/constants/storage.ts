@@ -1,9 +1,13 @@
 // ==========================================
 // LifeOS Storage Keys
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 export const STORAGE_KEYS = {
+  // ==========================================
+  // Planning
+  // ==========================================
+
   LIFE_GOALS: "lifeos-life-goals",
 
   MONTHLY_TARGETS: "lifeos-monthly-plans",
@@ -12,8 +16,25 @@ export const STORAGE_KEYS = {
 
   TASKS: "lifeos-tasks",
 
+  // ==========================================
+  // Profile
+  // ==========================================
+
+  USER_PROFILE: "lifeos-user-profile",
+
+  PROFILE_STATS: "lifeos-profile-stats",
+
+  // ==========================================
+  // Execution
+  // ==========================================
+
   EXECUTION_HISTORY:
     "lifeos-execution-history",
+
+  // ==========================================
+  // Legacy
+  // (Keep temporarily for migration)
+  // ==========================================
 
   TOTAL_XP: "lifeos-total-xp",
 } as const;
