@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Planning Kernel
-// Version: 1.0
+// Version: 2.0
 // ==========================================
 
 import type {
@@ -24,7 +24,48 @@ export class PlanningKernel {
   static recalculateWeeklyProgress(
     state: PlanningState
   ): PlanningState {
-    return state;
+    const weeklyTargets = state.weeklyTargets.map(
+      (weeklyTarget) => {
+        const tasks = state.tasks.filter(
+          (task) =>
+            task.weeklyTargetId === weeklyTarget.id
+        );
+
+        if (tasks.length === 0) {
+          return {
+            ...weeklyTarget,
+            progress: 0,
+            completed: false,
+            completedAt: undefined,
+          };
+        }
+
+        const completedTasks = tasks.filter(
+          (task) => task.completed
+        ).length;
+
+        const progress = Math.round(
+          (completedTasks / tasks.length) * 100
+        );
+
+        const completed = progress >= 100;
+
+        return {
+          ...weeklyTarget,
+          progress,
+          completed,
+          completedAt: completed
+            ? weeklyTarget.completedAt ??
+              new Date().toISOString()
+            : undefined,
+        };
+      }
+    );
+
+    return {
+      ...state,
+      weeklyTargets,
+    };
   }
 
   /**
@@ -33,7 +74,53 @@ export class PlanningKernel {
   static recalculateMonthlyProgress(
     state: PlanningState
   ): PlanningState {
-    return state;
+        const monthlyTargets = state.monthlyTargets.map(
+      (monthlyTarget) => {
+        const weeklyTargets = state.weeklyTargets.filter(
+          (weeklyTarget) =>
+            weeklyTarget.monthlyTargetId ===
+            monthlyTarget.id
+        );
+
+        if (weeklyTargets.length === 0) {
+          return {
+            ...monthlyTarget,
+            progress: 0,
+            completed: false,
+            completedAt: undefined,
+          };
+        }
+
+        const completedWeeklyTargets =
+          weeklyTargets.filter(
+            (weeklyTarget) =>
+              weeklyTarget.completed
+          ).length;
+
+        const progress = Math.round(
+          (completedWeeklyTargets /
+            weeklyTargets.length) *
+            100
+        );
+
+        const completed = progress >= 100;
+
+        return {
+          ...monthlyTarget,
+          progress,
+          completed,
+          completedAt: completed
+            ? monthlyTarget.completedAt ??
+              new Date().toISOString()
+            : undefined,
+        };
+      }
+    );
+
+    return {
+      ...state,
+      monthlyTargets,
+    };
   }
 
   /**
@@ -42,7 +129,54 @@ export class PlanningKernel {
   static recalculateLifeGoalProgress(
     state: PlanningState
   ): PlanningState {
-    return state;
+    const lifeGoals = state.lifeGoals.map(
+      (lifeGoal) => {
+        const monthlyTargets =
+          state.monthlyTargets.filter(
+            (monthlyTarget) =>
+              monthlyTarget.goalId ===
+              lifeGoal.id
+          );
+
+        if (monthlyTargets.length === 0) {
+          return {
+            ...lifeGoal,
+            progress: 0,
+            completed: false,
+            completedAt: undefined,
+          };
+        }
+
+        const completedMonthlyTargets =
+          monthlyTargets.filter(
+            (monthlyTarget) =>
+              monthlyTarget.completed
+          ).length;
+
+        const progress = Math.round(
+          (completedMonthlyTargets /
+            monthlyTargets.length) *
+            100
+        );
+
+        const completed = progress >= 100;
+
+        return {
+          ...lifeGoal,
+          progress,
+          completed,
+          completedAt: completed
+            ? lifeGoal.completedAt ??
+              new Date().toISOString()
+            : undefined,
+        };
+      }
+    );
+
+    return {
+      ...state,
+      lifeGoals,
+    };
   }
 
   /**
@@ -57,10 +191,14 @@ export class PlanningKernel {
       this.recalculateWeeklyProgress(updated);
 
     updated =
-      this.recalculateMonthlyProgress(updated);
+      this.recalculateMonthlyProgress(
+        updated
+      );
 
     updated =
-      this.recalculateLifeGoalProgress(updated);
+      this.recalculateLifeGoalProgress(
+        updated
+      );
 
     return updated;
   }
