@@ -10,6 +10,7 @@ import { useLifeGoals } from "../../context/LifeGoalsContext";
 import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { useTasks } from "../../context/TaskContext";
+import { usePlanningExecution } from "../../context/PlanningExecutionContext";
 
 import Card from "../ui/Card";
 
@@ -37,7 +38,6 @@ export default function MonthlyTargetCard({
 }: Props) {
   const {
     monthlyPlans,
-    deleteMonthlyPlan,
   } = useMonthlyPlanning();
 
   const {
@@ -52,28 +52,54 @@ export default function MonthlyTargetCard({
     lifeGoals,
   } = useLifeGoals();
 
+  const {
+    deleteMonthlyTarget,
+  } = usePlanningExecution();
+
   const plan =
     monthlyPlans.find(
-      (p) => p.id === id
+      (item) => item.id === id
     );
 
-  if (!plan) return null;
+  if (!plan) {
+    return null;
+  }
+
+  const planId = plan.id;
+  const planTitle = plan.title;
 
   const goal =
     lifeGoals.find(
-      (g) => g.id === plan.goalId
+      (item) =>
+        item.id === plan.goalId
     );
 
   const progress =
     ProgressEngine.getMonthlyProgress(
       {
         lifeGoals,
-        monthlyTargets: monthlyPlans,
+        monthlyTargets:
+          monthlyPlans,
         weeklyTargets,
         tasks,
       },
       plan.id
     );
+
+  function handleDelete() {
+    const confirmed =
+      window.confirm(
+        `Delete "${planTitle}"?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteMonthlyTarget(
+      planId
+    );
+  }
 
   return (
     <Card hover glow>
@@ -88,7 +114,8 @@ export default function MonthlyTargetCard({
           </div>
 
           <p className="mt-2 text-sm text-slate-400">
-            {MONTHS[plan.month - 1]} {plan.year}
+            {MONTHS[plan.month - 1]}{" "}
+            {plan.year}
           </p>
 
           <p className="mt-3 text-cyan-400">
@@ -99,18 +126,9 @@ export default function MonthlyTargetCard({
         </div>
 
         <button
-          onClick={() => {
-            if (
-              window.confirm(
-                `Delete "${plan.title}"?`
-              )
-            ) {
-              deleteMonthlyPlan(
-                plan.id
-              );
-            }
-          }}
+          onClick={handleDelete}
           className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+          aria-label={`Delete ${plan.title}`}
         >
           <FaTrash />
         </button>

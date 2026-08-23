@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Execution Coordinator
-// Kernel v1.1
+// Kernel v2.0
 // ==========================================
 
 import { ExecutionKernel } from "./ExecutionKernel";
@@ -30,11 +30,15 @@ export class ExecutionCoordinator {
   // ==========================================
 
   private static execute(
+    state: ExecutionState,
     action: () => ExecutionResult
   ): ExecutionResult {
     const result = action();
 
-    return ExecutionKernel.execute(result);
+    return ExecutionKernel.execute(
+      result,
+      state
+    );
   }
 
   // ==========================================
@@ -45,11 +49,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     taskId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.completeTask(
-        state,
-        taskId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.completeTask(
+          state,
+          taskId
+        )
     );
   }
 
@@ -57,11 +63,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     taskId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.uncompleteTask(
-        state,
-        taskId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.uncompleteTask(
+          state,
+          taskId
+        )
     );
   }
 
@@ -69,11 +77,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     taskId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.deleteTask(
-        state,
-        taskId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.deleteTask(
+          state,
+          taskId
+        )
     );
   }
 
@@ -85,11 +95,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     weeklyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.completeWeeklyTarget(
-        state,
-        weeklyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.completeWeeklyTarget(
+          state,
+          weeklyTargetId
+        )
     );
   }
 
@@ -97,11 +109,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     weeklyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.uncompleteWeeklyTarget(
-        state,
-        weeklyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.uncompleteWeeklyTarget(
+          state,
+          weeklyTargetId
+        )
     );
   }
 
@@ -109,11 +123,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     weeklyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.deleteWeeklyTarget(
-        state,
-        weeklyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.deleteWeeklyTarget(
+          state,
+          weeklyTargetId
+        )
     );
   }
 
@@ -125,11 +141,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     monthlyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.completeMonthlyTarget(
-        state,
-        monthlyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.completeMonthlyTarget(
+          state,
+          monthlyTargetId
+        )
     );
   }
 
@@ -137,11 +155,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     monthlyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.uncompleteMonthlyTarget(
-        state,
-        monthlyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.uncompleteMonthlyTarget(
+          state,
+          monthlyTargetId
+        )
     );
   }
 
@@ -149,11 +169,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     monthlyTargetId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.deleteMonthlyTarget(
-        state,
-        monthlyTargetId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.deleteMonthlyTarget(
+          state,
+          monthlyTargetId
+        )
     );
   }
 
@@ -165,11 +187,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     goalId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.completeLifeGoal(
-        state,
-        goalId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.completeLifeGoal(
+          state,
+          goalId
+        )
     );
   }
 
@@ -177,11 +201,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     goalId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.uncompleteLifeGoal(
-        state,
-        goalId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.uncompleteLifeGoal(
+          state,
+          goalId
+        )
     );
   }
 
@@ -189,11 +215,13 @@ export class ExecutionCoordinator {
     state: ExecutionState,
     goalId: number
   ): ExecutionResult {
-    return this.execute(() =>
-      ExecutionService.deleteLifeGoal(
-        state,
-        goalId
-      )
+    return this.execute(
+      state,
+      () =>
+        ExecutionService.deleteLifeGoal(
+          state,
+          goalId
+        )
     );
   }
 }

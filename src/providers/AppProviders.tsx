@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS App Providers
-// Version: 1.0
+// Version: 3.0
 // ==========================================
 
 import type { ReactNode } from "react";
@@ -10,6 +10,8 @@ import { LifeGoalsProvider } from "../context/LifeGoalsContext";
 import { MonthlyPlanningProvider } from "../context/MonthlyPlanningContext";
 import { WeeklyPlanningProvider } from "../context/WeeklyPlanningContext";
 import { TaskProvider } from "../context/TaskContext";
+import { XPProvider } from "../context/XPContext";
+import { PlanningExecutionProvider } from "../context/PlanningExecutionContext";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -24,7 +26,11 @@ export function AppProviders({
         <MonthlyPlanningProvider>
           <TaskProvider>
             <WeeklyPlanningProvider>
-              {children}
+              <XPProvider>
+                <PlanningExecutionProvider>
+                  {children}
+                </PlanningExecutionProvider>
+              </XPProvider>
             </WeeklyPlanningProvider>
           </TaskProvider>
         </MonthlyPlanningProvider>

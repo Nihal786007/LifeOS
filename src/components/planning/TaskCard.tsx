@@ -7,6 +7,7 @@ import {
 
 import { useTasks } from "../../context/TaskContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
+import { usePlanningExecution } from "../../context/PlanningExecutionContext";
 
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -18,25 +19,35 @@ interface Props {
 export default function TaskCard({
   id,
 }: Props) {
-  const {
-    tasks,
-    toggleTask,
-    deleteTask,
-  } = useTasks();
+  const { tasks } = useTasks();
 
-  const { weeklyTargets } =
-    useWeeklyPlanning();
+  const {
+    weeklyTargets,
+  } = useWeeklyPlanning();
+
+  const {
+    completeTask,
+    uncompleteTask,
+    deleteTask,
+  } = usePlanningExecution();
 
   const task = tasks.find(
-    (t) => t.id === id
+    (item) => item.id === id
   );
 
-  if (!task) return null;
+  if (!task) {
+    return null;
+  }
+
+  const taskId = task.id;
+  const taskTitle = task.title;
+  const taskCompleted = task.completed;
 
   const weeklyTarget =
     weeklyTargets.find(
-      (w) =>
-        w.id === task.weeklyTargetId
+      (target) =>
+        target.id ===
+        task.weeklyTargetId
     );
 
   const priorityColor = {
@@ -45,27 +56,43 @@ export default function TaskCard({
     high: "text-red-400",
   };
 
+  function handleToggleTask() {
+    if (taskCompleted) {
+      uncompleteTask(taskId);
+      return;
+    }
+
+    completeTask(taskId);
+  }
+
+  function handleDeleteTask() {
+    const confirmed =
+      window.confirm(
+        `Delete "${taskTitle}"?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteTask(taskId);
+  }
+
   return (
     <Card>
-
       <div className="flex items-start justify-between">
-
         <div>
-
           <h3 className="text-xl font-bold text-white">
             {task.title}
           </h3>
 
           {weeklyTarget && (
-
             <p className="mt-2 text-cyan-400">
               📆 {weeklyTarget.title}
             </p>
-
           )}
 
           <div className="mt-3 flex items-center gap-2">
-
             <FaFlag
               className={
                 priorityColor[
@@ -86,34 +113,21 @@ export default function TaskCard({
                 .toUpperCase() +
                 task.priority.slice(1)}
             </span>
-
           </div>
-
         </div>
 
         <button
-          onClick={() => {
-            if (
-              window.confirm(
-                `Delete "${task.title}"?`
-              )
-            ) {
-              deleteTask(task.id);
-            }
-          }}
+          onClick={handleDeleteTask}
           className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+          aria-label={`Delete ${task.title}`}
         >
           <FaTrash />
         </button>
-
       </div>
 
       <div className="mt-6 flex items-center justify-between">
-
         <div>
-
           <div className="flex items-center gap-2 text-sm text-slate-400">
-
             <FaCalendarAlt />
 
             <span>
@@ -122,13 +136,10 @@ export default function TaskCard({
                 task.createdAt
               ).toLocaleDateString()}
             </span>
-
           </div>
 
           {task.completedAt && (
-
             <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
-
               <FaCheckCircle />
 
               <span>
@@ -137,11 +148,8 @@ export default function TaskCard({
                   task.completedAt
                 ).toLocaleDateString()}
               </span>
-
             </div>
-
           )}
-
         </div>
 
         <Button
@@ -150,17 +158,13 @@ export default function TaskCard({
               ? "secondary"
               : "primary"
           }
-          onClick={() =>
-            toggleTask(task.id)
-          }
+          onClick={handleToggleTask}
         >
           {task.completed
             ? "✅ Completed"
             : "Mark Complete"}
         </Button>
-
       </div>
-
     </Card>
   );
 }

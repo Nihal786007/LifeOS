@@ -1,13 +1,18 @@
 // ==========================================
 // LifeOS Execution Kernel
-// Kernel v2.0
+// Kernel v4.0
 // ==========================================
 
 import { PlanningKernel } from "./PlanningKernel";
-
-import type { ExecutionResult } from "../services/ExecutionService";
+import { PlanningTransitionEngine } from "./PlanningTransitionEngine";
+import { XPAutomationEngine } from "./XPAutomationEngine";
 
 import { ExecutionHistoryService } from "../services/ExecutionHistoryService";
+
+import type {
+  ExecutionResult,
+  ExecutionState,
+} from "../services/ExecutionService";
 
 export class ExecutionKernel {
   // ==========================================
@@ -15,22 +20,15 @@ export class ExecutionKernel {
   // ==========================================
 
   static execute(
-    result: ExecutionResult
+    result: ExecutionResult,
+    previousState?: ExecutionState
   ): ExecutionResult {
     if (result.executionRecords.length === 0) {
       return result;
     }
 
     // ==========================================
-    // Persist Execution History
-    // ==========================================
-
-    ExecutionHistoryService.append(
-      result.executionRecords
-    );
-
-    // ==========================================
-    // Planning Kernel
+    // Planning Recalculation
     // ==========================================
 
     const planningState =
@@ -40,6 +38,28 @@ export class ExecutionKernel {
         weeklyTargets: result.weeklyTargets,
         tasks: result.tasks,
       });
+
+    // ==========================================
+    // Automatic Planning Transitions
+    // ==========================================
+
+    if (previousState) {
+      const transitionRecords =
+        PlanningTransitionEngine.detectTransitions(
+          previousState,
+          planningState,
+          result.executionRecords
+        );
+
+      result.executionRecords = [
+        ...result.executionRecords,
+        ...transitionRecords,
+      ];
+    }
+
+    // ==========================================
+    // Apply Planning State
+    // ==========================================
 
     result.lifeGoals =
       planningState.lifeGoals;
@@ -54,20 +74,38 @@ export class ExecutionKernel {
       planningState.tasks;
 
     // ==========================================
-    // Future Kernel Modules
+    // XP Automation
     // ==========================================
 
-    // XPKernel.process(result);
-    //
-    // AchievementKernel.process(result);
-    //
-    // TimelineKernel.process(result);
-    //
-    // NotificationKernel.process(result);
-    //
-    // AnalyticsKernel.process(result);
-    //
-    // AtlasKernel.process(result);
+    const executionHistory =
+      ExecutionHistoryService.getAll();
+
+    const xpResult =
+      XPAutomationEngine.process(
+        result.executionRecords,
+        executionHistory
+      );
+
+    result.executionRecords =
+      xpResult.records;
+
+    // ==========================================
+    // Persist Final Execution History
+    // ==========================================
+
+    ExecutionHistoryService.append(
+      result.executionRecords
+    );
+
+    // ==========================================
+    // Future Execution Consumers
+    // ==========================================
+
+    // Achievement automation
+    // Timeline / Life Calendar
+    // Notifications
+    // Analytics
+    // ATLAS
 
     return result;
   }

@@ -1,3 +1,8 @@
+// ==========================================
+// LifeOS Monthly Planning Context
+// Version: 2.0
+// ==========================================
+
 import {
   createContext,
   useContext,
@@ -9,10 +14,14 @@ import type { ReactNode } from "react";
 
 import { ExecutionService } from "../services/ExecutionService";
 import { STORAGE_KEYS } from "../constants/storage";
+
 import type {
   MonthlyTarget,
 } from "../shared/types";
 
+// ==========================================
+// Context Type
+// ==========================================
 
 interface MonthlyPlanningContextType {
   monthlyPlans: MonthlyTarget[];
@@ -36,12 +45,31 @@ interface MonthlyPlanningContextType {
   deleteMonthlyPlansByLifeGoal: (
     goalId: number
   ) => void;
+
+  /**
+   * Applies a complete Monthly Planning state
+   * produced by the LifeOS execution architecture.
+   *
+   * This is intended for orchestration-level updates,
+   * not normal component-level mutations.
+   */
+  replaceMonthlyPlans: (
+    monthlyPlans: MonthlyTarget[]
+  ) => void;
 }
+
+// ==========================================
+// Context
+// ==========================================
 
 const MonthlyPlanningContext =
   createContext<MonthlyPlanningContextType | null>(
     null
   );
+
+// ==========================================
+// Provider
+// ==========================================
 
 export function MonthlyPlanningProvider({
   children,
@@ -51,17 +79,25 @@ export function MonthlyPlanningProvider({
   const [monthlyPlans, setMonthlyPlans] =
     useState<MonthlyTarget[]>(() => {
       const saved = localStorage.getItem(
-  STORAGE_KEYS.MONTHLY_TARGETS
-);
+        STORAGE_KEYS.MONTHLY_TARGETS
+      );
 
-      if (!saved) return [];
+      if (!saved) {
+        return [];
+      }
 
       try {
-        return JSON.parse(saved);
+        return JSON.parse(
+          saved
+        ) as MonthlyTarget[];
       } catch {
         return [];
       }
     });
+
+  // ==========================================
+  // Persistence
+  // ==========================================
 
   useEffect(() => {
     localStorage.setItem(
@@ -70,37 +106,54 @@ export function MonthlyPlanningProvider({
     );
   }, [monthlyPlans]);
 
+  // ==========================================
+  // Monthly Plan Creation
+  // ==========================================
+
   function addMonthlyPlan(
     title: string,
     month: number,
     year: number,
     goalId?: number
   ) {
-    if (!title.trim()) return;
+    const trimmedTitle = title.trim();
 
-    setMonthlyPlans((prev) => [
-      ...prev,
+    if (!trimmedTitle) {
+      return;
+    }
+
+    setMonthlyPlans((previous) => [
+      ...previous,
       {
         id: Date.now(),
-        title: title.trim(),
+
+        title: trimmedTitle,
+
         month,
         year,
         goalId,
+
         progress: 0,
+
         completed: false,
         completedAt: undefined,
+
         createdAt:
           new Date().toISOString(),
       },
     ]);
   }
 
+  // ==========================================
+  // Progress Update
+  // ==========================================
+
   function updateMonthlyProgress(
     id: number,
     progress: number
   ) {
-    setMonthlyPlans((prev) =>
-      prev.map((plan) =>
+    setMonthlyPlans((previous) =>
+      previous.map((plan) =>
         plan.id === id
           ? {
               ...plan,
@@ -111,15 +164,19 @@ export function MonthlyPlanningProvider({
     );
   }
 
+  // ==========================================
+  // Monthly Plan Delete
+  // ==========================================
+
   function deleteMonthlyPlan(
     id: number
   ) {
-    setMonthlyPlans((prev) => {
+    setMonthlyPlans((previous) => {
       const result =
         ExecutionService.deleteMonthlyTarget(
           {
             lifeGoals: [],
-            monthlyTargets: prev,
+            monthlyTargets: previous,
             weeklyTargets: [],
             tasks: [],
           },
@@ -130,25 +187,48 @@ export function MonthlyPlanningProvider({
     });
   }
 
+  // ==========================================
+  // Delete Plans By Life Goal
+  // ==========================================
+
   function deleteMonthlyPlansByLifeGoal(
     goalId: number
   ) {
-    setMonthlyPlans((prev) =>
-      prev.filter(
+    setMonthlyPlans((previous) =>
+      previous.filter(
         (plan) =>
           plan.goalId !== goalId
       )
     );
   }
 
+  // ==========================================
+  // Execution State Application
+  // ==========================================
+
+  function replaceMonthlyPlans(
+    nextMonthlyPlans: MonthlyTarget[]
+  ) {
+    setMonthlyPlans(
+      nextMonthlyPlans
+    );
+  }
+
+  // ==========================================
+  // Provider
+  // ==========================================
+
   return (
     <MonthlyPlanningContext.Provider
       value={{
         monthlyPlans,
+
         addMonthlyPlan,
         updateMonthlyProgress,
         deleteMonthlyPlan,
         deleteMonthlyPlansByLifeGoal,
+
+        replaceMonthlyPlans,
       }}
     >
       {children}
@@ -156,10 +236,15 @@ export function MonthlyPlanningProvider({
   );
 }
 
+// ==========================================
+// Hook
+// ==========================================
+
 export function useMonthlyPlanning() {
-  const context = useContext(
-    MonthlyPlanningContext
-  );
+  const context =
+    useContext(
+      MonthlyPlanningContext
+    );
 
   if (!context) {
     throw new Error(

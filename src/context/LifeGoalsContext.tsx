@@ -1,3 +1,8 @@
+// ==========================================
+// LifeOS Life Goals Context
+// Version: 2.0
+// ==========================================
+
 import {
   createContext,
   useContext,
@@ -7,10 +12,12 @@ import {
 
 import type { ReactNode } from "react";
 
-import type {
-  LifeGoal,
-} from "../shared/types";
 import { STORAGE_KEYS } from "../constants/storage";
+import type { LifeGoal } from "../shared/types";
+
+// ==========================================
+// Context Type
+// ==========================================
 
 interface LifeGoalsContextType {
   lifeGoals: LifeGoal[];
@@ -33,12 +40,31 @@ interface LifeGoalsContextType {
   deleteGoal: (
     id: number
   ) => void;
+
+  /**
+   * Applies a complete Life Goal state produced by
+   * the LifeOS execution architecture.
+   *
+   * This is intended for orchestration-level updates,
+   * not normal component-level mutations.
+   */
+  replaceLifeGoals: (
+    lifeGoals: LifeGoal[]
+  ) => void;
 }
+
+// ==========================================
+// Context
+// ==========================================
 
 const LifeGoalsContext =
   createContext<LifeGoalsContextType | null>(
     null
   );
+
+// ==========================================
+// Provider
+// ==========================================
 
 export function LifeGoalsProvider({
   children,
@@ -47,55 +73,82 @@ export function LifeGoalsProvider({
 }) {
   const [lifeGoals, setLifeGoals] =
     useState<LifeGoal[]>(() => {
-      const saved =
-       localStorage.getItem(STORAGE_KEYS.LIFE_GOALS);
+      const saved = localStorage.getItem(
+        STORAGE_KEYS.LIFE_GOALS
+      );
 
-      if (!saved) return [];
+      if (!saved) {
+        return [];
+      }
 
       try {
-        return JSON.parse(saved);
+        return JSON.parse(saved) as LifeGoal[];
       } catch {
         return [];
       }
     });
 
+  // ==========================================
+  // Persistence
+  // ==========================================
+
   useEffect(() => {
-   localStorage.setItem(
-  STORAGE_KEYS.LIFE_GOALS,
+    localStorage.setItem(
+      STORAGE_KEYS.LIFE_GOALS,
       JSON.stringify(lifeGoals)
     );
   }, [lifeGoals]);
+
+  // ==========================================
+  // Goal Creation
+  // ==========================================
 
   function addGoal(
     title: string,
     description = "",
     targetDate?: string
   ) {
-    if (!title.trim()) return;
+    const trimmedTitle = title.trim();
 
-    setLifeGoals((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        title: title.trim(),
-        description,
-        progress: 0,
-        completed: false,
-        completedAt: undefined,
-        startDate:
-          new Date().toISOString(),
-        targetDate,
-        createdAt:
-          new Date().toISOString(),
-      },
+    if (!trimmedTitle) {
+      return;
+    }
+
+    const now =
+      new Date().toISOString();
+
+    const goal: LifeGoal = {
+      id: Date.now(),
+
+      title: trimmedTitle,
+      description,
+
+      progress: 0,
+
+      completed: false,
+      completedAt: undefined,
+
+      startDate: now,
+      targetDate,
+
+      createdAt: now,
+    };
+
+    setLifeGoals((previous) => [
+      ...previous,
+      goal,
     ]);
   }
+
+  // ==========================================
+  // Goal Update
+  // ==========================================
 
   function updateGoal(
     goal: LifeGoal
   ) {
-    setLifeGoals((prev) =>
-      prev.map((item) =>
+    setLifeGoals((previous) =>
+      previous.map((item) =>
         item.id === goal.id
           ? goal
           : item
@@ -103,12 +156,16 @@ export function LifeGoalsProvider({
     );
   }
 
+  // ==========================================
+  // Progress Update
+  // ==========================================
+
   function updateGoalProgress(
     id: number,
     progress: number
   ) {
-    setLifeGoals((prev) =>
-      prev.map((goal) =>
+    setLifeGoals((previous) =>
+      previous.map((goal) =>
         goal.id === id
           ? {
               ...goal,
@@ -119,25 +176,46 @@ export function LifeGoalsProvider({
     );
   }
 
+  // ==========================================
+  // Goal Delete
+  // ==========================================
+
   function deleteGoal(
     id: number
   ) {
-    setLifeGoals((prev) =>
-      prev.filter(
+    setLifeGoals((previous) =>
+      previous.filter(
         (goal) =>
           goal.id !== id
       )
     );
   }
 
+  // ==========================================
+  // Execution State Application
+  // ==========================================
+
+  function replaceLifeGoals(
+    nextLifeGoals: LifeGoal[]
+  ) {
+    setLifeGoals(nextLifeGoals);
+  }
+
+  // ==========================================
+  // Provider
+  // ==========================================
+
   return (
     <LifeGoalsContext.Provider
       value={{
         lifeGoals,
+
         addGoal,
         updateGoal,
         updateGoalProgress,
         deleteGoal,
+
+        replaceLifeGoals,
       }}
     >
       {children}
@@ -145,11 +223,13 @@ export function LifeGoalsProvider({
   );
 }
 
+// ==========================================
+// Hook
+// ==========================================
+
 export function useLifeGoals() {
   const context =
-    useContext(
-      LifeGoalsContext
-    );
+    useContext(LifeGoalsContext);
 
   if (!context) {
     throw new Error(

@@ -8,6 +8,7 @@ import { ProgressEngine } from "../../engines/ProgressEngine";
 import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { useTasks } from "../../context/TaskContext";
+import { usePlanningExecution } from "../../context/PlanningExecutionContext";
 
 import Card from "../ui/Card";
 
@@ -19,25 +20,40 @@ export default function WeeklyTargetCard({
   id,
 }: Props) {
   const {
-  weeklyTargets,
-  deleteWeeklyTarget,
-} = useWeeklyPlanning();
-  const { tasks } = useTasks();
+    weeklyTargets,
+  } = useWeeklyPlanning();
 
-  const { monthlyPlans } =
-    useMonthlyPlanning();
+  const {
+    tasks,
+  } = useTasks();
+
+  const {
+    monthlyPlans,
+  } = useMonthlyPlanning();
+
+  const {
+    deleteWeeklyTarget,
+  } = usePlanningExecution();
 
   const target =
     weeklyTargets.find(
-      (t) => t.id === id
+      (item) => item.id === id
     );
 
-  if (!target) return null;
+  if (!target) {
+    return null;
+  }
+
+  const targetId =
+    target.id;
+
+  const targetTitle =
+    target.title;
 
   const monthlyTarget =
     monthlyPlans.find(
-      (m) =>
-        m.id ===
+      (month) =>
+        month.id ===
         target.monthlyTargetId
     );
 
@@ -45,12 +61,28 @@ export default function WeeklyTargetCard({
     ProgressEngine.getWeeklyProgress(
       {
         lifeGoals: [],
-        monthlyTargets: monthlyPlans,
+        monthlyTargets:
+          monthlyPlans,
         weeklyTargets,
         tasks,
       },
       target.id
     );
+
+  function handleDelete() {
+    const confirmed =
+      window.confirm(
+        `Delete "${targetTitle}"?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    deleteWeeklyTarget(
+      targetId
+    );
+  }
 
   return (
     <Card hover glow>
@@ -73,18 +105,11 @@ export default function WeeklyTargetCard({
         </div>
 
         <button
-          onClick={() => {
-            if (
-              window.confirm(
-                `Delete "${target.title}"?`
-              )
-            ) {
-              deleteWeeklyTarget(
-                target.id
-              );
-            }
-          }}
+          onClick={
+            handleDelete
+          }
           className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+          aria-label={`Delete ${target.title}`}
         >
           <FaTrash />
         </button>

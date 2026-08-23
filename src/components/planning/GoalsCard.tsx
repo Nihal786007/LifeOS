@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useLifeGoals } from "../../context/LifeGoalsContext";
+import { usePlanningExecution } from "../../context/PlanningExecutionContext";
 
 import GoalModal from "./GoalModal";
 import GoalEmptyState from "./GoalEmptyState";
@@ -10,8 +11,11 @@ export default function GoalsCard() {
   const {
     lifeGoals,
     addGoal,
-    deleteGoal,
   } = useLifeGoals();
+
+  const {
+    deleteLifeGoal,
+  } = usePlanningExecution();
 
   const [openModal, setOpenModal] =
     useState(false);
@@ -58,7 +62,9 @@ export default function GoalsCard() {
               <LifeGoalCard
                 key={goal.id}
                 goal={goal}
-                onDelete={deleteGoal}
+                onDelete={
+                  deleteLifeGoal
+                }
               />
             ))}
 

@@ -48,6 +48,17 @@ interface TaskContextType {
   deleteTasksByWeeklyTarget: (
     weeklyTargetId: number
   ) => void;
+
+  /**
+   * Applies the complete task state returned by
+   * the LifeOS execution architecture.
+   *
+   * This is intended for orchestration-level
+   * synchronization only.
+   */
+  replaceTasks: (
+    tasks: Task[]
+  ) => void;
 }
 
 const TaskContext =
@@ -67,20 +78,24 @@ export function TaskProvider({
           STORAGE_KEYS.TASKS
         );
 
-      if (!saved) return [];
+      if (!saved) {
+        return [];
+      }
 
       try {
-        return JSON.parse(saved);
+        return JSON.parse(
+          saved
+        ) as Task[];
       } catch {
         return [];
       }
     });
 
   useEffect(() => {
-   localStorage.setItem(
-  STORAGE_KEYS.TASKS,
-  JSON.stringify(tasks)
-);
+    localStorage.setItem(
+      STORAGE_KEYS.TASKS,
+      JSON.stringify(tasks)
+    );
   }, [tasks]);
 
   function addTask(
@@ -89,20 +104,30 @@ export function TaskProvider({
     priority: "low" | "medium" | "high" = "medium",
     weeklyTargetId?: number
   ) {
-    if (!title.trim()) return;
+    const trimmedTitle =
+      title.trim();
 
-    setTasks((prev) => [
-      ...prev,
+    if (!trimmedTitle) {
+      return;
+    }
+
+    setTasks((previous) => [
+      ...previous,
       {
         id: Date.now(),
-        title: title.trim(),
+
+        title: trimmedTitle,
         description: undefined,
+
         dueDate,
         priority,
         weeklyTargetId,
+
         completed: false,
         completedAt: undefined,
+
         xp: 10,
+
         createdAt:
           new Date().toISOString(),
       },
@@ -112,31 +137,36 @@ export function TaskProvider({
   function toggleTask(
     id: number
   ) {
-    setTasks((prev) =>
-      prev.map((task) =>
+    setTasks((previous) =>
+      previous.map((task) =>
         task.id === id
           ? {
               ...task,
-              completed: !task.completed,
-              completedAt: !task.completed
-                ? new Date().toISOString()
-                : undefined,
+
+              completed:
+                !task.completed,
+
+              completedAt:
+                !task.completed
+                  ? new Date().toISOString()
+                  : undefined,
             }
           : task
       )
     );
   }
-    function completeTask(
+
+  function completeTask(
     id: number
   ) {
-    setTasks((prev) => {
+    setTasks((previous) => {
       const result =
         ExecutionCoordinator.completeTask(
           {
             lifeGoals: [],
             monthlyTargets: [],
             weeklyTargets: [],
-            tasks: prev,
+            tasks: previous,
           },
           id
         );
@@ -148,14 +178,14 @@ export function TaskProvider({
   function uncompleteTask(
     id: number
   ) {
-    setTasks((prev) => {
+    setTasks((previous) => {
       const result =
         ExecutionCoordinator.uncompleteTask(
           {
             lifeGoals: [],
             monthlyTargets: [],
             weeklyTargets: [],
-            tasks: prev,
+            tasks: previous,
           },
           id
         );
@@ -167,12 +197,15 @@ export function TaskProvider({
   function completeTasksByWeeklyTarget(
     weeklyTargetId: number
   ) {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.weeklyTargetId === weeklyTargetId
+    setTasks((previous) =>
+      previous.map((task) =>
+        task.weeklyTargetId ===
+        weeklyTargetId
           ? {
               ...task,
+
               completed: true,
+
               completedAt:
                 new Date().toISOString(),
             }
@@ -184,11 +217,13 @@ export function TaskProvider({
   function uncompleteTasksByWeeklyTarget(
     weeklyTargetId: number
   ) {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.weeklyTargetId === weeklyTargetId
+    setTasks((previous) =>
+      previous.map((task) =>
+        task.weeklyTargetId ===
+        weeklyTargetId
           ? {
               ...task,
+
               completed: false,
               completedAt: undefined,
             }
@@ -200,14 +235,14 @@ export function TaskProvider({
   function deleteTask(
     id: number
   ) {
-    setTasks((prev) => {
+    setTasks((previous) => {
       const result =
         ExecutionCoordinator.deleteTask(
           {
             lifeGoals: [],
             monthlyTargets: [],
             weeklyTargets: [],
-            tasks: prev,
+            tasks: previous,
           },
           id
         );
@@ -219,8 +254,8 @@ export function TaskProvider({
   function deleteTasksByWeeklyTarget(
     weeklyTargetId: number
   ) {
-    setTasks((prev) =>
-      prev.filter(
+    setTasks((previous) =>
+      previous.filter(
         (task) =>
           task.weeklyTargetId !==
           weeklyTargetId
@@ -228,24 +263,38 @@ export function TaskProvider({
     );
   }
 
+  function replaceTasks(
+    nextTasks: Task[]
+  ) {
+    setTasks(
+      nextTasks
+    );
+  }
+
   return (
     <TaskContext.Provider
       value={{
         tasks,
+
         addTask,
         toggleTask,
+
         completeTask,
         uncompleteTask,
+
         completeTasksByWeeklyTarget,
         uncompleteTasksByWeeklyTarget,
+
         deleteTask,
         deleteTasksByWeeklyTarget,
+
+        replaceTasks,
       }}
     >
       {children}
     </TaskContext.Provider>
   );
-  }
+}
 
 export function useTasks() {
   const context =

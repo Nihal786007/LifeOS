@@ -1,4 +1,5 @@
 import { STORAGE_KEYS } from "../constants/storage";
+
 import {
   createContext,
   useContext,
@@ -16,6 +17,8 @@ interface XPContextType {
   level: number;
 
   progress: number;
+
+  xpNeededForNextLevel: number;
 
   addXP: (
     amount: number
@@ -42,19 +45,24 @@ export function XPProvider({
     useState<number>(() => {
       const saved =
         localStorage.getItem(
-  STORAGE_KEYS.TOTAL_XP
-);
+          STORAGE_KEYS.TOTAL_XP
+        );
 
       if (!saved) {
         return 0;
       }
 
-      return Number(saved);
+      const parsed =
+        Number(saved);
+
+      return Number.isFinite(parsed)
+        ? parsed
+        : 0;
     });
 
   useEffect(() => {
-   localStorage.setItem(
-  STORAGE_KEYS.TOTAL_XP,
+    localStorage.setItem(
+      STORAGE_KEYS.TOTAL_XP,
       totalXP.toString()
     );
   }, [totalXP]);
@@ -67,7 +75,8 @@ export function XPProvider({
     }
 
     setTotalXP(
-      (prev) => prev + amount
+      (previous) =>
+        previous + amount
     );
   }
 
@@ -78,11 +87,12 @@ export function XPProvider({
       return;
     }
 
-    setTotalXP((prev) =>
-      Math.max(
-        0,
-        prev - amount
-      )
+    setTotalXP(
+      (previous) =>
+        Math.max(
+          0,
+          previous - amount
+        )
     );
   }
 
@@ -91,10 +101,17 @@ export function XPProvider({
   }
 
   const level =
-   XPEngine.getLevel(totalXP);
+    XPEngine.getLevel(
+      totalXP
+    );
 
   const progress =
     XPEngine.getLevelProgress(
+      totalXP
+    );
+
+  const xpNeededForNextLevel =
+    XPEngine.getXPNeededForNextLevel(
       totalXP
     );
 
@@ -104,6 +121,8 @@ export function XPProvider({
         totalXP,
         level,
         progress,
+        xpNeededForNextLevel,
+
         addXP,
         removeXP,
         resetXP,
