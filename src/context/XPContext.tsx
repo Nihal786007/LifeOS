@@ -1,5 +1,3 @@
-import { STORAGE_KEYS } from "../constants/storage";
-
 import {
   createContext,
   useContext,
@@ -7,9 +5,17 @@ import {
   useState,
 } from "react";
 
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
-import { XPEngine } from "../engines/XPEngine";
+import {
+  XPEngine,
+} from "../engines/XPEngine";
+
+import {
+  ExecutionHistoryService,
+} from "../services/ExecutionHistoryService";
 
 interface XPContextType {
   totalXP: number;
@@ -19,16 +25,6 @@ interface XPContextType {
   progress: number;
 
   xpNeededForNextLevel: number;
-
-  addXP: (
-    amount: number
-  ) => void;
-
-  removeXP: (
-    amount: number
-  ) => void;
-
-  resetXP: () => void;
 }
 
 const XPContext =
@@ -41,64 +37,42 @@ export function XPProvider({
 }: {
   children: ReactNode;
 }) {
-  const [totalXP, setTotalXP] =
-    useState<number>(() => {
-      const saved =
-        localStorage.getItem(
-          STORAGE_KEYS.TOTAL_XP
-        );
+  // ==========================================
+  // Derived XP Read Model
+  // ==========================================
 
-      if (!saved) {
-        return 0;
-      }
+  const [
+    totalXP,
+    setTotalXP,
+  ] = useState<number>(
+    () =>
+      ExecutionHistoryService.getTotalXP()
+  );
 
-      const parsed =
-        Number(saved);
-
-      return Number.isFinite(parsed)
-        ? parsed
-        : 0;
-    });
+  // ==========================================
+  // Execution History Subscription
+  // ==========================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.TOTAL_XP,
-      totalXP.toString()
-    );
-  }, [totalXP]);
-
-  function addXP(
-    amount: number
-  ) {
-    if (amount <= 0) {
-      return;
+    function refreshXP() {
+      setTotalXP(
+        ExecutionHistoryService.getTotalXP()
+      );
     }
 
-    setTotalXP(
-      (previous) =>
-        previous + amount
-    );
-  }
+    refreshXP();
 
-  function removeXP(
-    amount: number
-  ) {
-    if (amount <= 0) {
-      return;
-    }
+    const unsubscribe =
+      ExecutionHistoryService.subscribe(
+        refreshXP
+      );
 
-    setTotalXP(
-      (previous) =>
-        Math.max(
-          0,
-          previous - amount
-        )
-    );
-  }
+    return unsubscribe;
+  }, []);
 
-  function resetXP() {
-    setTotalXP(0);
-  }
+  // ==========================================
+  // Progression
+  // ==========================================
 
   const level =
     XPEngine.getLevel(
@@ -122,10 +96,6 @@ export function XPProvider({
         level,
         progress,
         xpNeededForNextLevel,
-
-        addXP,
-        removeXP,
-        resetXP,
       }}
     >
       {children}
@@ -135,7 +105,9 @@ export function XPProvider({
 
 export function useXP() {
   const context =
-    useContext(XPContext);
+    useContext(
+      XPContext
+    );
 
   if (!context) {
     throw new Error(

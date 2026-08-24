@@ -3,15 +3,29 @@ import {
   useContext,
 } from "react";
 
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
-import { ExecutionCoordinator } from "../engines/ExecutionCoordinator";
+import {
+  ExecutionCoordinator,
+} from "../engines/ExecutionCoordinator";
 
-import { useLifeGoals } from "./LifeGoalsContext";
-import { useMonthlyPlanning } from "./MonthlyPlanningContext";
-import { useWeeklyPlanning } from "./WeeklyPlanningContext";
-import { useTasks } from "./TaskContext";
-import { useXP } from "./XPContext";
+import {
+  useLifeGoals,
+} from "./LifeGoalsContext";
+
+import {
+  useMonthlyPlanning,
+} from "./MonthlyPlanningContext";
+
+import {
+  useWeeklyPlanning,
+} from "./WeeklyPlanningContext";
+
+import {
+  useTasks,
+} from "./TaskContext";
 
 interface PlanningExecutionContextType {
   completeTask: (
@@ -64,9 +78,9 @@ interface PlanningExecutionContextType {
 }
 
 const PlanningExecutionContext =
-  createContext<PlanningExecutionContextType | null>(
-    null
-  );
+  createContext<
+    PlanningExecutionContextType | null
+  >(null);
 
 export function PlanningExecutionProvider({
   children,
@@ -93,19 +107,15 @@ export function PlanningExecutionProvider({
     replaceTasks,
   } = useTasks();
 
-  const {
-    addXP,
-  } = useXP();
+  // ==========================================
+  // Apply Execution Result
+  // ==========================================
 
   function applyResult(
     result: ReturnType<
       typeof ExecutionCoordinator.completeTask
     >
   ) {
-    // ==========================================
-    // Apply Planning State
-    // ==========================================
-
     replaceLifeGoals(
       result.lifeGoals
     );
@@ -121,22 +131,11 @@ export function PlanningExecutionProvider({
     replaceTasks(
       result.tasks
     );
-
-    // ==========================================
-    // Apply XP Awards
-    // ==========================================
-
-    const earnedXP =
-      result.executionRecords.reduce(
-        (total, record) =>
-          total + record.xpAwarded,
-        0
-      );
-
-    if (earnedXP > 0) {
-      addXP(earnedXP);
-    }
   }
+
+  // ==========================================
+  // Current Planning State
+  // ==========================================
 
   function getState() {
     return {

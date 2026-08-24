@@ -26,23 +26,21 @@ export default function TaskCard({
       label: "Low Priority",
       bg: "bg-green-500/10",
       text: "text-green-300",
-      xp: 5,
     },
     medium: {
       label: "Medium Priority",
       bg: "bg-yellow-500/10",
       text: "text-yellow-300",
-      xp: 10,
     },
     high: {
       label: "High Priority",
       bg: "bg-red-500/10",
       text: "text-red-300",
-      xp: 20,
     },
   } as const;
 
-  const priority = priorityStyles[task.priority];
+  const priority =
+    priorityStyles[task.priority];
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -61,10 +59,13 @@ export default function TaskCard({
     due < today;
 
   function getDueStatus() {
-    if (!due) return "No Due Date";
+    if (!due) {
+      return "No Due Date";
+    }
 
     const diff = Math.floor(
-      (due.getTime() - today.getTime()) /
+      (due.getTime() -
+        today.getTime()) /
         (1000 * 60 * 60 * 24)
     );
 
@@ -85,18 +86,25 @@ export default function TaskCard({
     }
 
     return `⚠️ ${Math.abs(diff)} Day${
-      Math.abs(diff) > 1 ? "s" : ""
+      Math.abs(diff) > 1
+        ? "s"
+        : ""
     } Overdue`;
   }
 
   function formatDueDate() {
-    if (!due) return "";
+    if (!due) {
+      return "";
+    }
 
-    return due.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    return due.toLocaleDateString(
+      "en-US",
+      {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }
+    );
   }
 
   return (
@@ -107,11 +115,11 @@ export default function TaskCard({
           : ""
       }`}
     >
-
-    
-          <div className="flex items-start justify-between gap-6">
+      <div className="flex items-start justify-between gap-6">
         <div
-          onClick={() => toggleTask(task.id)}
+          onClick={() =>
+            toggleTask(task.id)
+          }
           className="flex flex-1 cursor-pointer gap-5"
         >
           <div className="mt-1 text-2xl">
@@ -140,8 +148,6 @@ export default function TaskCard({
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
-
-             
               <span
                 className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${priority.bg} ${priority.text}`}
               >
@@ -149,12 +155,8 @@ export default function TaskCard({
                 {priority.label}
               </span>
 
-              <span className="rounded-full bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-purple-300">
-                ⭐ {task.xp} XP
-              </span>
-
               {isOverdue && (
-                <span className="rounded-full bg-red-600 px-4 py-1 text-xs font-bold uppercase tracking-[0.25em] text-white animate-pulse">
+                <span className="animate-pulse rounded-full bg-red-600 px-4 py-1 text-xs font-bold uppercase tracking-[0.25em] text-white">
                   OVERDUE
                 </span>
               )}
@@ -164,21 +166,22 @@ export default function TaskCard({
                   COMPLETED
                 </span>
               )}
-
             </div>
           </div>
         </div>
 
         <Button
           variant="danger"
-          onClick={() => deleteTask(task.id)}
+          onClick={() =>
+            deleteTask(task.id)
+          }
           className="rounded-xl p-4 transition-transform hover:scale-105"
         >
           <FaTrash />
         </Button>
       </div>
-            <div className="mt-8 flex items-center justify-between border-t border-slate-800 pt-5">
 
+      <div className="mt-8 flex items-center justify-between border-t border-slate-800 pt-5">
         <div className="flex items-center gap-3 text-sm text-slate-400">
           <FaChevronRight className="text-cyan-400" />
 
@@ -195,7 +198,9 @@ export default function TaskCard({
 
         <Button
           variant="secondary"
-          onClick={() => toggleTask(task.id)}
+          onClick={() =>
+            toggleTask(task.id)
+          }
           className={`px-5 py-2 text-sm transition-all ${
             task.completed
               ? "bg-green-600 hover:bg-green-700"
@@ -206,9 +211,7 @@ export default function TaskCard({
             ? "Completed"
             : "Complete"}
         </Button>
-
       </div>
-
     </Card>
   );
 }

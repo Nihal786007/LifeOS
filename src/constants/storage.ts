@@ -36,5 +36,5 @@ export const STORAGE_KEYS = {
   // (Keep temporarily for migration)
   // ==========================================
 
-  TOTAL_XP: "lifeos-total-xp",
+
 } as const;

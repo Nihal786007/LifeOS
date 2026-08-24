@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS ATLAS Briefing Engine
-// Version: 2.0
+// Version: 2.1
 // ==========================================
 
 import type {
@@ -13,22 +13,26 @@ export class BriefingEngine {
     analysis: ProductivityAnalysis
   ): DailyBriefing {
     return {
-      greeting: "Welcome Back!",
+      greeting:
+        "Welcome Back!",
 
-      summary: `You completed ${analysis.completedTasks} of ${analysis.totalTasks} tasks.`,
+      summary:
+        `You completed ${analysis.completedTasks} of ${analysis.totalTasks} tasks.`,
 
       recommendation:
         "Stay focused on your highest priority mission.",
 
-      focusScore: analysis.focusScore,
+      focusScore:
+        analysis.focusScore,
 
-      overdueTasks: analysis.overdueTasks,
+      overdueTasks:
+        analysis.overdueTasks,
 
-      dueTodayTasks: analysis.dueTodayTasks,
+      dueTodayTasks:
+        analysis.dueTodayTasks,
 
-      upcomingTasks: analysis.upcomingTasks,
-
-      potentialXP: analysis.potentialXP,
+      upcomingTasks:
+        analysis.upcomingTasks,
 
       recommendedMission:
         "Complete your highest priority task",

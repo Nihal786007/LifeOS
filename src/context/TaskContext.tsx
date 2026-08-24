@@ -126,8 +126,6 @@ export function TaskProvider({
         completed: false,
         completedAt: undefined,
 
-        xp: 10,
-
         createdAt:
           new Date().toISOString(),
       },

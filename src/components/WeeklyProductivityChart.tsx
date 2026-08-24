@@ -1,42 +1,69 @@
 import {
   LineChart,
   Line,
- CartesianGrid,
+  CartesianGrid,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
 
-import { useApp } from "../context/AppContext";
+import { useTasks } from "../context/TaskContext";
 
 export default function WeeklyProductivityChart() {
-  const { tasks } = useApp();
+  const {
+    tasks,
+  } = useTasks();
 
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const days = [
+    "Sun",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+  ];
 
-  const weeklyData = days.map((day) => ({
-    day,
-    tasks: 0,
-  }));
+  const weeklyData =
+    days.map((day) => ({
+      day,
+      tasks: 0,
+    }));
 
   tasks.forEach((task) => {
-    if (!task.completedAt) return;
+    if (!task.completedAt) {
+      return;
+    }
 
-    const date = new Date(task.completedAt);
-    const dayIndex = date.getDay();
+    const date =
+      new Date(
+        task.completedAt
+      );
 
-    weeklyData[dayIndex].tasks++;
+    const dayIndex =
+      date.getDay();
+
+    weeklyData[
+      dayIndex
+    ].tasks += 1;
   });
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-6 h-[380px]">
-      <h2 className="text-2xl font-bold mb-6">
+    <div className="h-[380px] rounded-2xl bg-slate-900 p-6">
+      <h2 className="mb-6 text-2xl font-bold">
         📈 Weekly Productivity
       </h2>
 
-      <ResponsiveContainer width="100%" height="85%">
-        <LineChart data={weeklyData}>
+      <ResponsiveContainer
+        width="100%"
+        height="85%"
+      >
+        <LineChart
+          data={
+            weeklyData
+          }
+        >
           <CartesianGrid
             strokeDasharray="3 3"
             stroke="#334155"
@@ -48,7 +75,9 @@ export default function WeeklyProductivityChart() {
           />
 
           <YAxis
-            allowDecimals={false}
+            allowDecimals={
+              false
+            }
             stroke="#94a3b8"
           />
 

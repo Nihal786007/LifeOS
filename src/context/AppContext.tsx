@@ -10,29 +10,10 @@ import type { ReactNode } from "react";
 import type {
   Capture,
   Habit,
-  Task,
   UserProfile,
 } from "../shared/types";
 
 type AppContextType = {
-  // =========================
-  // TASKS
-  // =========================
-
-  tasks: Task[];
-
-  addTask: (
-    title: string,
-    priority: "low" | "medium" | "high",
-    dueDate: string
-  ) => void;
-
-  toggleTask: (id: number) => void;
-
-  deleteTask: (id: number) => void;
-
-  completedTasks: number;
-
   // =========================
   // HABITS
   // =========================
@@ -87,20 +68,27 @@ export function AppProvider({
   children: ReactNode;
 }) {
   // =========================
-  // TASKS
+  // HABITS
   // =========================
 
-  const [tasks, setTasks] =
-    useState<Task[]>(() => {
+  const [
+    habits,
+    setHabits,
+  ] =
+    useState<Habit[]>(() => {
       const saved =
         localStorage.getItem(
-          "lifeos-tasks"
+          "lifeos-habits"
         );
 
-      if (!saved) return [];
+      if (!saved) {
+        return [];
+      }
 
       try {
-        return JSON.parse(saved);
+        return JSON.parse(
+          saved
+        );
       } catch {
         return [];
       }
@@ -108,146 +96,87 @@ export function AppProvider({
 
   useEffect(() => {
     localStorage.setItem(
-      "lifeos-tasks",
-      JSON.stringify(tasks)
-    );
-  }, [tasks]);
-
-  function addTask(
-    title: string,
-    priority:
-      | "low"
-      | "medium"
-      | "high",
-    dueDate: string
-  ) {
-    if (!title.trim()) return;
-
-    setTasks((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-
-        title: title.trim(),
-
-        description: "",
-
-        completed: false,
-
-        completedAt: undefined,
-
-        dueDate,
-
-        priority,
-
-        goalId: undefined,
-
-        xp:
-          priority === "high"
-            ? 20
-            : priority ===
-              "medium"
-            ? 10
-            : 5,
-
-        createdAt:
-          new Date().toISOString(),
-      },
-    ]);
-  }
-
-  function toggleTask(
-    id: number
-  ) {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id !== id)
-          return task;
-
-        const completed =
-          !task.completed;
-
-        return {
-          ...task,
-
-          completed,
-
-          completedAt: completed
-            ? new Date().toISOString()
-            : undefined,
-        };
-      })
-    );
-  }
-
-  function deleteTask(
-    id: number
-  ) {
-    setTasks((prev) =>
-      prev.filter(
-        (task) =>
-          task.id !== id
-      )
-    );
-  }
-    // =========================
-  // HABITS
-  // =========================
-
-  const [habits, setHabits] = useState<Habit[]>(() => {
-    const saved = localStorage.getItem("lifeos-habits");
-
-    if (!saved) return [];
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return [];
-    }
-  });
-
-  useEffect(() => {
-    localStorage.setItem(
       "lifeos-habits",
-      JSON.stringify(habits)
+      JSON.stringify(
+        habits
+      )
     );
   }, [habits]);
 
-  function addHabit(name: string) {
-    if (!name.trim()) return;
+  function addHabit(
+    name: string
+  ) {
+    const trimmedName =
+      name.trim();
 
-    setHabits((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        name,
-        streak: 0,
-        completedToday: false,
-      },
-    ]);
-  }
+    if (!trimmedName) {
+      return;
+    }
 
-  function toggleHabit(id: number) {
-    setHabits((prev) =>
-      prev.map((habit) =>
-        habit.id === id
-          ? {
-              ...habit,
-              completedToday: !habit.completedToday,
-              streak: !habit.completedToday
-                ? habit.streak + 1
-                : Math.max(habit.streak - 1, 0),
-            }
-          : habit
-      )
+    setHabits(
+      (prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+
+          name: trimmedName,
+
+          streak: 0,
+
+          completedToday:
+            false,
+        },
+      ]
     );
   }
 
-  function deleteHabit(id: number) {
-    setHabits((prev) =>
-      prev.filter(
-        (habit) => habit.id !== id
-      )
+  function toggleHabit(
+    id: number
+  ) {
+    setHabits(
+      (prev) =>
+        prev.map(
+          (habit) => {
+            if (
+              habit.id !==
+              id
+            ) {
+              return habit;
+            }
+
+            const completedToday =
+              !habit.completedToday;
+
+            return {
+              ...habit,
+
+              completedToday,
+
+              streak:
+                completedToday
+                  ? habit.streak +
+                    1
+                  : Math.max(
+                      habit.streak -
+                        1,
+                      0
+                    ),
+            };
+          }
+        )
+    );
+  }
+
+  function deleteHabit(
+    id: number
+  ) {
+    setHabits(
+      (prev) =>
+        prev.filter(
+          (habit) =>
+            habit.id !==
+            id
+        )
     );
   }
 
@@ -255,45 +184,76 @@ export function AppProvider({
   // QUICK CAPTURE
   // =========================
 
-  const [captures, setCaptures] = useState<Capture[]>(() => {
-    const saved = localStorage.getItem(
-      "lifeos-captures"
+  const [
+    captures,
+    setCaptures,
+  ] =
+    useState<Capture[]>(
+      () => {
+        const saved =
+          localStorage.getItem(
+            "lifeos-captures"
+          );
+
+        if (!saved) {
+          return [];
+        }
+
+        try {
+          return JSON.parse(
+            saved
+          );
+        } catch {
+          return [];
+        }
+      }
     );
-
-    if (!saved) return [];
-
-    try {
-      return JSON.parse(saved);
-    } catch {
-      return [];
-    }
-  });
 
   useEffect(() => {
     localStorage.setItem(
       "lifeos-captures",
-      JSON.stringify(captures)
+      JSON.stringify(
+        captures
+      )
     );
   }, [captures]);
 
-  function addCapture(text: string) {
-    if (!text.trim()) return;
+  function addCapture(
+    text: string
+  ) {
+    const trimmedText =
+      text.trim();
 
-    setCaptures((prev) => [
-      {
-        id: Date.now(),
-        text: text.trim(),
-        createdAt: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+    if (!trimmedText) {
+      return;
+    }
+
+    setCaptures(
+      (prev) => [
+        {
+          id: Date.now(),
+
+          text: trimmedText,
+
+          createdAt:
+            new Date().toISOString(),
+        },
+
+        ...prev,
+      ]
+    );
   }
 
-  function deleteCapture(id: number) {
-    setCaptures((prev) =>
-      prev.filter(
-        (capture) => capture.id !== id
-      )
+  function deleteCapture(
+    id: number
+  ) {
+    setCaptures(
+      (prev) =>
+        prev.filter(
+          (capture) =>
+            capture.id !==
+            id
+        )
     );
   }
 
@@ -301,64 +261,71 @@ export function AppProvider({
   // USER PROFILE
   // =========================
 
-  const [profile, setProfile] =
-    useState<UserProfile>(() => {
-      const saved =
-        localStorage.getItem(
-          "lifeos-profile"
-        );
+  const [
+    profile,
+    setProfile,
+  ] =
+    useState<UserProfile>(
+      () => {
+        const saved =
+          localStorage.getItem(
+            "lifeos-profile"
+          );
 
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {
-          // Ignore invalid data
+        if (saved) {
+          try {
+            return JSON.parse(
+              saved
+            );
+          } catch {
+            // Ignore invalid
+            // stored profile data.
+          }
         }
-      }
 
-      return {
-        name: "",
-        occupation: "",
-        timezone: "Asia/Kolkata",
-        theme: "dark",
-        atlasPersonality:
-          "Professional",
-        level: 1,
-        xp: 0,
-      };
-    });
+        return {
+          name: "",
+
+          occupation: "",
+
+          timezone:
+            "Asia/Kolkata",
+
+          theme: "dark",
+
+          atlasPersonality:
+            "Professional",
+
+          level: 1,
+
+          xp: 0,
+        };
+      }
+    );
 
   useEffect(() => {
     localStorage.setItem(
       "lifeos-profile",
-      JSON.stringify(profile)
+      JSON.stringify(
+        profile
+      )
     );
   }, [profile]);
 
   function updateProfile(
     data: Partial<UserProfile>
   ) {
-    setProfile((prev) => ({
-      ...prev,
-      ...data,
-    }));
+    setProfile(
+      (prev) => ({
+        ...prev,
+        ...data,
+      })
+    );
   }
-    return (
+
+  return (
     <AppContext.Provider
       value={{
-        // =========================
-        // TASKS
-        // =========================
-
-        tasks,
-        addTask,
-        toggleTask,
-        deleteTask,
-
-        completedTasks: tasks.filter(
-          (task) => task.completed
-        ).length,
-
         // =========================
         // HABITS
         // =========================
@@ -390,7 +357,10 @@ export function AppProvider({
 }
 
 export function useApp() {
-  const context = useContext(AppContext);
+  const context =
+    useContext(
+      AppContext
+    );
 
   if (!context) {
     throw new Error(

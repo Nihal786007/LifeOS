@@ -1,4 +1,6 @@
-import type { DailyBriefing } from "../../atlas/types";
+import type {
+  DailyBriefing,
+} from "../../atlas/types";
 
 interface AtlasBriefingProps {
   briefing: DailyBriefing;
@@ -11,7 +13,7 @@ export default function AtlasBriefing({
     <div className="rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 shadow-lg">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-cyan-400">
-          🧠 Daily Intelligence
+          Daily Intelligence
         </h2>
 
         <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-widest text-cyan-300">
@@ -19,13 +21,13 @@ export default function AtlasBriefing({
         </span>
       </div>
 
-      <p className="mt-5 text-slate-300 leading-7">
+      <p className="mt-5 leading-7 text-slate-300">
         {briefing.summary}
       </p>
 
       <div className="my-6 h-px bg-slate-700" />
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl bg-slate-800 p-4">
           <p className="text-xs uppercase tracking-wider text-slate-400">
             Focus Score
@@ -33,16 +35,6 @@ export default function AtlasBriefing({
 
           <p className="mt-2 text-3xl font-bold text-cyan-400">
             {briefing.focusScore}%
-          </p>
-        </div>
-
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs uppercase tracking-wider text-slate-400">
-            Potential XP
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-yellow-400">
-            {briefing.potentialXP}
           </p>
         </div>
 
@@ -77,7 +69,7 @@ export default function AtlasBriefing({
         </h3>
 
         <p className="mt-3 text-slate-300">
-          💡 {briefing.recommendation}
+          {briefing.recommendation}
         </p>
       </div>
     </div>

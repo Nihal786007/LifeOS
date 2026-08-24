@@ -6,27 +6,50 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { useApp } from "../context/AppContext";
+
+import { useTasks } from "../context/TaskContext";
 
 export default function StatisticsPieChart() {
-  const { tasks, completedTasks } = useApp();
+  const {
+    tasks,
+  } = useTasks();
 
-  const remainingTasks = tasks.length - completedTasks;
+  const completedTasks =
+    tasks.filter(
+      (task) =>
+        task.completed
+    ).length;
+
+  const remainingTasks =
+    tasks.length -
+    completedTasks;
 
   const data = [
-    { name: "Completed", value: completedTasks },
-    { name: "Remaining", value: remainingTasks },
+    {
+      name: "Completed",
+      value: completedTasks,
+    },
+    {
+      name: "Remaining",
+      value: remainingTasks,
+    },
   ];
 
-  const COLORS = ["#22c55e", "#f97316"];
+  const COLORS = [
+    "#22c55e",
+    "#f97316",
+  ];
 
   return (
-    <div className="bg-slate-900 rounded-2xl p-6 shadow-lg h-[380px]">
-      <h2 className="text-xl font-bold mb-6">
+    <div className="h-[380px] rounded-2xl bg-slate-900 p-6 shadow-lg">
+      <h2 className="mb-6 text-xl font-bold">
         📊 Task Distribution
       </h2>
 
-      <ResponsiveContainer width="100%" height="90%">
+      <ResponsiveContainer
+        width="100%"
+        height="90%"
+      >
         <PieChart>
           <Pie
             data={data}
@@ -36,12 +59,19 @@ export default function StatisticsPieChart() {
             dataKey="value"
             label
           >
-            {data.map((_, index) => (
-              <Cell
-                key={index}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
+            {data.map(
+              (_, index) => (
+                <Cell
+                  key={index}
+                  fill={
+                    COLORS[
+                      index %
+                        COLORS.length
+                    ]
+                  }
+                />
+              )
+            )}
           </Pie>
 
           <Tooltip />

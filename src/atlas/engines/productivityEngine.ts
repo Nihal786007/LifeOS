@@ -1,45 +1,83 @@
 // ==========================================
 // LifeOS ATLAS Productivity Engine
-// Version: 2.0
+// Version: 2.2
 // ==========================================
 
-import type { AtlasTask, ProductivityAnalysis } from "../types";
+import type {
+  AtlasTask,
+  ProductivityAnalysis,
+} from "../types";
 
 export class ProductivityEngine {
-  analyze(tasks: AtlasTask[]): ProductivityAnalysis {
-    const totalTasks = tasks.length;
+  analyze(
+    tasks: AtlasTask[]
+  ): ProductivityAnalysis {
+    const totalTasks =
+      tasks.length;
 
-    const completedTasks = tasks.filter(
-      (task) => task.completed
-    ).length;
+    const completedTasks =
+      tasks.filter(
+        (task) =>
+          task.completed
+      ).length;
 
-    const pendingTasks = totalTasks - completedTasks;
+    const pendingTasks =
+      totalTasks -
+      completedTasks;
 
-    // Temporary values (we'll make these smart in the next step)
+    // ==========================================
+    // Temporary Task Timing Metrics
+    // ==========================================
+    //
+    // These remain placeholders until ATLAS
+    // receives trustworthy time-aware analytics.
+    // ==========================================
+
     const overdueTasks = 0;
+
     const dueTodayTasks = 0;
+
     const upcomingTasks = 0;
+
+    // ==========================================
+    // Completion Rate
+    // ==========================================
 
     const completionRate =
       totalTasks === 0
         ? 0
-        : Math.round((completedTasks / totalTasks) * 100);
+        : Math.round(
+            (
+              completedTasks /
+              totalTasks
+            ) * 100
+          );
 
-    const potentialXP = tasks
-      .filter((task) => !task.completed)
-      .reduce((sum, task) => sum + task.xp, 0);
-
+    // ==========================================
     // Temporary Focus Score
-    const focusScore = completionRate;
+    // ==========================================
 
-    let productivityLevel: "Low" | "Average" | "High";
+    const focusScore =
+      completionRate;
 
-    if (completionRate >= 80) {
-      productivityLevel = "High";
-    } else if (completionRate >= 50) {
-      productivityLevel = "Average";
+    let productivityLevel:
+      | "Low"
+      | "Average"
+      | "High";
+
+    if (
+      completionRate >= 80
+    ) {
+      productivityLevel =
+        "High";
+    } else if (
+      completionRate >= 50
+    ) {
+      productivityLevel =
+        "Average";
     } else {
-      productivityLevel = "Low";
+      productivityLevel =
+        "Low";
     }
 
     return {
@@ -54,16 +92,25 @@ export class ProductivityEngine {
       overdueTasks,
       dueTodayTasks,
       upcomingTasks,
-
-      potentialXP,
     };
   }
 
-  isImproving(current: number, previous: number): boolean {
-    return current > previous;
+  isImproving(
+    current: number,
+    previous: number
+  ): boolean {
+    return (
+      current >
+      previous
+    );
   }
 
-  isAtRisk(completionRate: number): boolean {
-    return completionRate < 40;
+  isAtRisk(
+    completionRate: number
+  ): boolean {
+    return (
+      completionRate <
+      40
+    );
   }
 }

@@ -1,7 +1,16 @@
-import StatCard from "../ui/StatCard";
-import { useEffect, useMemo, useState } from "react";
-import type { AtlasResult } from "../../atlas/types";
-import { useApp } from "../../context/AppContext";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import type {
+  AtlasResult,
+} from "../../atlas/types";
+
+import {
+  useTasks,
+} from "../../context/TaskContext";
 
 interface HeroSectionProps {
   name: string;
@@ -12,124 +21,178 @@ export default function HeroSection({
   name,
   atlas,
 }: HeroSectionProps) {
-  const { tasks } = useApp();
+  // ==========================================
+  // Universal Tasks
+  // ==========================================
 
-  const [now, setNow] = useState(new Date());
+  const {
+    tasks,
+  } = useTasks();
+
+  // ==========================================
+  // Live Time
+  // ==========================================
+
+  const [
+    now,
+    setNow,
+  ] = useState(
+    new Date()
+  );
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setNow(new Date());
-    }, 1000);
+    const timer =
+      setInterval(() => {
+        setNow(
+          new Date()
+        );
+      }, 1000);
 
-    return () => clearInterval(timer);
+    return () =>
+      clearInterval(
+        timer
+      );
   }, []);
 
-  const hour = now.getHours();
+  const hour =
+    now.getHours();
 
-  /* ----------------------------------------
-     Mission Status
-  ---------------------------------------- */
+  // ==========================================
+  // Mission Status
+  // ==========================================
 
-  const missionStatus = useMemo(() => {
-    if (hour < 12) return "MISSION READY";
-    if (hour < 18) return "MISSION IN PROGRESS";
-    if (hour < 22) return "MISSION REVIEW";
+  const missionStatus =
+    useMemo(() => {
+      if (hour < 12) {
+        return "MISSION READY";
+      }
 
-    return "SYSTEM WIND DOWN";
-  }, [hour]);
+      if (hour < 18) {
+        return "MISSION IN PROGRESS";
+      }
 
-  /* ----------------------------------------
-     Dynamic Theme
-  ---------------------------------------- */
+      if (hour < 22) {
+        return "MISSION REVIEW";
+      }
 
-  const heroTheme = useMemo(() => {
-    if (hour < 12) {
+      return "SYSTEM WIND DOWN";
+    }, [hour]);
+
+  // ==========================================
+  // Dynamic Theme
+  // ==========================================
+
+  const heroTheme =
+    useMemo(() => {
+      if (hour < 12) {
+        return {
+          background:
+            "from-sky-950 via-slate-950 to-slate-900",
+
+          border:
+            "border-sky-700/30",
+        };
+      }
+
+      if (hour < 18) {
+        return {
+          background:
+            "from-cyan-950 via-slate-950 to-slate-900",
+
+          border:
+            "border-cyan-700/30",
+        };
+      }
+
+      if (hour < 22) {
+        return {
+          background:
+            "from-indigo-950 via-slate-950 to-slate-900",
+
+          border:
+            "border-indigo-700/30",
+        };
+      }
+
       return {
         background:
-          "from-sky-950 via-slate-950 to-slate-900",
-        border: "border-sky-700/30",
+          "from-slate-950 via-black to-black",
+
+        border:
+          "border-slate-700/40",
       };
-    }
+    }, [hour]);
 
-    if (hour < 18) {
-      return {
-        background:
-          "from-cyan-950 via-slate-950 to-slate-900",
-        border: "border-cyan-700/30",
-      };
-    }
+  // ==========================================
+  // Time & Date
+  // ==========================================
 
-    if (hour < 22) {
-      return {
-        background:
-          "from-indigo-950 via-slate-950 to-slate-900",
-        border: "border-indigo-700/30",
-      };
-    }
+  const currentTime =
+    now.toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
 
-    return {
-      background:
-        "from-slate-950 via-black to-black",
-      border: "border-slate-700/40",
-    };
-  }, [hour]);
+  const currentDate =
+    now.toLocaleDateString(
+      "en-US",
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }
+    );
 
-  /* ----------------------------------------
-     Time & Date
-  ---------------------------------------- */
+  // ==========================================
+  // Dashboard Data
+  // ==========================================
 
-  const currentTime = now.toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  const currentDate = now.toLocaleDateString("en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
-
-  /* ----------------------------------------
-     Dashboard Data
-  ---------------------------------------- */
-
-  const activeMissions = tasks.filter(
-    (task) => !task.completed
-  ).length;
+  const activeMissions =
+    tasks.filter(
+      (task) =>
+        !task.completed
+    ).length;
 
   const primaryObjective =
-    atlas.briefing.recommendedMission ??
-    atlas.missions[0]?.title ??
+    atlas.briefing
+      .recommendedMission ??
+    atlas.missions[0]
+      ?.title ??
     "No Active Mission";
 
   const completionRate =
-    atlas.analysis.completionRate;
+    atlas.analysis
+      .completionRate;
 
   const focusScore =
-    atlas.analysis.focusScore;
-
-  const potentialXP =
-    atlas.analysis.potentialXP;
+    atlas.analysis
+      .focusScore;
 
   const successChance =
-    atlas.prediction.successChance;
+    atlas.prediction
+      .successChance;
 
   const streak =
     atlas.xp.streak;
 
   const motivation =
-    atlas.briefing.motivation;
+    atlas.briefing
+      .motivation;
 
   const atlasInsight =
-    atlas.recommendations[0]?.description ??
+    atlas.recommendations[0]
+      ?.description ??
     "Everything is operating normally.";
 
-  // JSX starts in Phase Alpha – Part 2
-    return (
+  return (
     <section
       className={`relative overflow-hidden rounded-[32px] border ${heroTheme.border} bg-gradient-to-br ${heroTheme.background} shadow-2xl transition-all duration-700`}
     >
       {/* Background Glow */}
+
       <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-cyan-500/10 blur-3xl" />
 
       <div className="absolute -right-32 bottom-0 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
@@ -156,7 +219,7 @@ export default function HeroSection({
 
             <div className="mt-8 inline-flex items-center gap-3 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-5 py-2 backdrop-blur-xl">
 
-              <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
 
               <span className="text-xs font-bold uppercase tracking-[0.35em] text-cyan-300">
                 ATLAS ONLINE
@@ -176,7 +239,7 @@ export default function HeroSection({
 
             <div className="mt-5 flex items-center gap-3">
 
-              <div className="h-3 w-3 rounded-full bg-emerald-400 animate-pulse" />
+              <div className="h-3 w-3 animate-pulse rounded-full bg-emerald-400" />
 
               <span className="text-sm font-medium text-slate-300">
                 All Systems Operational
@@ -205,9 +268,7 @@ export default function HeroSection({
         <div className="mt-16 max-w-4xl">
 
           <p className="text-sm font-semibold uppercase tracking-[0.45em] text-cyan-400">
-
             {missionStatus}
-
           </p>
 
           <h1 className="mt-6 text-5xl font-black leading-tight md:text-6xl xl:text-7xl">
@@ -217,33 +278,24 @@ export default function HeroSection({
             <br />
 
             <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
-
               {name || "Operator"}
-
             </span>
 
           </h1>
 
           <p className="mt-8 max-w-3xl text-lg leading-8 text-slate-300">
-
             {motivation}
-
           </p>
 
         </div>
 
-        {/* Divider */}
-
         <div className="my-14 h-px bg-gradient-to-r from-cyan-500/40 via-slate-700 to-transparent" />
 
-        {/* Objective + Metrics start in Phase Bravo */}
-                {/* ========================================= */}
+        {/* ========================================= */}
         {/* Primary Objective */}
         {/* ========================================= */}
 
         <div className="grid gap-8 xl:grid-cols-[1.6fr_1fr]">
-
-          {/* Objective Panel */}
 
           <div className="rounded-3xl border border-cyan-500/20 bg-slate-900/40 p-8 backdrop-blur-xl">
 
@@ -256,11 +308,8 @@ export default function HeroSection({
             </h2>
 
             <p className="mt-4 text-slate-400">
-              Complete your highest-impact mission first to maximize today's
-              progress and long-term growth.
+              Complete your highest-impact mission first to maximize today's progress and long-term growth.
             </p>
-
-            {/* Progress */}
 
             <div className="mt-10">
 
@@ -289,8 +338,6 @@ export default function HeroSection({
 
             </div>
 
-            {/* Next Milestone */}
-
             <div className="mt-10 rounded-2xl border border-cyan-500/10 bg-slate-950/40 p-5">
 
               <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
@@ -298,42 +345,40 @@ export default function HeroSection({
               </p>
 
               <p className="mt-3 text-lg font-semibold text-white">
-                Complete today's Robotics work and push your latest progress to
-                GitHub.
+                Complete your highest-priority task and keep your current plan moving forward.
               </p>
 
             </div>
 
           </div>
 
-        {/* Performance Metrics */}
+          {/* ========================================= */}
+          {/* Performance Metrics */}
+          {/* ========================================= */}
 
-<div className="grid grid-cols-2 gap-5">
-
-  <StatCard
-    icon="⚡"
-    title="XP"
-    value={potentialXP}
-    color="text-cyan-400"
-  />
-
-  <div className="rounded-3xl border border-cyan-500/10 bg-slate-900/40 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
-
-    <p className="text-3xl">🎯</p>
-
-    <p className="mt-5 text-4xl font-black">
-      {focusScore}
-    </p>
-
-    <p className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-500">
-      Focus
-    </p>
-
-  </div>
+          <div className="grid grid-cols-2 gap-5">
 
             <div className="rounded-3xl border border-cyan-500/10 bg-slate-900/40 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
 
-              <p className="text-3xl">🔥</p>
+              <p className="text-3xl">
+                🎯
+              </p>
+
+              <p className="mt-5 text-4xl font-black">
+                {focusScore}
+              </p>
+
+              <p className="mt-2 text-sm uppercase tracking-[0.25em] text-slate-500">
+                Focus
+              </p>
+
+            </div>
+
+            <div className="rounded-3xl border border-cyan-500/10 bg-slate-900/40 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
+
+              <p className="text-3xl">
+                🔥
+              </p>
 
               <p className="mt-5 text-4xl font-black text-orange-400">
                 {streak}
@@ -347,7 +392,9 @@ export default function HeroSection({
 
             <div className="rounded-3xl border border-cyan-500/10 bg-slate-900/40 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1">
 
-              <p className="text-3xl">📋</p>
+              <p className="text-3xl">
+                📋
+              </p>
 
               <p className="mt-5 text-4xl font-black">
                 {activeMissions}
@@ -363,18 +410,13 @@ export default function HeroSection({
 
         </div>
 
-        {/* Divider */}
-
         <div className="my-14 h-px bg-gradient-to-r from-cyan-500/40 via-slate-700 to-transparent" />
 
-        {/* ATLAS Analysis starts in Phase Delta */}
-                {/* ========================================= */}
-        {/* ATLAS ANALYSIS */}
+        {/* ========================================= */}
+        {/* ATLAS Analysis */}
         {/* ========================================= */}
 
         <div className="grid gap-8 xl:grid-cols-[1.45fr_0.9fr]">
-
-          {/* Atlas Intelligence */}
 
           <div className="rounded-3xl border border-cyan-500/20 bg-slate-900/40 p-8 backdrop-blur-xl">
 
@@ -404,8 +446,6 @@ export default function HeroSection({
 
             <div className="mt-10 grid gap-6 md:grid-cols-2">
 
-              {/* Success */}
-
               <div className="rounded-2xl bg-slate-950/60 p-6">
 
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
@@ -421,8 +461,6 @@ export default function HeroSection({
                 </p>
 
               </div>
-
-              {/* Focus */}
 
               <div className="rounded-2xl bg-slate-950/60 p-6">
 
@@ -442,8 +480,6 @@ export default function HeroSection({
 
             </div>
 
-            {/* AI Message */}
-
             <div className="mt-8 rounded-2xl border border-cyan-500/10 bg-cyan-500/5 p-6">
 
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-400">
@@ -458,7 +494,9 @@ export default function HeroSection({
 
           </div>
 
+          {/* ========================================= */}
           {/* Mission Status */}
+          {/* ========================================= */}
 
           <div className="rounded-3xl border border-cyan-500/20 bg-slate-900/40 p-8 backdrop-blur-xl">
 
@@ -507,18 +545,6 @@ export default function HeroSection({
               <div className="flex items-center justify-between">
 
                 <span className="text-slate-400">
-                  XP Potential
-                </span>
-
-                <span className="font-semibold text-cyan-400">
-                  {potentialXP}
-                </span>
-
-              </div>
-
-              <div className="flex items-center justify-between">
-
-                <span className="text-slate-400">
                   Day Streak
                 </span>
 
@@ -537,8 +563,7 @@ export default function HeroSection({
               </p>
 
               <p className="mt-3 text-lg font-semibold leading-7">
-                Excellent momentum. Keep your highest-impact mission first and
-                avoid unnecessary context switching.
+                Keep your highest-impact task first and avoid unnecessary context switching.
               </p>
 
             </div>
@@ -546,7 +571,8 @@ export default function HeroSection({
           </div>
 
         </div>
-                {/* ========================================= */}
+
+        {/* ========================================= */}
         {/* Bottom Signature */}
         {/* ========================================= */}
 
@@ -559,27 +585,19 @@ export default function HeroSection({
               <div>
 
                 <p className="text-xs uppercase tracking-[0.35em] text-cyan-400">
-
                   LIFEOS CORE
-
                 </p>
 
                 <h3 className="mt-3 text-2xl font-black">
-
                   One Mission.
                   <span className="bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400 bg-clip-text text-transparent">
-                    {" "}One System.
+                    {" "}
+                    One System.
                   </span>
-
                 </h3>
 
-                <p className="mt-4 max-w-2xl text-slate-400 leading-7">
-
-                  Every mission completed today moves you one step closer to
-                  becoming the engineer you aspire to be. Keep building
-                  consistently. Small progress compounds into extraordinary
-                  results.
-
+                <p className="mt-4 max-w-2xl leading-7 text-slate-400">
+                  Every action you complete moves your plans forward. Consistent progress compounds into extraordinary results.
                 </p>
 
               </div>
@@ -631,8 +649,6 @@ export default function HeroSection({
         </div>
 
       </div>
-
     </section>
-
   );
 }

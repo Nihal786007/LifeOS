@@ -1,9 +1,27 @@
 // ==========================================
 // LifeOS Execution History Service
-// Kernel v1.0
+// Version: 2.0
+// ==========================================
+//
+// Single persistent ledger for LifeOS
+// execution/domain events.
+//
+// Responsibilities:
+// - Read execution history
+// - Persist execution history
+// - Append execution records
+// - Clear execution history
+// - Derive total XP from history
+// - Notify read models when history changes
+//
+// IMPORTANT:
+// This service is the ONLY persistent writer
+// for execution history.
 // ==========================================
 
-import { STORAGE_KEYS } from "../constants/storage";
+import {
+  STORAGE_KEYS,
+} from "../constants/storage";
 
 import type {
   ExecutionRecord,
@@ -11,20 +29,35 @@ import type {
 
 export class ExecutionHistoryService {
   // ==========================================
+  // Event
+  // ==========================================
+
+  private static readonly HISTORY_CHANGED_EVENT =
+    "lifeos:execution-history-changed";
+
+  // ==========================================
   // Load
   // ==========================================
 
   static getAll(): ExecutionRecord[] {
-    const saved = localStorage.getItem(
-      STORAGE_KEYS.EXECUTION_HISTORY
-    );
+    const saved =
+      localStorage.getItem(
+        STORAGE_KEYS.EXECUTION_HISTORY
+      );
 
     if (!saved) {
       return [];
     }
 
     try {
-      return JSON.parse(saved) as ExecutionRecord[];
+      const parsed =
+        JSON.parse(saved);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed as ExecutionRecord[];
     } catch {
       return [];
     }
@@ -41,6 +74,8 @@ export class ExecutionHistoryService {
       STORAGE_KEYS.EXECUTION_HISTORY,
       JSON.stringify(records)
     );
+
+    this.notifyHistoryChanged();
   }
 
   // ==========================================
@@ -50,20 +85,53 @@ export class ExecutionHistoryService {
   static append(
     records: ExecutionRecord[]
   ): ExecutionRecord[] {
-    if (records.length === 0) {
+    if (
+      records.length === 0
+    ) {
       return this.getAll();
     }
 
-    const history = this.getAll();
+    const history =
+      this.getAll();
 
     const updatedHistory = [
       ...records,
       ...history,
     ];
 
-    this.save(updatedHistory);
+    this.save(
+      updatedHistory
+    );
 
     return updatedHistory;
+  }
+
+  // ==========================================
+  // Total XP
+  // ==========================================
+
+  static getTotalXP(): number {
+    return this.getAll().reduce(
+      (
+        total,
+        record
+      ) => {
+        const xp =
+          Number(
+            record.xpAwarded
+          );
+
+        if (
+          !Number.isFinite(xp) ||
+          xp <= 0
+        ) {
+          return total;
+        }
+
+        return total + xp;
+      },
+      0
+    );
   }
 
   // ==========================================
@@ -73,6 +141,40 @@ export class ExecutionHistoryService {
   static clear(): void {
     localStorage.removeItem(
       STORAGE_KEYS.EXECUTION_HISTORY
+    );
+
+    this.notifyHistoryChanged();
+  }
+
+  // ==========================================
+  // Subscribe
+  // ==========================================
+
+  static subscribe(
+    listener: () => void
+  ): () => void {
+    window.addEventListener(
+      this.HISTORY_CHANGED_EVENT,
+      listener
+    );
+
+    return () => {
+      window.removeEventListener(
+        this.HISTORY_CHANGED_EVENT,
+        listener
+      );
+    };
+  }
+
+  // ==========================================
+  // Notify
+  // ==========================================
+
+  private static notifyHistoryChanged(): void {
+    window.dispatchEvent(
+      new Event(
+        this.HISTORY_CHANGED_EVENT
+      )
     );
   }
 }

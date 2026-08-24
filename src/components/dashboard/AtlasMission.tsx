@@ -1,4 +1,6 @@
-import type { SmartMission } from "../../atlas/types";
+import type {
+  SmartMission,
+} from "../../atlas/types";
 
 interface AtlasMissionProps {
   missions: SmartMission[];
@@ -7,12 +9,18 @@ interface AtlasMissionProps {
 export default function AtlasMission({
   missions,
 }: AtlasMissionProps) {
-  const getPriorityColor = (priority: string) => {
-    switch (priority.toLowerCase()) {
+  const getPriorityColor = (
+    priority: string
+  ) => {
+    switch (
+      priority.toLowerCase()
+    ) {
       case "high":
         return "bg-red-500/20 text-red-400 border-red-500/30";
+
       case "medium":
         return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+
       default:
         return "bg-green-500/20 text-green-400 border-green-500/30";
     }
@@ -38,48 +46,56 @@ export default function AtlasMission({
             </p>
           </div>
         ) : (
-          missions.map((mission) => (
-            <div
-              key={mission.title}
-              className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5 transition-all duration-300 hover:border-orange-500/40 hover:bg-slate-800 hover:shadow-lg hover:shadow-orange-500/10"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">
-                    {mission.title}
-                  </h3>
+          missions.map(
+            (mission) => (
+              <div
+                key={
+                  mission.title
+                }
+                className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5 transition-all duration-300 hover:border-orange-500/40 hover:bg-slate-800 hover:shadow-lg hover:shadow-orange-500/10"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">
+                      {
+                        mission.title
+                      }
+                    </h3>
 
-                  <p className="mt-3 text-sm text-slate-400">
-                    {mission.reason}
-                  </p>
-                </div>
-
-                <span
-                  className={`rounded-full border px-3 py-1 text-xs font-semibold ${getPriorityColor(
-                    mission.priority
-                  )}`}
-                >
-                  {mission.priority.toUpperCase()}
-                </span>
-              </div>
-
-              <div className="mt-5 flex flex-wrap gap-3">
-                <div className="rounded-lg bg-slate-900 px-3 py-2 text-sm">
-                  ⏱ {mission.estimatedMinutes} min
-                </div>
-
-                <div className="rounded-lg bg-slate-900 px-3 py-2 text-sm text-yellow-400">
-                  ⭐ {mission.xp} XP
-                </div>
-
-                {mission.completed && (
-                  <div className="rounded-lg bg-green-500/20 px-3 py-2 text-sm text-green-400">
-                    ✅ Completed
+                    <p className="mt-3 text-sm text-slate-400">
+                      {
+                        mission.reason
+                      }
+                    </p>
                   </div>
-                )}
+
+                  <span
+                    className={`rounded-full border px-3 py-1 text-xs font-semibold ${getPriorityColor(
+                      mission.priority
+                    )}`}
+                  >
+                    {mission.priority.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <div className="rounded-lg bg-slate-900 px-3 py-2 text-sm">
+                    ⏱{" "}
+                    {
+                      mission.estimatedMinutes
+                    }{" "}
+                    min
+                  </div>
+
+                  {mission.completed && (
+                    <div className="rounded-lg bg-green-500/20 px-3 py-2 text-sm text-green-400">
+                      ✅ Completed
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            )
+          )
         )}
       </div>
     </div>

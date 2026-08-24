@@ -16,14 +16,14 @@ export default function AtlasStats({
       color: "text-cyan-400",
     },
     {
-      title: "Potential XP",
-      value: analysis.potentialXP,
-      color: "text-yellow-400",
-    },
-    {
       title: "Productivity",
       value: `${analysis.completionRate}%`,
       color: "text-green-400",
+    },
+    {
+      title: "Completed Tasks",
+      value: analysis.completedTasks,
+      color: "text-emerald-400",
     },
     {
       title: "Pending Tasks",
@@ -33,7 +33,7 @@ export default function AtlasStats({
   ];
 
   return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-5">
+    <div className="grid grid-cols-2 gap-5 xl:grid-cols-4">
       {stats.map((stat) => (
         <div
           key={stat.title}

@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 3.0
+// Version: 3.1
 // ==========================================
 
 /* =========================
@@ -15,8 +15,12 @@ export interface Task {
   description?: string;
 
   // Planning
-dueDate?: string;
-  priority: "low" | "medium" | "high";
+  dueDate?: string;
+
+  priority:
+    | "low"
+    | "medium"
+    | "high";
 
   // Optional Connection
   weeklyTargetId?: number;
@@ -25,12 +29,10 @@ dueDate?: string;
   completed: boolean;
   completedAt?: string;
 
-  // Rewards
-  xp: number;
-
   // Metadata
   createdAt: string;
 }
+
 /* =========================
    LIFE GOALS
 ========================= */
@@ -42,7 +44,7 @@ export interface LifeGoal {
   title: string;
   description?: string;
 
-  // Temporary (will become calculated by the Execution Engine)
+  // Calculated by planning/execution architecture
   progress: number;
 
   // Status
@@ -96,7 +98,9 @@ export interface UserProfile {
   timezone: string;
 
   // Appearance
-  theme: "dark" | "light";
+  theme:
+    | "dark"
+    | "light";
 
   // ATLAS Personality
   atlasPersonality:
@@ -104,11 +108,19 @@ export interface UserProfile {
     | "Friendly"
     | "Motivational";
 
-  // Progress
+  // Legacy Progress
+  //
+  // Real XP now comes from XPContext.
+  // Profile migration will happen separately.
   level: number;
 
   xp: number;
 }
+
+/* =========================
+   MONTHLY TARGETS
+========================= */
+
 export interface MonthlyTarget {
   id: number;
 
@@ -128,6 +140,11 @@ export interface MonthlyTarget {
 
   createdAt: string;
 }
+
+/* =========================
+   WEEKLY TARGETS
+========================= */
+
 export interface WeeklyTarget {
   id: number;
 
@@ -135,7 +152,12 @@ export interface WeeklyTarget {
 
   monthlyTargetId?: number;
 
-  week: 1 | 2 | 3 | 4 | 5;
+  week:
+    | 1
+    | 2
+    | 3
+    | 4
+    | 5;
 
   progress: number;
 

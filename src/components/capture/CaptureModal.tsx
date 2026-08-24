@@ -1,9 +1,13 @@
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
 import { FaBolt } from "react-icons/fa";
 
 import { IntentEngine } from "../../atlas/engines/intentEngine";
-import { useApp } from "../../context/AppContext";
+
+import { useTasks } from "../../context/TaskContext";
 
 import AtlasSuggestionCard from "./AtlasSuggestionCard";
 
@@ -13,7 +17,9 @@ import Card from "../ui/Card";
 interface CaptureModalProps {
   open: boolean;
   onClose: () => void;
-  onCapture: (text: string) => void;
+  onCapture: (
+    text: string
+  ) => void;
 }
 
 export default function CaptureModal({
@@ -21,26 +27,45 @@ export default function CaptureModal({
   onClose,
   onCapture,
 }: CaptureModalProps) {
-  const [text, setText] = useState("");
+  const [
+    text,
+    setText,
+  ] = useState("");
 
-  const { addTask } = useApp();
+  const {
+    addTask,
+  } = useTasks();
 
-  const intentEngine = useMemo(
-    () => new IntentEngine(),
-    []
-  );
+  const intentEngine =
+    useMemo(
+      () =>
+        new IntentEngine(),
+      []
+    );
 
   const suggestion =
-    text.trim().length > 0
-      ? intentEngine.analyze(text)
+    text.trim().length >
+    0
+      ? intentEngine.analyze(
+          text
+        )
       : null;
 
-  if (!open) return null;
+  if (!open) {
+    return null;
+  }
 
   function handleCapture() {
-    if (!text.trim()) return;
+    const trimmedText =
+      text.trim();
 
-    onCapture(text.trim());
+    if (!trimmedText) {
+      return;
+    }
+
+    onCapture(
+      trimmedText
+    );
 
     setText("");
 
@@ -48,22 +73,43 @@ export default function CaptureModal({
   }
 
   function handlePrimaryAction() {
-    if (!suggestion || !text.trim()) return;
+    const trimmedText =
+      text.trim();
 
-    switch (suggestion.actionId) {
-      case "create-task":
+    if (
+      !suggestion ||
+      !trimmedText
+    ) {
+      return;
+    }
+
+    switch (
+      suggestion.actionId
+    ) {
+      case "create-task": {
+        const today =
+          new Date()
+            .toISOString()
+            .split("T")[0];
+
         addTask(
-          text.trim(),
-          "medium",
-          new Date().toISOString().split("T")[0]
+          trimmedText,
+          today,
+          "medium"
         );
 
-        onCapture(text.trim());
+        onCapture(
+          trimmedText
+        );
 
         break;
+      }
 
       default:
-        onCapture(text.trim());
+        onCapture(
+          trimmedText
+        );
+
         break;
     }
 
@@ -94,7 +140,7 @@ export default function CaptureModal({
               </h2>
 
               <p className="mt-1 text-sm text-slate-400">
-                Capture an idea before you forget it.
+                Capture anything. ATLAS can help turn it into action.
               </p>
 
             </div>
@@ -111,16 +157,25 @@ export default function CaptureModal({
             autoFocus
             rows={7}
             value={text}
-            onChange={(e) =>
-              setText(e.target.value)
+            onChange={(
+              event
+            ) =>
+              setText(
+                event.target
+                  .value
+              )
             }
             placeholder="What's on your mind?"
             className="w-full resize-none rounded-2xl border border-slate-700 bg-slate-950 p-5 text-white outline-none transition focus:border-cyan-500"
           />
 
           <AtlasSuggestionCard
-            suggestion={suggestion}
-            onPrimaryAction={handlePrimaryAction}
+            suggestion={
+              suggestion
+            }
+            onPrimaryAction={
+              handlePrimaryAction
+            }
           />
 
         </div>
@@ -139,7 +194,11 @@ export default function CaptureModal({
             Cancel
           </Button>
 
-          <Button onClick={handleCapture}>
+          <Button
+            onClick={
+              handleCapture
+            }
+          >
             Capture
           </Button>
 
