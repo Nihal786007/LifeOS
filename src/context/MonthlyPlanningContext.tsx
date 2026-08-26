@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Monthly Planning Context
-// Version: 2.0
+// Version: 2.1
 // ==========================================
 
 import {
@@ -10,10 +10,13 @@ import {
   useState,
 } from "react";
 
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
-import { ExecutionService } from "../services/ExecutionService";
-import { STORAGE_KEYS } from "../constants/storage";
+import {
+  STORAGE_KEYS,
+} from "../constants/storage";
 
 import type {
   MonthlyTarget,
@@ -33,25 +36,12 @@ interface MonthlyPlanningContextType {
     goalId?: number
   ) => void;
 
-  updateMonthlyProgress: (
-    id: number,
-    progress: number
-  ) => void;
-
-  deleteMonthlyPlan: (
-    id: number
-  ) => void;
-
-  deleteMonthlyPlansByLifeGoal: (
-    goalId: number
-  ) => void;
-
   /**
-   * Applies a complete Monthly Planning state
+   * Applies complete Monthly Planning state
    * produced by the LifeOS execution architecture.
    *
-   * This is intended for orchestration-level updates,
-   * not normal component-level mutations.
+   * Completion, uncompletion, and deletion must
+   * flow through PlanningExecutionContext.
    */
   replaceMonthlyPlans: (
     monthlyPlans: MonthlyTarget[]
@@ -63,9 +53,9 @@ interface MonthlyPlanningContextType {
 // ==========================================
 
 const MonthlyPlanningContext =
-  createContext<MonthlyPlanningContextType | null>(
-    null
-  );
+  createContext<
+    MonthlyPlanningContextType | null
+  >(null);
 
 // ==========================================
 // Provider
@@ -76,24 +66,27 @@ export function MonthlyPlanningProvider({
 }: {
   children: ReactNode;
 }) {
-  const [monthlyPlans, setMonthlyPlans] =
-    useState<MonthlyTarget[]>(() => {
-      const saved = localStorage.getItem(
+  const [
+    monthlyPlans,
+    setMonthlyPlans,
+  ] = useState<MonthlyTarget[]>(() => {
+    const saved =
+      localStorage.getItem(
         STORAGE_KEYS.MONTHLY_TARGETS
       );
 
-      if (!saved) {
-        return [];
-      }
+    if (!saved) {
+      return [];
+    }
 
-      try {
-        return JSON.parse(
-          saved
-        ) as MonthlyTarget[];
-      } catch {
-        return [];
-      }
-    });
+    try {
+      return JSON.parse(
+        saved
+      ) as MonthlyTarget[];
+    } catch {
+      return [];
+    }
+  });
 
   // ==========================================
   // Persistence
@@ -102,7 +95,9 @@ export function MonthlyPlanningProvider({
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEYS.MONTHLY_TARGETS,
-      JSON.stringify(monthlyPlans)
+      JSON.stringify(
+        monthlyPlans
+      )
     );
   }, [monthlyPlans]);
 
@@ -116,89 +111,43 @@ export function MonthlyPlanningProvider({
     year: number,
     goalId?: number
   ) {
-    const trimmedTitle = title.trim();
+    const trimmedTitle =
+      title.trim();
 
     if (!trimmedTitle) {
       return;
     }
 
-    setMonthlyPlans((previous) => [
-      ...previous,
-      {
-        id: Date.now(),
+    const plan: MonthlyTarget = {
+      id: Date.now(),
 
-        title: trimmedTitle,
+      title:
+        trimmedTitle,
 
-        month,
-        year,
-        goalId,
+      month,
 
-        progress: 0,
+      year,
 
-        completed: false,
-        completedAt: undefined,
+      goalId,
 
-        createdAt:
-          new Date().toISOString(),
-      },
-    ]);
-  }
+      progress:
+        0,
 
-  // ==========================================
-  // Progress Update
-  // ==========================================
+      completed:
+        false,
 
-  function updateMonthlyProgress(
-    id: number,
-    progress: number
-  ) {
-    setMonthlyPlans((previous) =>
-      previous.map((plan) =>
-        plan.id === id
-          ? {
-              ...plan,
-              progress,
-            }
-          : plan
-      )
-    );
-  }
+      completedAt:
+        undefined,
 
-  // ==========================================
-  // Monthly Plan Delete
-  // ==========================================
+      createdAt:
+        new Date().toISOString(),
+    };
 
-  function deleteMonthlyPlan(
-    id: number
-  ) {
-    setMonthlyPlans((previous) => {
-      const result =
-        ExecutionService.deleteMonthlyTarget(
-          {
-            lifeGoals: [],
-            monthlyTargets: previous,
-            weeklyTargets: [],
-            tasks: [],
-          },
-          id
-        );
-
-      return result.monthlyTargets;
-    });
-  }
-
-  // ==========================================
-  // Delete Plans By Life Goal
-  // ==========================================
-
-  function deleteMonthlyPlansByLifeGoal(
-    goalId: number
-  ) {
-    setMonthlyPlans((previous) =>
-      previous.filter(
-        (plan) =>
-          plan.goalId !== goalId
-      )
+    setMonthlyPlans(
+      (previous) => [
+        ...previous,
+        plan,
+      ]
     );
   }
 
@@ -222,12 +171,7 @@ export function MonthlyPlanningProvider({
     <MonthlyPlanningContext.Provider
       value={{
         monthlyPlans,
-
         addMonthlyPlan,
-        updateMonthlyProgress,
-        deleteMonthlyPlan,
-        deleteMonthlyPlansByLifeGoal,
-
         replaceMonthlyPlans,
       }}
     >

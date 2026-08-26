@@ -5,10 +5,13 @@ import {
   useState,
 } from "react";
 
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
-import { ExecutionService } from "../services/ExecutionService";
-import { STORAGE_KEYS } from "../constants/storage";
+import {
+  STORAGE_KEYS,
+} from "../constants/storage";
 
 import type {
   WeeklyTarget,
@@ -23,25 +26,12 @@ interface WeeklyPlanningContextType {
     week: 1 | 2 | 3 | 4 | 5
   ) => void;
 
-  updateWeeklyProgress: (
-    id: number,
-    progress: number
-  ) => void;
-
-  deleteWeeklyTarget: (
-    id: number
-  ) => void;
-
-  deleteWeeklyTargetsByMonthlyTarget: (
-    monthlyTargetId: number
-  ) => void;
-
   /**
-   * Applies the complete weekly-target state
-   * returned by the execution architecture.
+   * Applies complete weekly-target state
+   * produced by the LifeOS execution architecture.
    *
-   * This is intended for orchestration-level
-   * state synchronization.
+   * Completion, uncompletion, and deletion must
+   * flow through PlanningExecutionContext.
    */
   replaceWeeklyTargets: (
     weeklyTargets: WeeklyTarget[]
@@ -49,119 +39,100 @@ interface WeeklyPlanningContextType {
 }
 
 const WeeklyPlanningContext =
-  createContext<WeeklyPlanningContextType | null>(
-    null
-  );
+  createContext<
+    WeeklyPlanningContextType | null
+  >(null);
 
 export function WeeklyPlanningProvider({
   children,
 }: {
   children: ReactNode;
 }) {
-  const [weeklyTargets, setWeeklyTargets] =
-    useState<WeeklyTarget[]>(() => {
-      const saved = localStorage.getItem(
+  const [
+    weeklyTargets,
+    setWeeklyTargets,
+  ] = useState<WeeklyTarget[]>(() => {
+    const saved =
+      localStorage.getItem(
         STORAGE_KEYS.WEEKLY_TARGETS
       );
 
-      if (!saved) {
-        return [];
-      }
+    if (!saved) {
+      return [];
+    }
 
-      try {
-        return JSON.parse(
-          saved
-        ) as WeeklyTarget[];
-      } catch {
-        return [];
-      }
-    });
+    try {
+      return JSON.parse(
+        saved
+      ) as WeeklyTarget[];
+    } catch {
+      return [];
+    }
+  });
+
+  // ==========================================
+  // Persistence
+  // ==========================================
 
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEYS.WEEKLY_TARGETS,
-      JSON.stringify(weeklyTargets)
+      JSON.stringify(
+        weeklyTargets
+      )
     );
   }, [weeklyTargets]);
+
+  // ==========================================
+  // Weekly Target Creation
+  // ==========================================
 
   function addWeeklyTarget(
     title: string,
     monthlyTargetId: number | undefined,
     week: 1 | 2 | 3 | 4 | 5
   ) {
-    const trimmedTitle = title.trim();
+    const trimmedTitle =
+      title.trim();
 
     if (!trimmedTitle) {
       return;
     }
 
-    setWeeklyTargets((previous) => [
-      ...previous,
-      {
-        id: Date.now(),
+    const target: WeeklyTarget = {
+      id: Date.now(),
 
-        title: trimmedTitle,
+      title:
+        trimmedTitle,
 
-        monthlyTargetId,
-        week,
+      monthlyTargetId,
 
-        progress: 0,
+      week,
 
-        completed: false,
-        completedAt: undefined,
+      progress:
+        0,
 
-        createdAt:
-          new Date().toISOString(),
-      },
-    ]);
-  }
+      completed:
+        false,
 
-  function updateWeeklyProgress(
-    id: number,
-    progress: number
-  ) {
-    setWeeklyTargets((previous) =>
-      previous.map((target) =>
-        target.id === id
-          ? {
-              ...target,
-              progress,
-            }
-          : target
-      )
+      completedAt:
+        undefined,
+
+      createdAt:
+        new Date().toISOString(),
+    };
+
+    setWeeklyTargets(
+      (previous) => [
+        ...previous,
+        target,
+      ]
     );
   }
 
-  function deleteWeeklyTarget(
-    id: number
-  ) {
-    setWeeklyTargets((previous) => {
-      const result =
-        ExecutionService.deleteWeeklyTarget(
-          {
-            lifeGoals: [],
-            monthlyTargets: [],
-            weeklyTargets: previous,
-            tasks: [],
-          },
-          id
-        );
-
-      return result.weeklyTargets;
-    });
-  }
-
-  function deleteWeeklyTargetsByMonthlyTarget(
-    monthlyTargetId: number
-  ) {
-    setWeeklyTargets((previous) =>
-      previous.filter(
-        (target) =>
-          target.monthlyTargetId !==
-          monthlyTargetId
-      )
-    );
-  }
+  // ==========================================
+  // Execution State Application
+  // ==========================================
 
   function replaceWeeklyTargets(
     nextWeeklyTargets: WeeklyTarget[]
@@ -171,14 +142,15 @@ export function WeeklyPlanningProvider({
     );
   }
 
+  // ==========================================
+  // Provider
+  // ==========================================
+
   return (
     <WeeklyPlanningContext.Provider
       value={{
         weeklyTargets,
         addWeeklyTarget,
-        updateWeeklyProgress,
-        deleteWeeklyTarget,
-        deleteWeeklyTargetsByMonthlyTarget,
         replaceWeeklyTargets,
       }}
     >
