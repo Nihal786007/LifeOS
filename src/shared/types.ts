@@ -1,11 +1,28 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 3.1
+// Version: 3.2
 // ==========================================
 
 /* =========================
-   TASKS
+TASKS
 ========================= */
+
+export type TaskPriority =
+  | "low"
+  | "medium"
+  | "high";
+
+export interface CreateTaskInput {
+  title: string;
+
+  description?: string;
+
+  dueDate?: string;
+
+  priority?: TaskPriority;
+
+  weeklyTargetId?: number;
+}
 
 export interface Task {
   id: number;
@@ -17,10 +34,7 @@ export interface Task {
   // Planning
   dueDate?: string;
 
-  priority:
-    | "low"
-    | "medium"
-    | "high";
+  priority: TaskPriority;
 
   // Optional Connection
   weeklyTargetId?: number;
@@ -34,7 +48,7 @@ export interface Task {
 }
 
 /* =========================
-   LIFE GOALS
+LIFE GOALS
 ========================= */
 
 export interface LifeGoal {
@@ -60,7 +74,7 @@ export interface LifeGoal {
 }
 
 /* =========================
-   HABITS
+HABITS
 ========================= */
 
 export interface Habit {
@@ -74,7 +88,7 @@ export interface Habit {
 }
 
 /* =========================
-   QUICK CAPTURE
+QUICK CAPTURE
 ========================= */
 
 export interface Capture {
@@ -86,7 +100,7 @@ export interface Capture {
 }
 
 /* =========================
-   USER PROFILE
+USER PROFILE
 ========================= */
 
 export interface UserProfile {
@@ -118,7 +132,7 @@ export interface UserProfile {
 }
 
 /* =========================
-   MONTHLY TARGETS
+MONTHLY TARGETS
 ========================= */
 
 export interface MonthlyTarget {
@@ -142,7 +156,7 @@ export interface MonthlyTarget {
 }
 
 /* =========================
-   WEEKLY TARGETS
+WEEKLY TARGETS
 ========================= */
 
 export interface WeeklyTarget {

@@ -1,27 +1,83 @@
-import { useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
 import {
   FaPlus,
   FaSearch,
 } from "react-icons/fa";
 
-import { sortTasks } from "../utils/taskSorter";
+import {
+  sortTasks,
+} from "../utils/taskSorter";
 
-import { useTasks } from "../context/TaskContext";
-import { usePlanningExecution } from "../context/PlanningExecutionContext";
+import {
+  TaskRelationshipEngine,
+} from "../engines/TaskRelationshipEngine";
 
-import TaskSection from "../components/tasks/TaskSection";
-import EmptyState from "../components/tasks/EmptyState";
+import {
+  useTasks,
+} from "../context/TaskContext";
 
-import Card from "../components/ui/Card";
+import {
+  useLifeGoals,
+} from "../context/LifeGoalsContext";
+
+import {
+  useMonthlyPlanning,
+} from "../context/MonthlyPlanningContext";
+
+import {
+  useWeeklyPlanning,
+} from "../context/WeeklyPlanningContext";
+
+import {
+  usePlanningExecution,
+} from "../context/PlanningExecutionContext";
+
+import UniversalTaskTable from "../components/tasks/UniversalTaskTable";
+
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
-import PageHero from "../components/ui/PageHero";
 
 type Priority =
   | "low"
   | "medium"
   | "high";
+
+type TaskFilter =
+  | "all"
+  | "today"
+  | "overdue"
+  | "upcoming"
+  | "completed";
+
+function getLocalDateString() {
+  const now =
+    new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return `${year}-${month}-${day}`;
+}
 
 export default function Tasks() {
   const [
@@ -46,10 +102,16 @@ export default function Tasks() {
     dueDate,
     setDueDate,
   ] = useState(
-    new Date()
-      .toISOString()
-      .split("T")[0]
+    getLocalDateString()
   );
+
+  const [
+    activeFilter,
+    setActiveFilter,
+  ] =
+    useState<TaskFilter>(
+      "all"
+    );
 
   // ==========================================
   // Universal Task State
@@ -60,8 +122,22 @@ export default function Tasks() {
     addTask,
   } = useTasks();
 
+  const {
+    lifeGoals,
+  } = useLifeGoals();
+
+  const {
+    monthlyPlans,
+  } =
+    useMonthlyPlanning();
+
+  const {
+    weeklyTargets,
+  } =
+    useWeeklyPlanning();
+
   // ==========================================
-  // Execution Actions
+  // Universal Execution
   // ==========================================
 
   const {
@@ -72,26 +148,27 @@ export default function Tasks() {
     usePlanningExecution();
 
   // ==========================================
-  // Derived Statistics
+  // Relationship State
   // ==========================================
 
-  const completedTasks =
-    tasks.filter(
-      (task) =>
-        task.completed
-    ).length;
+  const relationshipState =
+    useMemo(
+      () => ({
+        lifeGoals,
 
-  // ==========================================
-  // Search
-  // ==========================================
+        monthlyTargets:
+          monthlyPlans,
 
-  const filteredTasks =
-    tasks.filter((item) =>
-      (item.title ?? "")
-        .toLowerCase()
-        .includes(
-          search.toLowerCase()
-        )
+        weeklyTargets,
+
+        tasks,
+      }),
+      [
+        lifeGoals,
+        monthlyPlans,
+        weeklyTargets,
+        tasks,
+      ]
     );
 
   // ==========================================
@@ -99,60 +176,133 @@ export default function Tasks() {
   // ==========================================
 
   const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
+    getLocalDateString();
 
   // ==========================================
-  // Task Sections
+  // Real Task Groups
   // ==========================================
 
-  const overdueTasks =
-    sortTasks(
-      filteredTasks.filter(
-        (task) =>
-          !task.completed &&
-          Boolean(
-            task.dueDate
-          ) &&
-          task.dueDate! <
-            today
-      )
+  const completedTasks =
+    tasks.filter(
+      (task) =>
+        task.completed
     );
 
   const todayTasks =
-    sortTasks(
-      filteredTasks.filter(
-        (task) =>
-          !task.completed &&
-          task.dueDate ===
-            today
-      )
+    tasks.filter(
+      (task) =>
+        !task.completed &&
+        task.dueDate ===
+          today
+    );
+
+  const overdueTasks =
+    tasks.filter(
+      (task) =>
+        !task.completed &&
+        Boolean(
+          task.dueDate
+        ) &&
+        task.dueDate! <
+          today
     );
 
   const upcomingTasks =
-    sortTasks(
-      filteredTasks.filter(
-        (task) =>
-          !task.completed &&
-          Boolean(
-            task.dueDate
-          ) &&
-          task.dueDate! >
-            today
-      )
-    );
-
-  const completedTaskList =
-    sortTasks(
-      filteredTasks.filter(
-        (task) =>
-          task.completed
-      )
+    tasks.filter(
+      (task) =>
+        !task.completed &&
+        Boolean(
+          task.dueDate
+        ) &&
+        task.dueDate! >
+          today
     );
 
   // ==========================================
-  // Task Creation
+  // Search + Filter
+  // ==========================================
+
+  const visibleTasks =
+    useMemo(() => {
+      const normalizedSearch =
+        search
+          .trim()
+          .toLowerCase();
+
+      const searched =
+        tasks.filter(
+          (task) =>
+            task.title
+              .toLowerCase()
+              .includes(
+                normalizedSearch
+              ) ||
+            (
+              task.description ??
+              ""
+            )
+              .toLowerCase()
+              .includes(
+                normalizedSearch
+              )
+        );
+
+      const filtered =
+        searched.filter(
+          (task) => {
+            switch (
+              activeFilter
+            ) {
+              case "today":
+                return (
+                  !task.completed &&
+                  task.dueDate ===
+                    today
+                );
+
+              case "overdue":
+                return (
+                  !task.completed &&
+                  Boolean(
+                    task.dueDate
+                  ) &&
+                  task.dueDate! <
+                    today
+                );
+
+              case "upcoming":
+                return (
+                  !task.completed &&
+                  Boolean(
+                    task.dueDate
+                  ) &&
+                  task.dueDate! >
+                    today
+                );
+
+              case "completed":
+                return (
+                  task.completed
+                );
+
+              default:
+                return true;
+            }
+          }
+        );
+
+      return sortTasks(
+        filtered
+      );
+    }, [
+      tasks,
+      search,
+      activeFilter,
+      today,
+    ]);
+
+  // ==========================================
+  // Universal Task Creation
   // ==========================================
 
   function handleAddTask() {
@@ -163,26 +313,32 @@ export default function Tasks() {
       return;
     }
 
-    addTask(
-      trimmedTitle,
-      dueDate,
-      priority
-    );
+    addTask({
+      title:
+        trimmedTitle,
+
+      dueDate:
+        dueDate ||
+        undefined,
+
+      priority,
+    });
 
     setTaskTitle("");
   }
 
   // ==========================================
-  // Task Execution
+  // Universal Task Execution
   // ==========================================
 
   function handleToggleTask(
-    id: number
+    taskId: number
   ) {
     const selectedTask =
       tasks.find(
         (task) =>
-          task.id === id
+          task.id ===
+          taskId
       );
 
     if (!selectedTask) {
@@ -192,227 +348,404 @@ export default function Tasks() {
     if (
       selectedTask.completed
     ) {
-      uncompleteTask(id);
+      uncompleteTask(
+        taskId
+      );
+
       return;
     }
 
-    completeTask(id);
+    completeTask(
+      taskId
+    );
   }
 
   function handleDeleteTask(
-    id: number
+    taskId: number
   ) {
-    deleteTask(id);
+    deleteTask(
+      taskId
+    );
   }
 
+  // ==========================================
+  // Relationship Presentation
+  // ==========================================
+
+  function getPlanType(
+    task: typeof tasks[number]
+  ):
+    | "personal"
+    | "goal"
+    | "none" {
+    const relationship =
+      TaskRelationshipEngine
+        .resolve(
+          relationshipState,
+          task.id
+        );
+
+    if (
+      relationship?.scope ===
+      "goal"
+    ) {
+      return "goal";
+    }
+
+    if (
+      relationship?.scope ===
+      "personal"
+    ) {
+      return "personal";
+    }
+
+    return "none";
+  }
+
+  function getWeeklyTargetTitle(
+    task: typeof tasks[number]
+  ) {
+    const relationship =
+      TaskRelationshipEngine
+        .resolve(
+          relationshipState,
+          task.id
+        );
+
+    if (
+      !relationship
+        ?.weeklyTarget
+    ) {
+      return undefined;
+    }
+
+    return `W${relationship.weeklyTarget.week} · ${relationship.weeklyTarget.title}`;
+  }
+
+  // ==========================================
+  // Filters
+  // ==========================================
+
+  const filters: {
+    id: TaskFilter;
+    label: string;
+    count: number;
+  }[] = [
+    {
+      id: "all",
+      label: "All",
+      count:
+        tasks.length,
+    },
+    {
+      id: "today",
+      label: "Today",
+      count:
+        todayTasks.length,
+    },
+    {
+      id: "overdue",
+      label: "Overdue",
+      count:
+        overdueTasks.length,
+    },
+    {
+      id: "upcoming",
+      label: "Upcoming",
+      count:
+        upcomingTasks.length,
+    },
+    {
+      id: "completed",
+      label: "Done",
+      count:
+        completedTasks.length,
+    },
+  ];
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-5">
 
-      <PageHero
-        badge="Mission Planner"
-        title="Tasks"
-        description="Organize your missions, stay focused, and execute every objective with precision."
-      >
-        <Card className="border-cyan-500/20 bg-cyan-500/5">
+      {/* ======================================
+          Compact Header
+      ====================================== */}
 
-          <p className="text-sm uppercase tracking-widest text-cyan-300">
-            Today's Progress
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-cyan-400">
+            Universal Execution
           </p>
 
-          <h2 className="mt-3 text-5xl font-black">
-            {completedTasks}/
-            {tasks.length}
-          </h2>
+          <h1 className="mt-1 text-3xl font-bold text-white">
+            Tasks
+          </h1>
 
-          <p className="mt-3 text-slate-400">
-            Missions Completed
+          <p className="mt-1 text-sm text-slate-400">
+            One task. One state. Every view.
           </p>
+        </div>
 
-        </Card>
-      </PageHero>
-
-      {/* Search */}
-
-      <div className="relative">
-
-        <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
-
-        <Input
-          value={search}
-          onChange={(event) =>
-            setSearch(
-              event.target.value
-            )
-          }
-          placeholder="Search missions..."
-          className="py-5 pl-14 pr-6 text-lg"
-        />
-
-      </div>
-
-      {/* Create Task */}
-
-      <Card className="space-y-6">
-
-        <h2 className="text-xl font-bold text-white">
-          Create New Mission
-        </h2>
-
-        <Input
-          value={taskTitle}
-          onChange={(event) =>
-            setTaskTitle(
-              event.target.value
-            )
-          }
-          onKeyDown={(
-            event
-          ) => {
-            if (
-              event.key ===
-              "Enter"
-            ) {
-              handleAddTask();
-            }
-          }}
-          placeholder="Mission title..."
-          className="px-6 py-5 text-lg"
-        />
-
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex items-center gap-5 text-sm">
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-300">
-              Priority
-            </label>
+            <span className="font-semibold text-white">
+              {tasks.length}
+            </span>
 
-            <select
-              value={
-                priority
-              }
-              onChange={(
-                event
-              ) =>
-                setPriority(
-                  event.target
-                    .value as Priority
-                )
-              }
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white"
-            >
-              <option value="low">
-                🟢 Low
-              </option>
-
-              <option value="medium">
-                🟡 Medium
-              </option>
-
-              <option value="high">
-                🔴 High
-              </option>
-            </select>
+            <span className="ml-1 text-slate-500">
+              total
+            </span>
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-300">
-              Due Date
-            </label>
+            <span className="font-semibold text-green-400">
+              {
+                completedTasks.length
+              }
+            </span>
 
-            <Input
-              type="date"
-              value={
-                dueDate
+            <span className="ml-1 text-slate-500">
+              done
+            </span>
+          </div>
+
+          <div>
+            <span className="font-semibold text-cyan-400">
+              {
+                todayTasks.length
               }
-              onChange={(
-                event
-              ) =>
-                setDueDate(
-                  event.target
-                    .value
-                )
-              }
-            />
+            </span>
+
+            <span className="ml-1 text-slate-500">
+              today
+            </span>
           </div>
 
         </div>
 
-        <Button
-          onClick={
-            handleAddTask
+      </div>
+
+      {/* ======================================
+          Filter Strip
+      ====================================== */}
+
+      <div className="flex gap-2 overflow-x-auto pb-1">
+
+        {filters.map(
+          (filter) => {
+            const active =
+              activeFilter ===
+              filter.id;
+
+            return (
+              <button
+                key={
+                  filter.id
+                }
+                type="button"
+                onClick={() =>
+                  setActiveFilter(
+                    filter.id
+                  )
+                }
+                className={`
+                  shrink-0
+                  rounded-lg
+                  border
+                  px-3
+                  py-1.5
+                  text-sm
+                  font-medium
+                  transition
+
+                  ${
+                    active
+                      ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
+                      : "border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                  }
+                `}
+              >
+                {
+                  filter.label
+                }
+
+                <span
+                  className={`
+                    ml-2
+                    text-xs
+
+                    ${
+                      active
+                        ? "text-cyan-400"
+                        : "text-slate-600"
+                    }
+                  `}
+                >
+                  {
+                    filter.count
+                  }
+                </span>
+              </button>
+            );
           }
-          className="w-full py-4"
-        >
-          <FaPlus />
-          Create Mission
-        </Button>
-
-      </Card>
-
-      {/* Task Sections */}
-
-      <div className="space-y-10">
-
-        {filteredTasks.length ===
-        0 ? (
-          <EmptyState />
-        ) : (
-          <>
-            <TaskSection
-              title="🔴 Overdue"
-              tasks={
-                overdueTasks
-              }
-              toggleTask={
-                handleToggleTask
-              }
-              deleteTask={
-                handleDeleteTask
-              }
-            />
-
-            <TaskSection
-              title="🟢 Today"
-              tasks={
-                todayTasks
-              }
-              toggleTask={
-                handleToggleTask
-              }
-              deleteTask={
-                handleDeleteTask
-              }
-            />
-
-            <TaskSection
-              title="🟡 Upcoming"
-              tasks={
-                upcomingTasks
-              }
-              toggleTask={
-                handleToggleTask
-              }
-              deleteTask={
-                handleDeleteTask
-              }
-            />
-
-            <TaskSection
-              title="⚪ Completed"
-              tasks={
-                completedTaskList
-              }
-              toggleTask={
-                handleToggleTask
-              }
-              deleteTask={
-                handleDeleteTask
-              }
-            />
-          </>
         )}
 
       </div>
+
+      {/* ======================================
+          Search + Quick Add
+      ====================================== */}
+
+      <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+
+        <div className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(260px,1.4fr)_130px_150px_auto]">
+
+          {/* Search */}
+
+          <div className="relative">
+
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-600" />
+
+            <Input
+              value={
+                search
+              }
+              onChange={(
+                event
+              ) =>
+                setSearch(
+                  event.target
+                    .value
+                )
+              }
+              placeholder="Search tasks..."
+              className="h-10 py-2 pl-9 text-sm"
+            />
+
+          </div>
+
+          {/* Task Input */}
+
+          <Input
+            value={
+              taskTitle
+            }
+            onChange={(
+              event
+            ) =>
+              setTaskTitle(
+                event.target
+                  .value
+              )
+            }
+            onKeyDown={(
+              event
+            ) => {
+              if (
+                event.key ===
+                "Enter"
+              ) {
+                handleAddTask();
+              }
+            }}
+            placeholder="Add a task..."
+            className="h-10 py-2 text-sm"
+          />
+
+          {/* Priority */}
+
+          <select
+            value={
+              priority
+            }
+            onChange={(
+              event
+            ) =>
+              setPriority(
+                event.target
+                  .value as Priority
+              )
+            }
+            className="h-10 rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm text-slate-200 outline-none transition focus:border-cyan-500"
+          >
+            <option value="low">
+              Low
+            </option>
+
+            <option value="medium">
+              Medium
+            </option>
+
+            <option value="high">
+              High
+            </option>
+          </select>
+
+          {/* Due Date */}
+
+          <Input
+            type="date"
+            value={
+              dueDate
+            }
+            onChange={(
+              event
+            ) =>
+              setDueDate(
+                event.target
+                  .value
+              )
+            }
+            className="h-10 py-2 text-sm"
+          />
+
+          {/* Add */}
+
+          <Button
+            onClick={
+              handleAddTask
+            }
+            className="h-10 whitespace-nowrap px-4 py-2"
+          >
+            <FaPlus />
+
+            Add
+          </Button>
+
+        </div>
+
+      </div>
+
+      {/* ======================================
+          Universal Task Table
+      ====================================== */}
+
+      <UniversalTaskTable
+        tasks={
+          visibleTasks
+        }
+        getPlanIcon={
+          getPlanType
+        }
+        getWeeklyTargetTitle={
+          getWeeklyTargetTitle
+        }
+        onToggle={
+          handleToggleTask
+        }
+        onDelete={
+          handleDeleteTask
+        }
+        emptyMessage={
+          search
+            ? "No tasks match your search."
+            : activeFilter ===
+                "all"
+              ? "No tasks yet. Add your first task above."
+              : `No ${activeFilter} tasks.`
+        }
+      />
 
     </div>
   );

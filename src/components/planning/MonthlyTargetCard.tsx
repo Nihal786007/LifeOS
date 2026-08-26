@@ -4,13 +4,33 @@ import {
   FaCalendarAlt,
 } from "react-icons/fa";
 
-import { ProgressEngine } from "../../engines/ProgressEngine";
+import {
+  ProgressEngine,
+} from "../../engines/ProgressEngine";
 
-import { useLifeGoals } from "../../context/LifeGoalsContext";
-import { useMonthlyPlanning } from "../../context/MonthlyPlanningContext";
-import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
-import { useTasks } from "../../context/TaskContext";
-import { usePlanningExecution } from "../../context/PlanningExecutionContext";
+import {
+  TaskRelationshipEngine,
+} from "../../engines/TaskRelationshipEngine";
+
+import {
+  useLifeGoals,
+} from "../../context/LifeGoalsContext";
+
+import {
+  useMonthlyPlanning,
+} from "../../context/MonthlyPlanningContext";
+
+import {
+  useWeeklyPlanning,
+} from "../../context/WeeklyPlanningContext";
+
+import {
+  useTasks,
+} from "../../context/TaskContext";
+
+import {
+  usePlanningExecution,
+} from "../../context/PlanningExecutionContext";
 
 import Card from "../ui/Card";
 
@@ -58,32 +78,49 @@ export default function MonthlyTargetCard({
 
   const plan =
     monthlyPlans.find(
-      (item) => item.id === id
+      (item) =>
+        item.id === id
     );
 
   if (!plan) {
     return null;
   }
 
-  const planId = plan.id;
-  const planTitle = plan.title;
+  const planId =
+    plan.id;
+
+  const planTitle =
+    plan.title;
+
+  const relationshipState = {
+    lifeGoals,
+
+    monthlyTargets:
+      monthlyPlans,
+
+    weeklyTargets,
+
+    tasks,
+  };
+
+  const linkedTasks =
+    TaskRelationshipEngine
+      .getTasksForMonthlyTarget(
+        relationshipState,
+        planId
+      );
 
   const goal =
     lifeGoals.find(
       (item) =>
-        item.id === plan.goalId
+        item.id ===
+        plan.goalId
     );
 
   const progress =
     ProgressEngine.getMonthlyProgress(
-      {
-        lifeGoals,
-        monthlyTargets:
-          monthlyPlans,
-        weeklyTargets,
-        tasks,
-      },
-      plan.id
+      relationshipState,
+      planId
     );
 
   function handleDelete() {
@@ -103,18 +140,25 @@ export default function MonthlyTargetCard({
 
   return (
     <Card hover glow>
+
       <div className="flex items-start justify-between">
+
         <div>
+
           <div className="flex items-center gap-2">
+
             <FaBullseye className="text-cyan-400" />
 
             <h3 className="text-xl font-bold text-white">
-              {plan.title}
+              {planTitle}
             </h3>
+
           </div>
 
           <p className="mt-2 text-sm text-slate-400">
-            {MONTHS[plan.month - 1]}{" "}
+            {MONTHS[
+              plan.month - 1
+            ]}{" "}
             {plan.year}
           </p>
 
@@ -123,19 +167,38 @@ export default function MonthlyTargetCard({
               ? `🎯 ${goal.title}`
               : "Standalone Target"}
           </p>
+
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-400">
+
+            <span>
+              {linkedTasks.length}{" "}
+              {linkedTasks.length === 1
+                ? "task"
+                : "tasks"}
+            </span>
+
+          </div>
+
         </div>
 
         <button
-          onClick={handleDelete}
+          onClick={
+            handleDelete
+          }
           className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
-          aria-label={`Delete ${plan.title}`}
+          aria-label={
+            `Delete ${planTitle}`
+          }
         >
           <FaTrash />
         </button>
+
       </div>
 
       <div className="mt-6">
+
         <div className="mb-2 flex items-center justify-between text-sm">
+
           <span className="text-slate-400">
             Progress
           </span>
@@ -143,19 +206,25 @@ export default function MonthlyTargetCard({
           <span className="font-semibold text-cyan-400">
             {progress}%
           </span>
+
         </div>
 
         <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+
           <div
             className="h-full rounded-full bg-cyan-500 transition-all duration-500"
             style={{
-              width: `${progress}%`,
+              width:
+                `${progress}%`,
             }}
           />
+
         </div>
+
       </div>
 
       <div className="mt-6 flex items-center gap-2 text-sm text-slate-400">
+
         <FaCalendarAlt />
 
         <span>
@@ -164,7 +233,9 @@ export default function MonthlyTargetCard({
             plan.createdAt
           ).toLocaleDateString()}
         </span>
+
       </div>
+
     </Card>
   );
 }

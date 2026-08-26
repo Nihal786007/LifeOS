@@ -5,6 +5,7 @@ import {
   FaChartLine,
   FaFire,
   FaGear,
+  FaTableList,
 } from "react-icons/fa6";
 
 type SidebarProps = {
@@ -23,15 +24,20 @@ export default function Sidebar({
       icon: <FaHouse />,
     },
     {
-  id: "planning",
-  label: "Planning",
-  icon: <FaListCheck />,
-},
-   {
-  id: "calendar",
-  label: "Calendar",
-  icon: <FaCalendarDays />,
-},
+      id: "planning",
+      label: "Planning",
+      icon: <FaListCheck />,
+    },
+    {
+      id: "tasks",
+      label: "Tasks",
+      icon: <FaTableList />,
+    },
+    {
+      id: "calendar",
+      label: "Calendar",
+      icon: <FaCalendarDays />,
+    },
     {
       id: "statistics",
       label: "Analytics",
@@ -77,7 +83,6 @@ export default function Sidebar({
         <div className="space-y-2">
 
           {menuItems.map((item) => {
-
             const active =
               currentPage === item.id;
 
@@ -101,17 +106,17 @@ export default function Sidebar({
 
                   ${
                     active
-                      ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 shadow-lg shadow-cyan-500/10"
+                      ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 shadow-lg shadow-cyan-500/10"
                       : "border border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
                   }
                 `}
               >
-
                 <div
                   className={`
                     text-lg
                     transition-transform
                     duration-300
+
                     ${
                       active
                         ? "scale-110"
@@ -125,7 +130,6 @@ export default function Sidebar({
                 <span className="font-medium">
                   {item.label}
                 </span>
-
               </button>
             );
           })}
@@ -159,9 +163,7 @@ export default function Sidebar({
         <div className="flex items-center gap-4">
 
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 font-bold text-slate-950">
-
             NA
-
           </div>
 
           <div>

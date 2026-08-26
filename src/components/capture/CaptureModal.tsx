@@ -92,11 +92,11 @@ export default function CaptureModal({
             .toISOString()
             .split("T")[0];
 
-        addTask(
-          trimmedText,
-          today,
-          "medium"
-        );
+        addTask({
+  title: trimmedText,
+  dueDate: today,
+  priority: "medium",
+});
 
         onCapture(
           trimmedText

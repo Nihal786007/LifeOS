@@ -9,66 +9,100 @@ import CaptureModal from "./components/capture/CaptureModal";
 
 import Dashboard from "./pages/Dashboard";
 import Planning from "./pages/Planning";
+import Tasks from "./pages/Tasks";
 import Calendar from "./pages/Calendar";
 import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 
 function AppContent() {
-  const [currentPage, setCurrentPage] =
-    useState("dashboard");
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState("dashboard");
 
-  const [captureOpen, setCaptureOpen] =
-    useState(false);
+  const [
+    captureOpen,
+    setCaptureOpen,
+  ] = useState(false);
 
-  const { addCapture } = useApp();
+  const {
+    addCapture,
+  } = useApp();
 
   return (
     <div className="flex h-screen bg-slate-950 text-white">
+
       <Sidebar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
+        currentPage={
+          currentPage
+        }
+        setCurrentPage={
+          setCurrentPage
+        }
       />
 
-      <main className="flex-1 overflow-auto p-8 space-y-8">
-        {currentPage === "dashboard" && (
+      <main className="flex-1 space-y-8 overflow-auto p-8">
+
+        {currentPage ===
+          "dashboard" && (
           <Dashboard />
         )}
 
-        {currentPage === "planning" && (
+        {currentPage ===
+          "planning" && (
           <Planning />
         )}
 
-        {currentPage === "calendar" && (
+        {currentPage ===
+          "tasks" && (
+          <Tasks />
+        )}
+
+        {currentPage ===
+          "calendar" && (
           <Calendar />
         )}
 
-        {currentPage === "statistics" && (
+        {currentPage ===
+          "statistics" && (
           <Statistics />
         )}
 
-        {currentPage === "habits" && (
+        {currentPage ===
+          "habits" && (
           <Habits />
         )}
 
-        {currentPage === "settings" && (
+        {currentPage ===
+          "settings" && (
           <Settings />
         )}
+
       </main>
 
       <CaptureFab
         onClick={() =>
-          setCaptureOpen(true)
+          setCaptureOpen(
+            true
+          )
         }
       />
 
       <CaptureModal
-        open={captureOpen}
-        onClose={() =>
-          setCaptureOpen(false)
+        open={
+          captureOpen
         }
-        onCapture={addCapture}
+        onClose={() =>
+          setCaptureOpen(
+            false
+          )
+        }
+        onCapture={
+          addCapture
+        }
       />
+
     </div>
   );
 }

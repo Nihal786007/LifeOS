@@ -16,40 +16,62 @@ export default function TaskModal({
   open,
   onClose,
 }: TaskModalProps) {
-  const { addTask } =
-    useTasks();
+  const {
+    addTask,
+  } = useTasks();
 
-  const { weeklyTargets } =
-    useWeeklyPlanning();
+  const {
+    weeklyTargets,
+  } = useWeeklyPlanning();
 
   const today =
-    new Date().toISOString().split("T")[0];
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
-  const [title, setTitle] =
-    useState("");
+  const [
+    title,
+    setTitle,
+  ] = useState("");
 
-  const [priority, setPriority] =
-    useState<
-      "low" | "medium" | "high"
-    >("medium");
+  const [
+    priority,
+    setPriority,
+  ] = useState<
+    "low" | "medium" | "high"
+  >("medium");
 
-  const [weeklyTargetId, setWeeklyTargetId] =
-    useState("");
+  const [
+    weeklyTargetId,
+    setWeeklyTargetId,
+  ] = useState("");
 
   function handleCreate() {
-    if (!title.trim()) {
-      alert("Please enter a task.");
+    const trimmedTitle =
+      title.trim();
+
+    if (!trimmedTitle) {
+      alert(
+        "Please enter a task."
+      );
       return;
     }
 
-    addTask(
-      title.trim(),
-      today,
+    addTask({
+      title: trimmedTitle,
+
+      dueDate:
+        today,
+
       priority,
-      weeklyTargetId
-        ? Number(weeklyTargetId)
-        : undefined
-    );
+
+      weeklyTargetId:
+        weeklyTargetId
+          ? Number(
+              weeklyTargetId
+            )
+          : undefined,
+    });
 
     setTitle("");
     setPriority("medium");
@@ -73,7 +95,9 @@ export default function TaskModal({
           </Button>
 
           <Button
-            onClick={handleCreate}
+            onClick={
+              handleCreate
+            }
           >
             Create Task
           </Button>
@@ -90,9 +114,11 @@ export default function TaskModal({
           <Input
             placeholder="Finish SAT Practice"
             value={title}
-            onChange={(e) =>
+            onChange={(
+              event
+            ) =>
               setTitle(
-                e.target.value
+                event.target.value
               )
             }
           />
@@ -105,9 +131,11 @@ export default function TaskModal({
 
           <select
             value={priority}
-            onChange={(e) =>
+            onChange={(
+              event
+            ) =>
               setPriority(
-                e.target
+                event.target
                   .value as
                   | "low"
                   | "medium"
@@ -136,10 +164,14 @@ export default function TaskModal({
           </label>
 
           <select
-            value={weeklyTargetId}
-            onChange={(e) =>
+            value={
+              weeklyTargetId
+            }
+            onChange={(
+              event
+            ) =>
               setWeeklyTargetId(
-                e.target.value
+                event.target.value
               )
             }
             className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none focus:border-cyan-500"
@@ -151,10 +183,16 @@ export default function TaskModal({
             {weeklyTargets.map(
               (target) => (
                 <option
-                  key={target.id}
-                  value={target.id}
+                  key={
+                    target.id
+                  }
+                  value={
+                    target.id
+                  }
                 >
-                  {target.title}
+                  {
+                    target.title
+                  }
                 </option>
               )
             )}
