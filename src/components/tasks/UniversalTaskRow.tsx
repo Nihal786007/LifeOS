@@ -6,6 +6,14 @@ import type {
   Task,
 } from "../../shared/types";
 
+// ==========================================
+// Types
+// ==========================================
+
+export type UniversalTaskRowVariant =
+  | "full"
+  | "compact";
+
 interface UniversalTaskRowProps {
   task: Task;
 
@@ -16,6 +24,8 @@ interface UniversalTaskRowProps {
 
   weeklyTargetTitle?: string;
 
+  variant?: UniversalTaskRowVariant;
+
   onToggle: (
     taskId: number
   ) => void;
@@ -24,6 +34,10 @@ interface UniversalTaskRowProps {
     taskId: number
   ) => void;
 }
+
+// ==========================================
+// Styles
+// ==========================================
 
 const priorityStyles = {
   low:
@@ -35,6 +49,10 @@ const priorityStyles = {
   high:
     "text-red-400 bg-red-500/10 border-red-500/20",
 };
+
+// ==========================================
+// Helpers
+// ==========================================
 
 function formatDate(
   date?: string
@@ -90,12 +108,18 @@ function getPlanLabel(
   }
 }
 
+// ==========================================
+// Component
+// ==========================================
+
 export default function UniversalTaskRow({
   task,
 
   planType = "none",
 
   weeklyTargetTitle,
+
+  variant = "full",
 
   onToggle,
 
@@ -110,6 +134,14 @@ export default function UniversalTaskRow({
     getPlanLabel(
       planType
     );
+
+  const isCompact =
+    variant ===
+    "compact";
+
+  // ==========================================
+  // Delete
+  // ==========================================
 
   function handleDelete() {
     if (!onDelete) {
@@ -130,10 +162,327 @@ export default function UniversalTaskRow({
     );
   }
 
+  // ==========================================
+  // Completion Button
+  // ==========================================
+
+  const completionButton = (
+    <button
+      type="button"
+      onClick={() =>
+        onToggle(
+          task.id
+        )
+      }
+      aria-label={
+        task.completed
+          ? `Mark ${task.title} incomplete`
+          : `Complete ${task.title}`
+      }
+      className={`
+        flex
+        h-5
+        w-5
+        shrink-0
+        items-center
+        justify-center
+        rounded
+        border
+        text-xs
+        font-bold
+        transition
+
+        ${
+          task.completed
+            ? "border-cyan-400 bg-cyan-400 text-slate-950"
+            : "border-slate-600 hover:border-cyan-400"
+        }
+      `}
+    >
+      {task.completed
+        ? "✓"
+        : ""}
+    </button>
+  );
+
+  // ==========================================
+  // Compact Desktop / Tablet Row
+  // ==========================================
+
+  if (isCompact) {
+    return (
+      <>
+        <div
+          className="
+            hidden
+            min-h-11
+            grid-cols-[40px_minmax(150px,1fr)_90px_90px_40px]
+            items-center
+            border-b
+            border-slate-800
+            px-2
+            text-sm
+            transition
+            hover:bg-slate-800/40
+            md:grid
+          "
+        >
+          {/* Complete */}
+
+          <div className="flex items-center justify-center">
+            {completionButton}
+          </div>
+
+          {/* Task */}
+
+          <div className="min-w-0 px-2">
+            <p
+              className={`
+                truncate
+                text-sm
+                font-medium
+
+                ${
+                  task.completed
+                    ? "text-slate-500 line-through"
+                    : "text-slate-100"
+                }
+              `}
+              title={
+                task.title
+              }
+            >
+              {task.title}
+            </p>
+
+            {task.description && (
+              <p
+                className="
+                  mt-0.5
+                  truncate
+                  text-[11px]
+                  text-slate-600
+                "
+                title={
+                  task.description
+                }
+              >
+                {
+                  task.description
+                }
+              </p>
+            )}
+          </div>
+
+          {/* Priority */}
+
+          <div className="px-1">
+            <span
+              className={`
+                inline-flex
+                rounded-md
+                border
+                px-2
+                py-0.5
+                text-[10px]
+                font-medium
+                capitalize
+
+                ${
+                  priorityStyles[
+                    task.priority
+                  ]
+                }
+              `}
+            >
+              {
+                task.priority
+              }
+            </span>
+          </div>
+
+          {/* Due */}
+
+          <div
+            className="
+              whitespace-nowrap
+              px-1
+              text-xs
+              text-slate-400
+            "
+          >
+            {formatDate(
+              task.dueDate
+            )}
+          </div>
+
+          {/* Delete */}
+
+          <div className="flex items-center justify-center">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={
+                  handleDelete
+                }
+                className="
+                  rounded-md
+                  p-2
+                  text-slate-600
+                  transition
+                  hover:bg-red-500/10
+                  hover:text-red-400
+                "
+                aria-label={
+                  `Delete ${task.title}`
+                }
+              >
+                <FaTrash />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* ==================================
+            Compact Mobile Row
+        ================================== */}
+
+        <div
+          className="
+            border-b
+            border-slate-800
+            px-2
+            py-2.5
+            transition
+            hover:bg-slate-800/40
+            md:hidden
+          "
+        >
+          <div className="flex items-start gap-2.5">
+
+            <div className="mt-0.5">
+              {completionButton}
+            </div>
+
+            <div className="min-w-0 flex-1">
+
+              <p
+                className={`
+                  truncate
+                  text-sm
+                  font-medium
+
+                  ${
+                    task.completed
+                      ? "text-slate-500 line-through"
+                      : "text-slate-100"
+                  }
+                `}
+                title={
+                  task.title
+                }
+              >
+                {task.title}
+              </p>
+
+              {task.description && (
+                <p
+                  className="
+                    mt-0.5
+                    truncate
+                    text-[11px]
+                    text-slate-600
+                  "
+                >
+                  {
+                    task.description
+                  }
+                </p>
+              )}
+
+              <div
+                className="
+                  mt-1.5
+                  flex
+                  flex-wrap
+                  items-center
+                  gap-1.5
+                  text-[10px]
+                  text-slate-500
+                "
+              >
+                <span
+                  className={`
+                    rounded
+                    border
+                    px-1.5
+                    py-0.5
+                    capitalize
+
+                    ${
+                      priorityStyles[
+                        task.priority
+                      ]
+                    }
+                  `}
+                >
+                  {
+                    task.priority
+                  }
+                </span>
+
+                {task.dueDate && (
+                  <>
+                    <span>
+                      •
+                    </span>
+
+                    <span>
+                      {formatDate(
+                        task.dueDate
+                      )}
+                    </span>
+                  </>
+                )}
+              </div>
+
+            </div>
+
+            {onDelete && (
+              <button
+                type="button"
+                onClick={
+                  handleDelete
+                }
+                className="
+                  shrink-0
+                  rounded-md
+                  p-1.5
+                  text-slate-600
+                  transition
+                  hover:bg-red-500/10
+                  hover:text-red-400
+                "
+                aria-label={
+                  `Delete ${task.title}`
+                }
+              >
+                <FaTrash />
+              </button>
+            )}
+
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // ==========================================
+  // Full Desktop / Tablet Row
+  // ==========================================
+
   return (
     <>
-      {/* Desktop / Tablet Row */}
-
       <div
         className="
           hidden
@@ -152,41 +501,7 @@ export default function UniversalTaskRow({
         {/* Complete */}
 
         <div className="flex items-center justify-center">
-          <button
-            type="button"
-            onClick={() =>
-              onToggle(
-                task.id
-              )
-            }
-            aria-label={
-              task.completed
-                ? `Mark ${task.title} incomplete`
-                : `Complete ${task.title}`
-            }
-            className={`
-              flex
-              h-5
-              w-5
-              items-center
-              justify-center
-              rounded
-              border
-              text-xs
-              font-bold
-              transition
-
-              ${
-                task.completed
-                  ? "border-cyan-400 bg-cyan-400 text-slate-950"
-                  : "border-slate-600 hover:border-cyan-400"
-              }
-            `}
-          >
-            {task.completed
-              ? "✓"
-              : ""}
-          </button>
+          {completionButton}
         </div>
 
         {/* Task */}
@@ -273,7 +588,9 @@ export default function UniversalTaskRow({
               }
             `}
           >
-            {task.priority}
+            {
+              task.priority
+            }
           </span>
         </div>
 
@@ -328,7 +645,9 @@ export default function UniversalTaskRow({
         </div>
       </div>
 
-      {/* Mobile Row */}
+      {/* ======================================
+          Full Mobile Row
+      ====================================== */}
 
       <div
         className="
@@ -343,43 +662,9 @@ export default function UniversalTaskRow({
       >
         <div className="flex items-start gap-3">
 
-          <button
-            type="button"
-            onClick={() =>
-              onToggle(
-                task.id
-              )
-            }
-            aria-label={
-              task.completed
-                ? `Mark ${task.title} incomplete`
-                : `Complete ${task.title}`
-            }
-            className={`
-              mt-0.5
-              flex
-              h-5
-              w-5
-              shrink-0
-              items-center
-              justify-center
-              rounded
-              border
-              text-xs
-              font-bold
-              transition
-
-              ${
-                task.completed
-                  ? "border-cyan-400 bg-cyan-400 text-slate-950"
-                  : "border-slate-600 hover:border-cyan-400"
-              }
-            `}
-          >
-            {task.completed
-              ? "✓"
-              : ""}
-          </button>
+          <div className="mt-0.5">
+            {completionButton}
+          </div>
 
           <div className="min-w-0 flex-1">
 

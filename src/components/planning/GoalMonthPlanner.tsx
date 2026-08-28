@@ -17,6 +17,10 @@ import {
 } from "../../calendar/goalWeeks";
 
 import {
+  TaskWeekPlacementEngine,
+} from "../../engines/TaskWeekPlacementEngine";
+
+import {
   useMonthlyPlanning,
 } from "../../context/MonthlyPlanningContext";
 
@@ -27,6 +31,10 @@ import {
 import {
   useTasks,
 } from "../../context/TaskContext";
+
+import {
+  useLifeGoals,
+} from "../../context/LifeGoalsContext";
 
 import {
   usePlanningExecution,
@@ -121,6 +129,10 @@ export default function GoalMonthPlanner({
   const {
     tasks,
   } = useTasks();
+
+  const {
+    lifeGoals,
+  } = useLifeGoals();
 
   const {
     createTask,
@@ -248,6 +260,24 @@ export default function GoalMonthPlanner({
     );
 
   // ==========================================
+  // Goal
+  // ==========================================
+
+  const currentGoal =
+    useMemo(
+      () =>
+        lifeGoals.find(
+          (goal) =>
+            goal.id ===
+            month.goalId
+        ),
+      [
+        lifeGoals,
+        month.goalId,
+      ]
+    );
+
+  // ==========================================
   // Existing Weekly Targets
   // ==========================================
 
@@ -289,6 +319,56 @@ export default function GoalMonthPlanner({
         weeklyTargetId
     );
   }
+
+  // ==========================================
+  // Placement State
+  // ==========================================
+
+  const placementState =
+    useMemo(
+      () => ({
+        lifeGoals,
+
+        monthlyTargets: [
+          month,
+        ],
+
+        weeklyTargets,
+      }),
+      [
+        lifeGoals,
+        month,
+        weeklyTargets,
+      ]
+    );
+
+  const taskPlacementResult =
+    useMemo(() => {
+      if (
+        !currentGoal ||
+        !taskDueDate
+      ) {
+        return undefined;
+      }
+
+      return TaskWeekPlacementEngine.resolve(
+        placementState,
+        {
+          scope:
+            "goal",
+
+          goalId:
+            currentGoal.id,
+
+          dueDate:
+            taskDueDate,
+        }
+      );
+    }, [
+      currentGoal,
+      taskDueDate,
+      placementState,
+    ]);
 
   // ==========================================
   // Monthly Outcome Editing
@@ -496,13 +576,35 @@ export default function GoalMonthPlanner({
   }
 
   function handleCreateTask(
-    weeklyTargetId: number
+    openedWeeklyTargetId: number
   ) {
     const trimmed =
       taskTitle.trim();
 
     if (!trimmed) {
       return;
+    }
+
+    let resolvedWeeklyTargetId =
+      openedWeeklyTargetId;
+
+    if (
+      taskDueDate &&
+      currentGoal
+    ) {
+      if (
+        !taskPlacementResult ||
+        taskPlacementResult.status !==
+          "matched" ||
+        !taskPlacementResult.weeklyTarget
+      ) {
+        return;
+      }
+
+      resolvedWeeklyTargetId =
+        taskPlacementResult
+          .weeklyTarget
+          .id;
     }
 
     createTask({
@@ -516,7 +618,8 @@ export default function GoalMonthPlanner({
         taskDueDate ||
         undefined,
 
-      weeklyTargetId,
+      weeklyTargetId:
+        resolvedWeeklyTargetId,
     });
 
     setTaskTitle("");
@@ -532,7 +635,7 @@ export default function GoalMonthPlanner({
     );
 
     setExpandedWeeklyTargetId(
-      weeklyTargetId
+      resolvedWeeklyTargetId
     );
   }
 
@@ -1727,6 +1830,67 @@ export default function GoalMonthPlanner({
                                 />
                               </div>
 
+                              {/* ==================================
+                                  Smart Placement Preview
+                              ================================== */}
+
+                              {taskDueDate &&
+                                taskPlacementResult && (
+                                  <div
+                                    className={`
+                                      mt-3
+                                      rounded-lg
+                                      border
+                                      px-3
+                                      py-2
+
+                                      ${
+                                        taskPlacementResult.status ===
+                                        "matched"
+                                          ? "border-emerald-500/20 bg-emerald-500/5"
+                                          : "border-amber-500/20 bg-amber-500/5"
+                                      }
+                                    `}
+                                  >
+                                    <p
+                                      className={`
+                                        text-[10px]
+                                        font-semibold
+                                        uppercase
+                                        tracking-wider
+
+                                        ${
+                                          taskPlacementResult.status ===
+                                          "matched"
+                                            ? "text-emerald-400"
+                                            : "text-amber-400"
+                                        }
+                                      `}
+                                    >
+                                      Smart Placement
+                                    </p>
+
+                                    <p className="mt-1 text-[11px] text-slate-400">
+                                      {
+                                        taskPlacementResult.message
+                                      }
+                                    </p>
+
+                                    {taskPlacementResult.status ===
+                                      "matched" &&
+                                      taskPlacementResult.weeklyTarget && (
+                                        <p className="mt-1 text-[10px] text-slate-600">
+                                          Weekly focus:{" "}
+                                          {
+                                            taskPlacementResult
+                                              .weeklyTarget
+                                              .title
+                                          }
+                                        </p>
+                                      )}
+                                  </div>
+                                )}
+
                               <div
                                 className="
                                   mt-3
@@ -1760,6 +1924,13 @@ export default function GoalMonthPlanner({
                                       target.id
                                     )
                                   }
+                                  disabled={
+                                    Boolean(
+                                      taskDueDate &&
+                                      taskPlacementResult?.status !==
+                                        "matched"
+                                    )
+                                  }
                                   className="
                                     rounded-md
                                     bg-cyan-500
@@ -1768,7 +1939,10 @@ export default function GoalMonthPlanner({
                                     text-[10px]
                                     font-bold
                                     text-slate-950
+                                    transition
                                     hover:bg-cyan-400
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-40
                                   "
                                 >
                                   Add Task
@@ -1778,13 +1952,14 @@ export default function GoalMonthPlanner({
                           )}
 
                           {/* ==================================
-                              Shared Universal Task Table
+                              Shared Compact Universal Tasks
                           ================================== */}
 
                           <UniversalTaskTable
                             tasks={
                               weeklyTasks
                             }
+                            variant="compact"
                             getPlanIcon={() =>
                               "goal"
                             }
