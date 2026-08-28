@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Monthly Planning Context
-// Version: 2.1
+// Version: 2.2
 // ==========================================
 
 import {
@@ -34,6 +34,11 @@ interface MonthlyPlanningContextType {
     month: number,
     year: number,
     goalId?: number
+  ) => void;
+
+  updateMonthlyPlanTitle: (
+    id: number,
+    title: string
   ) => void;
 
   /**
@@ -152,6 +157,36 @@ export function MonthlyPlanningProvider({
   }
 
   // ==========================================
+  // Monthly Plan Editing
+  // ==========================================
+
+  function updateMonthlyPlanTitle(
+    id: number,
+    title: string
+  ) {
+    const trimmedTitle =
+      title.trim();
+
+    if (!trimmedTitle) {
+      return;
+    }
+
+    setMonthlyPlans(
+      (previous) =>
+        previous.map(
+          (plan) =>
+            plan.id === id
+              ? {
+                  ...plan,
+                  title:
+                    trimmedTitle,
+                }
+              : plan
+        )
+    );
+  }
+
+  // ==========================================
   // Execution State Application
   // ==========================================
 
@@ -172,6 +207,7 @@ export function MonthlyPlanningProvider({
       value={{
         monthlyPlans,
         addMonthlyPlan,
+        updateMonthlyPlanTitle,
         replaceMonthlyPlans,
       }}
     >

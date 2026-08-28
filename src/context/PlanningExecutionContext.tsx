@@ -1,3 +1,8 @@
+// ==========================================
+// LifeOS Planning Execution Context
+// Version: 2.1
+// ==========================================
+
 import {
   createContext,
   useContext,
@@ -10,6 +15,10 @@ import type {
 import {
   ExecutionCoordinator,
 } from "../engines/ExecutionCoordinator";
+
+import {
+  PlanningKernel,
+} from "../engines/PlanningKernel";
 
 import {
   useLifeGoals,
@@ -27,7 +36,29 @@ import {
   useTasks,
 } from "./TaskContext";
 
+import type {
+  CreateTaskInput,
+  Task,
+} from "../shared/types";
+
+// ==========================================
+// Context Type
+// ==========================================
+
 interface PlanningExecutionContextType {
+  /**
+   * Creates one Universal Task as a planning
+   * mutation.
+   *
+   * Creation does not award XP and does not
+   * create an execution-history record.
+   *
+   * Planning progress is recalculated immediately.
+   */
+  createTask: (
+    input: CreateTaskInput
+  ) => void;
+
   completeTask: (
     taskId: number
   ) => void;
@@ -77,10 +108,18 @@ interface PlanningExecutionContextType {
   ) => void;
 }
 
+// ==========================================
+// Context
+// ==========================================
+
 const PlanningExecutionContext =
   createContext<
     PlanningExecutionContextType | null
   >(null);
+
+// ==========================================
+// Provider
+// ==========================================
 
 export function PlanningExecutionProvider({
   children,
@@ -134,6 +173,35 @@ export function PlanningExecutionProvider({
   }
 
   // ==========================================
+  // Apply Planning State
+  // ==========================================
+
+  function applyPlanningState(
+    state: {
+      lifeGoals: typeof lifeGoals;
+      monthlyTargets: typeof monthlyPlans;
+      weeklyTargets: typeof weeklyTargets;
+      tasks: Task[];
+    }
+  ) {
+    replaceLifeGoals(
+      state.lifeGoals
+    );
+
+    replaceMonthlyPlans(
+      state.monthlyTargets
+    );
+
+    replaceWeeklyTargets(
+      state.weeklyTargets
+    );
+
+    replaceTasks(
+      state.tasks
+    );
+  }
+
+  // ==========================================
   // Current Planning State
   // ==========================================
 
@@ -151,6 +219,78 @@ export function PlanningExecutionProvider({
   }
 
   // ==========================================
+  // Universal Task Creation
+  // ==========================================
+
+  function createTask(
+    input: CreateTaskInput
+  ) {
+    const trimmedTitle =
+      input.title.trim();
+
+    if (!trimmedTitle) {
+      return;
+    }
+
+    const task: Task = {
+      id:
+        Date.now(),
+
+      title:
+        trimmedTitle,
+
+      description:
+        input.description?.trim() ||
+        undefined,
+
+      dueDate:
+        input.dueDate,
+
+      priority:
+        input.priority ??
+        "medium",
+
+      weeklyTargetId:
+        input.weeklyTargetId,
+
+      completed:
+        false,
+
+      completedAt:
+        undefined,
+
+      createdAt:
+        new Date().toISOString(),
+    };
+
+    const nextTasks = [
+      ...tasks,
+      task,
+    ];
+
+    // ========================================
+    // Creation is Planning, not Execution
+    // ========================================
+
+    const recalculated =
+      PlanningKernel.recalculateAll({
+        lifeGoals,
+
+        monthlyTargets:
+          monthlyPlans,
+
+        weeklyTargets,
+
+        tasks:
+          nextTasks,
+      });
+
+    applyPlanningState(
+      recalculated
+    );
+  }
+
+  // ==========================================
   // Tasks
   // ==========================================
 
@@ -163,7 +303,9 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function uncompleteTask(
@@ -175,7 +317,9 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function deleteTask(
@@ -187,7 +331,9 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   // ==========================================
@@ -203,7 +349,9 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function uncompleteWeeklyTarget(
@@ -215,7 +363,9 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function deleteWeeklyTarget(
@@ -227,7 +377,9 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   // ==========================================
@@ -243,7 +395,9 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function uncompleteMonthlyTarget(
@@ -255,7 +409,9 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function deleteMonthlyTarget(
@@ -267,7 +423,9 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   // ==========================================
@@ -283,7 +441,9 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function uncompleteLifeGoal(
@@ -295,7 +455,9 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
 
   function deleteLifeGoal(
@@ -307,12 +469,20 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(result);
+    applyResult(
+      result
+    );
   }
+
+  // ==========================================
+  // Provider
+  // ==========================================
 
   return (
     <PlanningExecutionContext.Provider
       value={{
+        createTask,
+
         completeTask,
         uncompleteTask,
         deleteTask,
@@ -334,6 +504,10 @@ export function PlanningExecutionProvider({
     </PlanningExecutionContext.Provider>
   );
 }
+
+// ==========================================
+// Hook
+// ==========================================
 
 export function usePlanningExecution() {
   const context =

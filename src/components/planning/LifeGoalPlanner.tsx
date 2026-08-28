@@ -35,17 +35,13 @@ import {
   TaskRelationshipEngine,
 } from "../../engines/TaskRelationshipEngine";
 
-import UniversalTaskTable from "../tasks/UniversalTaskTable";
-
 import GoalModal from "./GoalModal";
 import MonthlyTargetModal from "./MonthlyTargetModal";
 import SmartGoalTimeline from "./SmartGoalTimeline";
+import GoalMonthPlanner from "./GoalMonthPlanner";
 
 import type {
   LifeGoal,
-  MonthlyTarget,
-  Task,
-  WeeklyTarget,
 } from "../../shared/types";
 
 // ==========================================
@@ -61,31 +57,6 @@ interface SelectedGoalMonth {
 // ==========================================
 // Helpers
 // ==========================================
-
-const MONTH_NAMES = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
-
-function getMonthName(
-  month: number
-) {
-  return (
-    MONTH_NAMES[
-      month - 1
-    ] ?? `Month ${month}`
-  );
-}
 
 function parseDate(
   value?: string
@@ -182,9 +153,6 @@ export default function LifeGoalPlanner() {
   } = useTasks();
 
   const {
-    completeTask,
-    uncompleteTask,
-    deleteTask,
     deleteLifeGoal,
   } = usePlanningExecution();
 
@@ -211,26 +179,6 @@ export default function LifeGoalPlanner() {
   const [
     expandedGoals,
     setExpandedGoals,
-  ] = useState<
-    Set<number>
-  >(
-    () =>
-      new Set<number>()
-  );
-
-  const [
-    expandedMonths,
-    setExpandedMonths,
-  ] = useState<
-    Set<number>
-  >(
-    () =>
-      new Set<number>()
-  );
-
-  const [
-    expandedWeeks,
-    setExpandedWeeks,
   ] = useState<
     Set<number>
   >(
@@ -297,7 +245,7 @@ export default function LifeGoalPlanner() {
     }, [lifeGoals]);
 
   // ==========================================
-  // Relationship Helpers
+  // Goal Months
   // ==========================================
 
   function getGoalMonths(
@@ -330,37 +278,6 @@ export default function LifeGoalPlanner() {
           );
         }
       );
-  }
-
-  function getMonthWeeks(
-    monthlyTargetId: number
-  ) {
-    return weeklyTargets
-      .filter(
-        (target) =>
-          target.monthlyTargetId ===
-          monthlyTargetId
-      )
-      .sort(
-        (
-          first,
-          second
-        ) =>
-          first.week -
-          second.week
-      );
-  }
-
-  function getWeekTasks(
-    weeklyTargetId: number
-  ) {
-    return (
-      TaskRelationshipEngine
-        .getTasksForWeeklyTarget(
-          relationshipState,
-          weeklyTargetId
-        )
-    );
   }
 
   // ==========================================
@@ -417,7 +334,7 @@ export default function LifeGoalPlanner() {
   }
 
   // ==========================================
-  // Expansion Controls
+  // Goal Expansion
   // ==========================================
 
   function toggleGoal(
@@ -444,99 +361,6 @@ export default function LifeGoalPlanner() {
 
         return next;
       }
-    );
-  }
-
-  function toggleMonth(
-    monthId: number
-  ) {
-    setExpandedMonths(
-      (previous) => {
-        const next =
-          new Set(
-            previous
-          );
-
-        if (
-          next.has(monthId)
-        ) {
-          next.delete(
-            monthId
-          );
-        } else {
-          next.add(
-            monthId
-          );
-        }
-
-        return next;
-      }
-    );
-  }
-
-  function toggleWeek(
-    weekId: number
-  ) {
-    setExpandedWeeks(
-      (previous) => {
-        const next =
-          new Set(
-            previous
-          );
-
-        if (
-          next.has(weekId)
-        ) {
-          next.delete(
-            weekId
-          );
-        } else {
-          next.add(
-            weekId
-          );
-        }
-
-        return next;
-      }
-    );
-  }
-
-  // ==========================================
-  // Task Execution
-  // ==========================================
-
-  function handleTaskToggle(
-    taskId: number
-  ) {
-    const task =
-      tasks.find(
-        (item) =>
-          item.id ===
-          taskId
-      );
-
-    if (!task) {
-      return;
-    }
-
-    if (
-      task.completed
-    ) {
-      uncompleteTask(
-        taskId
-      );
-    } else {
-      completeTask(
-        taskId
-      );
-    }
-  }
-
-  function handleTaskDelete(
-    taskId: number
-  ) {
-    deleteTask(
-      taskId
     );
   }
 
@@ -687,8 +511,8 @@ export default function LifeGoalPlanner() {
               "
             >
               Create a long-term outcome and LifeOS
-              will organize it into months, weeks,
-              and Universal Tasks.
+              will organize it into months, real
+              calendar weeks, and Universal Tasks.
             </p>
 
             <button
@@ -1153,7 +977,7 @@ export default function LifeGoalPlanner() {
                         </div>
 
                         {/* =====================
-                            Smart Timeline
+                            Smart Goal Timeline
                         ===================== */}
 
                         <SmartGoalTimeline
@@ -1176,7 +1000,7 @@ export default function LifeGoalPlanner() {
                         />
 
                         {/* =====================
-                            Planned Hierarchy
+                            Planned Structure
                         ===================== */}
 
                         <div>
@@ -1207,9 +1031,8 @@ export default function LifeGoalPlanner() {
                                   text-slate-600
                                 "
                               >
-                                Monthly targets, weekly targets,
-                                and Universal Tasks already
-                                connected to this goal.
+                                Open a month to plan real
+                                Monday–Sunday calendar weeks.
                               </p>
                             </div>
 
@@ -1276,42 +1099,13 @@ export default function LifeGoalPlanner() {
                                 (
                                   month
                                 ) => (
-                                  <GoalMonth
-                                    key={
-                                      month.id
-                                    }
-                                    month={
-                                      month
-                                    }
-                                    weeks={
-                                      getMonthWeeks(
-                                        month.id
-                                      )
-                                    }
-                                    expanded={
-                                      expandedMonths.has(
-                                        month.id
-                                      )
-                                    }
-                                    expandedWeeks={
-                                      expandedWeeks
-                                    }
-                                    onToggleMonth={
-                                      toggleMonth
-                                    }
-                                    onToggleWeek={
-                                      toggleWeek
-                                    }
-                                    getWeekTasks={
-                                      getWeekTasks
-                                    }
-                                    onTaskToggle={
-                                      handleTaskToggle
-                                    }
-                                    onTaskDelete={
-                                      handleTaskDelete
-                                    }
-                                  />
+                                  <GoalMonthPlanner
+  key={month.id}
+  month={month}
+  weeklyTargets={weeklyTargets}
+  goalStartDate={goal.startDate}
+  goalTargetDate={goal.targetDate}
+/>
                                 )
                               )}
 
@@ -1374,409 +1168,5 @@ export default function LifeGoalPlanner() {
         />
       )}
     </>
-  );
-}
-
-// ==========================================
-// Goal Month
-// ==========================================
-
-interface GoalMonthProps {
-  month: MonthlyTarget;
-
-  weeks: WeeklyTarget[];
-
-  expanded: boolean;
-
-  expandedWeeks:
-    Set<number>;
-
-  onToggleMonth: (
-    monthId: number
-  ) => void;
-
-  onToggleWeek: (
-    weekId: number
-  ) => void;
-
-  getWeekTasks: (
-    weeklyTargetId: number
-  ) => Task[];
-
-  onTaskToggle: (
-    taskId: number
-  ) => void;
-
-  onTaskDelete: (
-    taskId: number
-  ) => void;
-}
-
-function GoalMonth({
-  month,
-  weeks,
-  expanded,
-  expandedWeeks,
-  onToggleMonth,
-  onToggleWeek,
-  getWeekTasks,
-  onTaskToggle,
-  onTaskDelete,
-}: GoalMonthProps) {
-  const progress =
-    clampProgress(
-      month.progress
-    );
-
-  return (
-    <div
-      className="
-        overflow-hidden
-        rounded-lg
-        border
-        border-slate-800
-        bg-slate-900/60
-      "
-    >
-      <button
-        type="button"
-        onClick={() =>
-          onToggleMonth(
-            month.id
-          )
-        }
-        className="
-          flex
-          w-full
-          items-center
-          gap-3
-          px-3
-          py-2.5
-          text-left
-          transition
-          hover:bg-slate-800/40
-        "
-      >
-        <span
-          className="
-            flex
-            h-6
-            w-6
-            items-center
-            justify-center
-            text-xs
-            text-slate-500
-          "
-        >
-          {expanded ? (
-            <FaChevronDown />
-          ) : (
-            <FaChevronRight />
-          )}
-        </span>
-
-        <div className="min-w-0 flex-1">
-
-          <div
-            className="
-              flex
-              flex-wrap
-              items-center
-              gap-x-2
-              gap-y-1
-            "
-          >
-            <span
-              className="
-                text-sm
-                font-medium
-                text-slate-200
-              "
-            >
-              {getMonthName(
-                month.month
-              )}
-              {" "}
-              {month.year}
-            </span>
-
-            <span
-              className="
-                truncate
-                text-xs
-                text-slate-500
-              "
-            >
-              {month.title}
-            </span>
-
-          </div>
-
-        </div>
-
-        <span
-          className="
-            hidden
-            text-xs
-            text-slate-600
-            sm:inline
-          "
-        >
-          {weeks.length}
-          {" "}
-          {weeks.length === 1
-            ? "week"
-            : "weeks"}
-        </span>
-
-        <span
-          className="
-            min-w-10
-            text-right
-            text-xs
-            font-medium
-            text-slate-400
-          "
-        >
-          {progress}%
-        </span>
-      </button>
-
-      {expanded && (
-        <div
-          className="
-            space-y-2
-            border-t
-            border-slate-800
-            bg-slate-950/25
-            p-2
-          "
-        >
-          {weeks.length === 0 ? (
-            <div
-              className="
-                px-3
-                py-4
-                text-center
-                text-xs
-                text-slate-600
-              "
-            >
-              No weekly targets in this month yet.
-            </div>
-          ) : (
-            weeks.map(
-              (week) => (
-                <GoalWeek
-                  key={
-                    week.id
-                  }
-                  week={
-                    week
-                  }
-                  tasks={
-                    getWeekTasks(
-                      week.id
-                    )
-                  }
-                  expanded={
-                    expandedWeeks.has(
-                      week.id
-                    )
-                  }
-                  onToggle={
-                    onToggleWeek
-                  }
-                  onTaskToggle={
-                    onTaskToggle
-                  }
-                  onTaskDelete={
-                    onTaskDelete
-                  }
-                />
-              )
-            )
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ==========================================
-// Goal Week
-// ==========================================
-
-interface GoalWeekProps {
-  week: WeeklyTarget;
-
-  tasks: Task[];
-
-  expanded: boolean;
-
-  onToggle: (
-    weekId: number
-  ) => void;
-
-  onTaskToggle: (
-    taskId: number
-  ) => void;
-
-  onTaskDelete: (
-    taskId: number
-  ) => void;
-}
-
-function GoalWeek({
-  week,
-  tasks,
-  expanded,
-  onToggle,
-  onTaskToggle,
-  onTaskDelete,
-}: GoalWeekProps) {
-  const progress =
-    clampProgress(
-      week.progress
-    );
-
-  const completedTasks =
-    tasks.filter(
-      (task) =>
-        task.completed
-    ).length;
-
-  return (
-    <div
-      className="
-        overflow-hidden
-        rounded-lg
-        border
-        border-slate-800/80
-        bg-slate-950/35
-      "
-    >
-      <button
-        type="button"
-        onClick={() =>
-          onToggle(
-            week.id
-          )
-        }
-        className="
-          flex
-          w-full
-          items-center
-          gap-3
-          px-3
-          py-2
-          text-left
-          transition
-          hover:bg-slate-800/30
-        "
-      >
-        <span
-          className="
-            flex
-            h-6
-            w-6
-            items-center
-            justify-center
-            text-xs
-            text-slate-600
-          "
-        >
-          {expanded ? (
-            <FaChevronDown />
-          ) : (
-            <FaChevronRight />
-          )}
-        </span>
-
-        <span
-          className="
-            shrink-0
-            rounded-md
-            border
-            border-cyan-500/15
-            bg-cyan-500/5
-            px-2
-            py-0.5
-            text-[11px]
-            font-medium
-            text-cyan-400
-          "
-        >
-          Week {week.week}
-        </span>
-
-        <span
-          className="
-            min-w-0
-            flex-1
-            truncate
-            text-xs
-            font-medium
-            text-slate-300
-          "
-        >
-          {week.title}
-        </span>
-
-        <span
-          className="
-            hidden
-            text-[11px]
-            text-slate-600
-            sm:inline
-          "
-        >
-          {completedTasks}/
-          {tasks.length}
-          {" "}
-          tasks
-        </span>
-
-        <span
-          className="
-            min-w-10
-            text-right
-            text-[11px]
-            font-medium
-            text-slate-500
-          "
-        >
-          {progress}%
-        </span>
-      </button>
-
-      {expanded && (
-        <div
-          className="
-            border-t
-            border-slate-800/80
-          "
-        >
-          <UniversalTaskTable
-            tasks={
-              tasks
-            }
-            getPlanIcon={() =>
-              "goal"
-            }
-            getWeeklyTargetTitle={() =>
-              `W${week.week} · ${week.title}`
-            }
-            onToggle={
-              onTaskToggle
-            }
-            onDelete={
-              onTaskDelete
-            }
-            emptyMessage="No tasks planned for this week yet."
-          />
-        </div>
-      )}
-    </div>
   );
 }

@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 3.2
+// Version: 3.3
 // ==========================================
 
 /* =========================
@@ -166,12 +166,35 @@ export interface WeeklyTarget {
 
   monthlyTargetId?: number;
 
+  /**
+   * Legacy month-relative week number.
+   *
+   * Kept temporarily so existing LifeOS data and
+   * older UI remain compatible while the planner
+   * migrates to real calendar-date weeks.
+   *
+   * New Planning V2 UI should prefer:
+   * weekStartDate + weekEndDate.
+   */
   week:
     | 1
     | 2
     | 3
     | 4
     | 5;
+
+  /**
+   * Real calendar identity for this week.
+   *
+   * Stored as local date strings:
+   * YYYY-MM-DD
+   *
+   * Optional during migration because older saved
+   * WeeklyTargets do not contain these fields yet.
+   */
+  weekStartDate?: string;
+
+  weekEndDate?: string;
 
   progress: number;
 

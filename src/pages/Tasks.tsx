@@ -4,8 +4,10 @@ import {
 } from "react";
 
 import {
+  FaBullseye,
   FaPlus,
   FaSearch,
+  FaUser,
 } from "react-icons/fa";
 
 import {
@@ -15,6 +17,10 @@ import {
 import {
   TaskRelationshipEngine,
 } from "../engines/TaskRelationshipEngine";
+
+import {
+  TaskWeekPlacementEngine,
+} from "../engines/TaskWeekPlacementEngine";
 
 import {
   useTasks,
@@ -41,6 +47,14 @@ import UniversalTaskTable from "../components/tasks/UniversalTaskTable";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 
+import type {
+  TaskPlacementScope,
+} from "../engines/TaskWeekPlacementEngine";
+
+// ==========================================
+// Types
+// ==========================================
+
 type Priority =
   | "low"
   | "medium"
@@ -52,6 +66,10 @@ type TaskFilter =
   | "overdue"
   | "upcoming"
   | "completed";
+
+// ==========================================
+// Date
+// ==========================================
 
 function getLocalDateString() {
   const now =
@@ -78,6 +96,10 @@ function getLocalDateString() {
 
   return `${year}-${month}-${day}`;
 }
+
+// ==========================================
+// Page
+// ==========================================
 
 export default function Tasks() {
   const [
@@ -106,6 +128,26 @@ export default function Tasks() {
   );
 
   const [
+    planScope,
+    setPlanScope,
+  ] =
+    useState<TaskPlacementScope>(
+      "standalone"
+    );
+
+  const [
+    selectedGoalId,
+    setSelectedGoalId,
+  ] = useState<
+    number | undefined
+  >(undefined);
+
+  const [
+    missingWeekFocus,
+    setMissingWeekFocus,
+  ] = useState("");
+
+  const [
     activeFilter,
     setActiveFilter,
   ] =
@@ -119,7 +161,6 @@ export default function Tasks() {
 
   const {
     tasks,
-    addTask,
   } = useTasks();
 
   const {
@@ -133,6 +174,7 @@ export default function Tasks() {
 
   const {
     weeklyTargets,
+    addCalendarWeeklyTarget,
   } =
     useWeeklyPlanning();
 
@@ -141,6 +183,7 @@ export default function Tasks() {
   // ==========================================
 
   const {
+    createTask,
     completeTask,
     uncompleteTask,
     deleteTask,
@@ -168,6 +211,52 @@ export default function Tasks() {
         monthlyPlans,
         weeklyTargets,
         tasks,
+      ]
+    );
+
+  // ==========================================
+  // Placement State
+  // ==========================================
+
+  const placementState =
+    useMemo(
+      () => ({
+        lifeGoals,
+
+        monthlyTargets:
+          monthlyPlans,
+
+        weeklyTargets,
+      }),
+      [
+        lifeGoals,
+        monthlyPlans,
+        weeklyTargets,
+      ]
+    );
+
+  const placementResult =
+    useMemo(
+      () =>
+        TaskWeekPlacementEngine.resolve(
+          placementState,
+          {
+            scope:
+              planScope,
+
+            dueDate:
+              dueDate ||
+              undefined,
+
+            goalId:
+              selectedGoalId,
+          }
+        ),
+      [
+        placementState,
+        planScope,
+        dueDate,
+        selectedGoalId,
       ]
     );
 
@@ -302,6 +391,62 @@ export default function Tasks() {
     ]);
 
   // ==========================================
+  // Creation Permission
+  // ==========================================
+
+  const canCreateTask =
+    planScope ===
+      "standalone" ||
+    placementResult.status ===
+      "matched";
+
+  // ==========================================
+  // Missing Weekly Focus Creation
+  // ==========================================
+
+  function handleCreateMissingWeeklyFocus() {
+    if (
+      placementResult.status !==
+      "weekly_focus_missing"
+    ) {
+      return;
+    }
+
+    const trimmedFocus =
+      missingWeekFocus.trim();
+
+    if (!trimmedFocus) {
+      return;
+    }
+
+    const monthlyTarget =
+      placementResult.monthlyTarget;
+
+    const weekStartDate =
+      placementResult.weekStartDate;
+
+    const weekEndDate =
+      placementResult.weekEndDate;
+
+    if (
+      !monthlyTarget ||
+      !weekStartDate ||
+      !weekEndDate
+    ) {
+      return;
+    }
+
+    addCalendarWeeklyTarget(
+      trimmedFocus,
+      monthlyTarget.id,
+      weekStartDate,
+      weekEndDate
+    );
+
+    setMissingWeekFocus("");
+  }
+
+  // ==========================================
   // Universal Task Creation
   // ==========================================
 
@@ -313,7 +458,16 @@ export default function Tasks() {
       return;
     }
 
-    addTask({
+    if (
+      planScope !==
+        "standalone" &&
+      placementResult.status !==
+        "matched"
+    ) {
+      return;
+    }
+
+    createTask({
       title:
         trimmedTitle,
 
@@ -322,6 +476,13 @@ export default function Tasks() {
         undefined,
 
       priority,
+
+      weeklyTargetId:
+        placementResult.status ===
+        "matched"
+          ? placementResult
+              .weeklyTarget?.id
+          : undefined,
     });
 
     setTaskTitle("");
@@ -419,7 +580,17 @@ export default function Tasks() {
       return undefined;
     }
 
-    return `W${relationship.weeklyTarget.week} · ${relationship.weeklyTarget.title}`;
+    const weeklyTarget =
+      relationship.weeklyTarget;
+
+    if (
+      weeklyTarget.weekStartDate &&
+      weeklyTarget.weekEndDate
+    ) {
+      return `${weeklyTarget.weekStartDate} → ${weeklyTarget.weekEndDate} · ${weeklyTarget.title}`;
+    }
+
+    return `W${weeklyTarget.week} · ${weeklyTarget.title}`;
   }
 
   // ==========================================
@@ -462,6 +633,10 @@ export default function Tasks() {
         completedTasks.length,
     },
   ];
+
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
     <div className="space-y-5">
@@ -594,7 +769,7 @@ export default function Tasks() {
       </div>
 
       {/* ======================================
-          Search + Quick Add
+          Search + Smart Quick Add
       ====================================== */}
 
       <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
@@ -646,6 +821,8 @@ export default function Tasks() {
                 event.key ===
                 "Enter"
               ) {
+                event.preventDefault();
+
                 handleAddTask();
               }
             }}
@@ -706,6 +883,9 @@ export default function Tasks() {
             onClick={
               handleAddTask
             }
+            disabled={
+              !canCreateTask
+            }
             className="h-10 whitespace-nowrap px-4 py-2"
           >
             <FaPlus />
@@ -714,6 +894,420 @@ export default function Tasks() {
           </Button>
 
         </div>
+
+        {/* ==================================
+            Plan Selection
+        ================================== */}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+
+          <button
+            type="button"
+            onClick={() => {
+              setPlanScope(
+                "standalone"
+              );
+
+              setSelectedGoalId(
+                undefined
+              );
+
+              setMissingWeekFocus("");
+            }}
+            className={`
+              rounded-lg
+              border
+              px-3
+              py-1.5
+              text-xs
+              font-medium
+              transition
+
+              ${
+                planScope ===
+                "standalone"
+                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
+                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+              }
+            `}
+          >
+            Standalone
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setPlanScope(
+                "personal"
+              );
+
+              setSelectedGoalId(
+                undefined
+              );
+
+              setMissingWeekFocus("");
+            }}
+            className={`
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-lg
+              border
+              px-3
+              py-1.5
+              text-xs
+              font-medium
+              transition
+
+              ${
+                planScope ===
+                "personal"
+                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
+                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+              }
+            `}
+          >
+            <FaUser />
+
+            Personal
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setPlanScope(
+                "goal"
+              );
+
+              setMissingWeekFocus("");
+            }}
+            className={`
+              inline-flex
+              items-center
+              gap-1.5
+              rounded-lg
+              border
+              px-3
+              py-1.5
+              text-xs
+              font-medium
+              transition
+
+              ${
+                planScope ===
+                "goal"
+                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
+                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+              }
+            `}
+          >
+            <FaBullseye />
+
+            Life Goal
+          </button>
+
+          {planScope ===
+            "goal" && (
+            <select
+              value={
+                selectedGoalId ??
+                ""
+              }
+              onChange={(
+                event
+              ) => {
+                setSelectedGoalId(
+                  event.target
+                    .value
+                    ? Number(
+                        event.target
+                          .value
+                      )
+                    : undefined
+                );
+
+                setMissingWeekFocus("");
+              }}
+              className="
+                h-8
+                min-w-52
+                rounded-lg
+                border
+                border-slate-800
+                bg-slate-950
+                px-3
+                text-xs
+                text-slate-300
+                outline-none
+                transition
+                focus:border-cyan-500/50
+              "
+            >
+              <option value="">
+                Choose Life Goal
+              </option>
+
+              {lifeGoals.map(
+                (goal) => (
+                  <option
+                    key={
+                      goal.id
+                    }
+                    value={
+                      goal.id
+                    }
+                  >
+                    {
+                      goal.title
+                    }
+                  </option>
+                )
+              )}
+            </select>
+          )}
+
+        </div>
+
+        {/* ==================================
+            Smart Placement Preview
+        ================================== */}
+
+        {planScope !==
+          "standalone" && (
+          <div
+            className={`
+              mt-3
+              rounded-lg
+              border
+              px-3
+              py-2.5
+
+              ${
+                placementResult.status ===
+                "matched"
+                  ? "border-emerald-500/20 bg-emerald-500/5"
+                  : "border-amber-500/20 bg-amber-500/5"
+              }
+            `}
+          >
+            <p
+              className={`
+                text-[10px]
+                font-semibold
+                uppercase
+                tracking-wider
+
+                ${
+                  placementResult.status ===
+                  "matched"
+                    ? "text-emerald-400"
+                    : "text-amber-400"
+                }
+              `}
+            >
+              LifeOS Placement
+            </p>
+
+            <p className="mt-1 text-xs text-slate-300">
+              {
+                placementResult.message
+              }
+            </p>
+
+            {/* ==================================
+                Matched Placement Details
+            ================================== */}
+
+            {placementResult.status ===
+              "matched" && (
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
+
+                {placementResult.goal && (
+                  <span>
+                    🎯{" "}
+                    {
+                      placementResult.goal
+                        .title
+                    }
+                  </span>
+                )}
+
+                {placementResult.monthlyTarget && (
+                  <span>
+                    {
+                      placementResult
+                        .monthlyTarget
+                        .title
+                    }
+                  </span>
+                )}
+
+                {placementResult.weekLabel && (
+                  <span>
+                    {
+                      placementResult.weekLabel
+                    }
+                  </span>
+                )}
+
+                {placementResult.weeklyTarget && (
+                  <span>
+                    {
+                      placementResult
+                        .weeklyTarget
+                        .title
+                    }
+                  </span>
+                )}
+
+              </div>
+            )}
+
+            {/* ==================================
+                Missing Weekly Focus
+            ================================== */}
+
+            {placementResult.status ===
+              "weekly_focus_missing" && (
+              <div
+                className="
+                  mt-3
+                  rounded-lg
+                  border
+                  border-amber-500/15
+                  bg-slate-950/35
+                  p-3
+                "
+              >
+                <p
+                  className="
+                    text-[10px]
+                    font-semibold
+                    uppercase
+                    tracking-wider
+                    text-amber-400
+                  "
+                >
+                  Plan This Week
+                </p>
+
+                {placementResult.weekLabel && (
+                  <p
+                    className="
+                      mt-1
+                      text-[10px]
+                      text-slate-500
+                    "
+                  >
+                    {
+                      placementResult.weekLabel
+                    }
+                  </p>
+                )}
+
+                {placementResult.monthlyTarget && (
+                  <p
+                    className="
+                      mt-1
+                      text-[10px]
+                      text-slate-600
+                    "
+                  >
+                    Monthly outcome:{" "}
+                    {
+                      placementResult
+                        .monthlyTarget
+                        .title
+                    }
+                  </p>
+                )}
+
+                <div
+                  className="
+                    mt-3
+                    flex
+                    flex-col
+                    gap-2
+                    sm:flex-row
+                  "
+                >
+                  <input
+                    value={
+                      missingWeekFocus
+                    }
+                    onChange={(
+                      event
+                    ) =>
+                      setMissingWeekFocus(
+                        event.target
+                          .value
+                      )
+                    }
+                    onKeyDown={(
+                      event
+                    ) => {
+                      if (
+                        event.key ===
+                        "Enter"
+                      ) {
+                        event.preventDefault();
+
+                        handleCreateMissingWeeklyFocus();
+                      }
+
+                      if (
+                        event.key ===
+                        "Escape"
+                      ) {
+                        event.preventDefault();
+
+                        setMissingWeekFocus("");
+                      }
+                    }}
+                    placeholder="What should this week accomplish?"
+                    className="
+                      h-9
+                      min-w-0
+                      flex-1
+                      rounded-lg
+                      border
+                      border-slate-800
+                      bg-slate-950
+                      px-3
+                      text-xs
+                      text-slate-200
+                      outline-none
+                      transition
+                      placeholder:text-slate-700
+                      focus:border-amber-500/40
+                    "
+                  />
+
+                  <button
+                    type="button"
+                    onClick={
+                      handleCreateMissingWeeklyFocus
+                    }
+                    className="
+                      h-9
+                      shrink-0
+                      rounded-lg
+                      bg-amber-400
+                      px-3
+                      text-xs
+                      font-semibold
+                      text-slate-950
+                      transition
+                      hover:bg-amber-300
+                    "
+                  >
+                    Create Weekly Focus
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
 

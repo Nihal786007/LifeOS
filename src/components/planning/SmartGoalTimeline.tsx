@@ -34,7 +34,7 @@ interface GoalMonthSlot {
   startDate: Date;
   endDate: Date;
 
-  monthlyTarget?: MonthlyTarget;
+  monthlyTargets: MonthlyTarget[];
 
   isCurrentMonth: boolean;
   isStartMonth: boolean;
@@ -270,14 +270,27 @@ function buildGoalMonths(
         ? startOfDay(target)
         : calendarMonthEnd;
 
-    const monthlyTarget =
-      goalPlans.find(
-        (plan) =>
-          plan.month ===
-            month &&
-          plan.year ===
-            year
-      );
+    const monthlyTargets =
+      goalPlans
+        .filter(
+          (plan) =>
+            plan.month ===
+              month &&
+            plan.year ===
+              year
+        )
+        .sort(
+          (
+            first,
+            second
+          ) =>
+            new Date(
+              first.createdAt
+            ).getTime() -
+            new Date(
+              second.createdAt
+            ).getTime()
+        );
 
     months.push({
       month,
@@ -295,7 +308,7 @@ function buildGoalMonths(
       endDate:
         slotEnd,
 
-      monthlyTarget,
+      monthlyTargets,
 
       isStartMonth,
 
@@ -347,8 +360,20 @@ export default function SmartGoalTimeline({
   const plannedMonths =
     months.filter(
       (month) =>
-        month.monthlyTarget
+        month.monthlyTargets.length >
+        0
     ).length;
+
+  const totalMonthlyTargets =
+    months.reduce(
+      (
+        total,
+        month
+      ) =>
+        total +
+        month.monthlyTargets.length,
+      0
+    );
 
   const daysRemaining =
     targetDate
@@ -476,8 +501,8 @@ export default function SmartGoalTimeline({
         />
 
         <TimelineMetric
-          label="Months Planned"
-          value={`${plannedMonths} / ${months.length}`}
+          label="Planning"
+          value={`${plannedMonths}/${months.length} months · ${totalMonthlyTargets} targets`}
         />
 
         <TimelineMetric
@@ -661,13 +686,13 @@ function GoalMonthSlotCard({
   month,
   onPlanMonth,
 }: GoalMonthSlotCardProps) {
-  const target =
-    month.monthlyTarget;
+  const targets =
+    month.monthlyTargets;
 
   return (
     <div
       className={`
-        w-44
+        w-52
         shrink-0
         rounded-lg
         border
@@ -773,107 +798,162 @@ function GoalMonthSlotCard({
         )}
       </div>
 
-      {/* Planned / Empty */}
+      {/* Targets */}
 
-      {target ? (
-        <div
-          className="
-            mt-3
-            rounded-md
-            border
-            border-emerald-500/15
-            bg-emerald-500/5
-            p-2
-          "
-        >
+      <div className="mt-3 space-y-1.5">
+
+        {targets.length === 0 ? (
           <div
             className="
-              flex
-              items-center
-              gap-1.5
-              text-[10px]
-              font-semibold
-              text-emerald-400
+              rounded-md
+              border
+              border-dashed
+              border-slate-800
+              p-2
             "
           >
-            <FaCheck />
-
-            Planned
-          </div>
-
-          <p
-            className="
-              mt-1
-              line-clamp-2
-              text-[11px]
-              leading-4
-              text-slate-300
-            "
-          >
-            {target.title}
-          </p>
-
-          <p
-            className="
-              mt-1
-              text-[10px]
-              text-slate-600
-            "
-          >
-            {Math.round(
-              target.progress
-            )}
-            % complete
-          </p>
-        </div>
-      ) : (
-        <div
-          className="
-            mt-3
-            rounded-md
-            border
-            border-dashed
-            border-slate-800
-            p-2
-          "
-        >
-          <p
-            className="
-              text-[10px]
-              text-slate-600
-            "
-          >
-            No monthly target
-          </p>
-
-          {onPlanMonth && (
-            <button
-              type="button"
-              onClick={() =>
-                onPlanMonth(
-                  month.month,
-                  month.year
-                )
-              }
+            <p
               className="
-                mt-2
-                inline-flex
-                items-center
-                gap-1.5
                 text-[10px]
-                font-semibold
-                text-cyan-400
-                transition
-                hover:text-cyan-300
+                text-slate-600
               "
             >
-              <FaPlus />
+              No monthly targets
+            </p>
+          </div>
+        ) : (
+          targets.map(
+            (target) => (
+              <div
+                key={
+                  target.id
+                }
+                className="
+                  rounded-md
+                  border
+                  border-emerald-500/15
+                  bg-emerald-500/5
+                  p-2
+                "
+              >
+                <div
+                  className="
+                    flex
+                    items-start
+                    gap-1.5
+                  "
+                >
+                  <FaCheck
+                    className="
+                      mt-0.5
+                      shrink-0
+                      text-[9px]
+                      text-emerald-400
+                    "
+                  />
 
-              Plan Month
-            </button>
-          )}
-        </div>
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="
+                        line-clamp-2
+                        text-[11px]
+                        leading-4
+                        text-slate-300
+                      "
+                    >
+                      {target.title}
+                    </p>
+
+                    <div
+                      className="
+                        mt-1
+                        flex
+                        items-center
+                        gap-2
+                      "
+                    >
+                      <div
+                        className="
+                          h-1
+                          flex-1
+                          overflow-hidden
+                          rounded-full
+                          bg-slate-800
+                        "
+                      >
+                        <div
+                          className="
+                            h-full
+                            rounded-full
+                            bg-emerald-400
+                          "
+                          style={{
+                            width:
+                              `${Math.min(
+                                100,
+                                Math.max(
+                                  0,
+                                  Math.round(
+                                    target.progress
+                                  )
+                                )
+                              )}%`,
+                          }}
+                        />
+                      </div>
+
+                      <span
+                        className="
+                          text-[9px]
+                          text-slate-600
+                        "
+                      >
+                        {Math.round(
+                          target.progress
+                        )}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )
+          )
+        )}
+
+      </div>
+
+      {/* Add Another Target */}
+
+      {onPlanMonth && (
+        <button
+          type="button"
+          onClick={() =>
+            onPlanMonth(
+              month.month,
+              month.year
+            )
+          }
+          className="
+            mt-2
+            inline-flex
+            items-center
+            gap-1.5
+            text-[10px]
+            font-semibold
+            text-cyan-400
+            transition
+            hover:text-cyan-300
+          "
+        >
+          <FaPlus />
+
+          {targets.length === 0
+            ? "Plan Month"
+            : "Add Target"}
+        </button>
       )}
+
     </div>
   );
 }
