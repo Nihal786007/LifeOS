@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Life Goals Context
-// Version: 2.1
+// Version: 3.0
 // ==========================================
 
 import {
@@ -29,22 +29,12 @@ import type {
 interface LifeGoalsContextType {
   lifeGoals: LifeGoal[];
 
-  addGoal: (
-    title: string,
-    description?: string,
-    targetDate?: string
-  ) => void;
-
-  updateGoal: (
-    goal: LifeGoal
-  ) => void;
-
   /**
    * Applies a complete Life Goal state produced by
-   * the LifeOS execution architecture.
+   * the LifeOS planning/execution architecture.
    *
-   * Completion, uncompletion, and deletion must
-   * flow through PlanningExecutionContext.
+   * Goal creation, editing, completion, uncompletion,
+   * and deletion must flow through PlanningExecutionContext.
    */
   replaceLifeGoals: (
     lifeGoals: LifeGoal[]
@@ -105,79 +95,7 @@ export function LifeGoalsProvider({
   }, [lifeGoals]);
 
   // ==========================================
-  // Goal Creation
-  // ==========================================
-
-  function addGoal(
-    title: string,
-    description = "",
-    targetDate?: string
-  ) {
-    const trimmedTitle =
-      title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    const now =
-      new Date().toISOString();
-
-    const goal: LifeGoal = {
-      id: Date.now(),
-
-      title:
-        trimmedTitle,
-
-      description,
-
-      progress:
-        0,
-
-      completed:
-        false,
-
-      completedAt:
-        undefined,
-
-      startDate:
-        now,
-
-      targetDate,
-
-      createdAt:
-        now,
-    };
-
-    setLifeGoals(
-      (previous) => [
-        ...previous,
-        goal,
-      ]
-    );
-  }
-
-  // ==========================================
-  // Goal Update
-  // ==========================================
-
-  function updateGoal(
-    goal: LifeGoal
-  ) {
-    setLifeGoals(
-      (previous) =>
-        previous.map(
-          (item) =>
-            item.id ===
-            goal.id
-              ? goal
-              : item
-        )
-    );
-  }
-
-  // ==========================================
-  // Execution State Application
+  // Planning / Execution State Application
   // ==========================================
 
   function replaceLifeGoals(
@@ -196,8 +114,6 @@ export function LifeGoalsProvider({
     <LifeGoalsContext.Provider
       value={{
         lifeGoals,
-        addGoal,
-        updateGoal,
         replaceLifeGoals,
       }}
     >

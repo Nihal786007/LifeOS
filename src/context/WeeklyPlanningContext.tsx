@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Weekly Planning Context
-// Version: 2.3
+// Version: 4.0
 // ==========================================
 
 import {
@@ -37,23 +37,12 @@ interface WeeklyPlanningContextType {
   weeklyTargets: WeeklyTarget[];
 
   /**
-   * Legacy creation path.
+   * Internal real-calendar-week persistence
+   * primitive.
    *
-   * Kept temporarily so older LifeOS UI remains
-   * compatible during the real-calendar-week migration.
-   */
-  addWeeklyTarget: (
-    title: string,
-    monthlyTargetId: number | undefined,
-    week: LegacyWeekNumber
-  ) => void;
-
-  /**
-   * Planning V2 creation path.
-   *
-   * Creates a Weekly Target using real calendar dates.
-   * The legacy week number is derived only for temporary
-   * backward compatibility with older UI.
+   * Goal Weekly Focus creation must first pass
+   * through PlanningExecutionContext and the
+   * planning mutation/ownership architecture.
    */
   addCalendarWeeklyTarget: (
     title: string,
@@ -63,22 +52,13 @@ interface WeeklyPlanningContextType {
   ) => void;
 
   /**
-   * Renames an existing weekly focus.
+   * Applies complete Weekly Planning state
+   * produced by the LifeOS planning/execution
+   * architecture.
    *
-   * This does not alter completion, progress,
-   * relationships, dates, or execution history.
-   */
-  updateWeeklyTargetTitle: (
-    id: number,
-    title: string
-  ) => void;
-
-  /**
-   * Applies complete weekly-target state produced
-   * by the LifeOS execution architecture.
-   *
-   * Completion, uncompletion, and deletion must
-   * flow through PlanningExecutionContext.
+   * Weekly Focus editing, completion,
+   * uncompletion, and deletion must flow
+   * through PlanningExecutionContext.
    */
   replaceWeeklyTargets: (
     weeklyTargets: WeeklyTarget[]
@@ -111,13 +91,19 @@ function parseLocalDate(
   }
 
   const year =
-    Number(match[1]);
+    Number(
+      match[1]
+    );
 
   const month =
-    Number(match[2]);
+    Number(
+      match[2]
+    );
 
   const day =
-    Number(match[3]);
+    Number(
+      match[3]
+    );
 
   const date =
     new Date(
@@ -130,6 +116,17 @@ function parseLocalDate(
     Number.isNaN(
       date.getTime()
     )
+  ) {
+    return undefined;
+  }
+
+  if (
+    date.getFullYear() !==
+      year ||
+    date.getMonth() !==
+      month - 1 ||
+    date.getDate() !==
+      day
   ) {
     return undefined;
   }
@@ -212,7 +209,9 @@ export function WeeklyPlanningProvider({
   const [
     weeklyTargets,
     setWeeklyTargets,
-  ] = useState<WeeklyTarget[]>(() => {
+  ] = useState<
+    WeeklyTarget[]
+  >(() => {
     const saved =
       localStorage.getItem(
         STORAGE_KEYS.WEEKLY_TARGETS
@@ -242,54 +241,9 @@ export function WeeklyPlanningProvider({
         weeklyTargets
       )
     );
-  }, [weeklyTargets]);
-
-  // ==========================================
-  // Legacy Weekly Target Creation
-  // ==========================================
-
-  function addWeeklyTarget(
-    title: string,
-    monthlyTargetId: number | undefined,
-    week: LegacyWeekNumber
-  ) {
-    const trimmedTitle =
-      title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    const target: WeeklyTarget = {
-      id: Date.now(),
-
-      title:
-        trimmedTitle,
-
-      monthlyTargetId,
-
-      week,
-
-      progress:
-        0,
-
-      completed:
-        false,
-
-      completedAt:
-        undefined,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    setWeeklyTargets(
-      (previous) => [
-        ...previous,
-        target,
-      ]
-    );
-  }
+  }, [
+    weeklyTargets,
+  ]);
 
   // ==========================================
   // Real Calendar Weekly Target Creation
@@ -297,7 +251,9 @@ export function WeeklyPlanningProvider({
 
   function addCalendarWeeklyTarget(
     title: string,
-    monthlyTargetId: number | undefined,
+    monthlyTargetId:
+      | number
+      | undefined,
     weekStartDate: string,
     weekEndDate: string
   ) {
@@ -333,38 +289,40 @@ export function WeeklyPlanningProvider({
       return;
     }
 
-    const target: WeeklyTarget = {
-      id: Date.now(),
+    const target:
+      WeeklyTarget = {
+        id:
+          Date.now(),
 
-      title:
-        trimmedTitle,
+        title:
+          trimmedTitle,
 
-      monthlyTargetId,
+        monthlyTargetId,
 
-      // Temporary compatibility field.
-      week:
-        deriveLegacyWeekNumber(
-          normalizedRange.weekStartDate
-        ),
+        // Temporary compatibility field.
+        week:
+          deriveLegacyWeekNumber(
+            normalizedRange.weekStartDate
+          ),
 
-      weekStartDate:
-        normalizedRange.weekStartDate,
+        weekStartDate:
+          normalizedRange.weekStartDate,
 
-      weekEndDate:
-        normalizedRange.weekEndDate,
+        weekEndDate:
+          normalizedRange.weekEndDate,
 
-      progress:
-        0,
+        progress:
+          0,
 
-      completed:
-        false,
+        completed:
+          false,
 
-      completedAt:
-        undefined,
+        completedAt:
+          undefined,
 
-      createdAt:
-        new Date().toISOString(),
-    };
+        createdAt:
+          new Date().toISOString(),
+      };
 
     setWeeklyTargets(
       (previous) => [
@@ -375,37 +333,7 @@ export function WeeklyPlanningProvider({
   }
 
   // ==========================================
-  // Weekly Focus Editing
-  // ==========================================
-
-  function updateWeeklyTargetTitle(
-    id: number,
-    title: string
-  ) {
-    const trimmedTitle =
-      title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    setWeeklyTargets(
-      (previous) =>
-        previous.map(
-          (target) =>
-            target.id === id
-              ? {
-                  ...target,
-                  title:
-                    trimmedTitle,
-                }
-              : target
-        )
-    );
-  }
-
-  // ==========================================
-  // Execution State Application
+  // State Application
   // ==========================================
 
   function replaceWeeklyTargets(
@@ -424,9 +352,9 @@ export function WeeklyPlanningProvider({
     <WeeklyPlanningContext.Provider
       value={{
         weeklyTargets,
-        addWeeklyTarget,
+
         addCalendarWeeklyTarget,
-        updateWeeklyTargetTitle,
+
         replaceWeeklyTargets,
       }}
     >

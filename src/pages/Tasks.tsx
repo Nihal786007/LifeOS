@@ -97,6 +97,156 @@ function getLocalDateString() {
   return `${year}-${month}-${day}`;
 }
 
+function parseLocalDate(
+  value?: string
+) {
+  if (!value) {
+    return undefined;
+  }
+
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+      value
+    );
+
+  if (!match) {
+    return undefined;
+  }
+
+  const year =
+    Number(
+      match[1]
+    );
+
+  const month =
+    Number(
+      match[2]
+    );
+
+  const day =
+    Number(
+      match[3]
+    );
+
+  const date =
+    new Date(
+      year,
+      month - 1,
+      day
+    );
+
+  if (
+    date.getFullYear() !==
+      year ||
+    date.getMonth() !==
+      month - 1 ||
+    date.getDate() !==
+      day
+  ) {
+    return undefined;
+  }
+
+  return date;
+}
+
+function formatWeekRange(
+  weekStartDate?: string,
+  weekEndDate?: string
+) {
+  const start =
+    parseLocalDate(
+      weekStartDate
+    );
+
+  const end =
+    parseLocalDate(
+      weekEndDate
+    );
+
+  if (
+    !start ||
+    !end
+  ) {
+    return undefined;
+  }
+
+  const sameYear =
+    start.getFullYear() ===
+    end.getFullYear();
+
+  const sameMonth =
+    sameYear &&
+    start.getMonth() ===
+      end.getMonth();
+
+  if (sameMonth) {
+    const monthLabel =
+      start.toLocaleDateString(
+        undefined,
+        {
+          month:
+            "short",
+        }
+      );
+
+    return `${monthLabel} ${start.getDate()}–${end.getDate()}`;
+  }
+
+  if (sameYear) {
+    const startLabel =
+      start.toLocaleDateString(
+        undefined,
+        {
+          month:
+            "short",
+          day:
+            "numeric",
+        }
+      );
+
+    const endLabel =
+      end.toLocaleDateString(
+        undefined,
+        {
+          month:
+            "short",
+          day:
+            "numeric",
+        }
+      );
+
+    return `${startLabel}–${endLabel}`;
+  }
+
+  const startLabel =
+    start.toLocaleDateString(
+      undefined,
+      {
+        month:
+          "short",
+        day:
+          "numeric",
+        year:
+          "numeric",
+      }
+    );
+
+  const endLabel =
+    end.toLocaleDateString(
+      undefined,
+      {
+        month:
+          "short",
+        day:
+          "numeric",
+        year:
+          "numeric",
+      }
+    );
+
+  return `${startLabel}–${endLabel}`;
+}
+
 // ==========================================
 // Page
 // ==========================================
@@ -174,16 +324,18 @@ export default function Tasks() {
 
   const {
     weeklyTargets,
-    addCalendarWeeklyTarget,
   } =
     useWeeklyPlanning();
 
   // ==========================================
-  // Universal Execution
+  // Universal Planning + Execution
   // ==========================================
 
   const {
     createTask,
+
+    createGoalWeeklyFocus,
+
     completeTask,
     uncompleteTask,
     deleteTask,
@@ -436,12 +588,19 @@ export default function Tasks() {
       return;
     }
 
-    addCalendarWeeklyTarget(
-      trimmedFocus,
-      monthlyTarget.id,
-      weekStartDate,
-      weekEndDate
-    );
+    const result =
+      createGoalWeeklyFocus(
+        trimmedFocus,
+        monthlyTarget.id,
+        weekStartDate,
+        weekEndDate
+      );
+
+    if (
+      !result.created
+    ) {
+      return;
+    }
 
     setMissingWeekFocus("");
   }
@@ -583,14 +742,17 @@ export default function Tasks() {
     const weeklyTarget =
       relationship.weeklyTarget;
 
-    if (
-      weeklyTarget.weekStartDate &&
-      weeklyTarget.weekEndDate
-    ) {
-      return `${weeklyTarget.weekStartDate} → ${weeklyTarget.weekEndDate} · ${weeklyTarget.title}`;
+    const weekRange =
+      formatWeekRange(
+        weeklyTarget.weekStartDate,
+        weeklyTarget.weekEndDate
+      );
+
+    if (weekRange) {
+      return `${weekRange} · ${weeklyTarget.title}`;
     }
 
-    return `W${weeklyTarget.week} · ${weeklyTarget.title}`;
+    return weeklyTarget.title;
   }
 
   // ==========================================

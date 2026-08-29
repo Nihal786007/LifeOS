@@ -5,10 +5,6 @@ import {
 } from "react-icons/fa";
 
 import {
-  ProgressEngine,
-} from "../../engines/ProgressEngine";
-
-import {
   TaskRelationshipEngine,
 } from "../../engines/TaskRelationshipEngine";
 
@@ -118,9 +114,14 @@ export default function MonthlyTargetCard({
     );
 
   const progress =
-    ProgressEngine.getMonthlyProgress(
-      relationshipState,
-      planId
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Math.round(
+          plan.progress
+        )
+      )
     );
 
   function handleDelete() {

@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 3.3
+// Version: 3.4
 // ==========================================
 
 /* =========================
@@ -22,6 +22,36 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
 
   weeklyTargetId?: number;
+}
+
+/**
+ * Universal Task mutation contract.
+ *
+ * undefined
+ * → leave the existing value unchanged.
+ *
+ * null
+ * → intentionally clear an optional value.
+ *
+ * Task relationship changes must still be
+ * validated by the planning architecture.
+ */
+export interface UpdateTaskInput {
+  title?: string;
+
+  description?:
+    | string
+    | null;
+
+  dueDate?:
+    | string
+    | null;
+
+  priority?: TaskPriority;
+
+  weeklyTargetId?:
+    | number
+    | null;
 }
 
 export interface Task {

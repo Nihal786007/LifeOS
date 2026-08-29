@@ -8,8 +8,8 @@ import {
 } from "../../context/LifeGoalsContext";
 
 import {
-  useMonthlyPlanning,
-} from "../../context/MonthlyPlanningContext";
+  usePlanningExecution,
+} from "../../context/PlanningExecutionContext";
 
 import Button from "../ui/Button";
 import Input from "../ui/Input";
@@ -50,12 +50,12 @@ export default function MonthlyTargetModal({
   lockedGoalId,
 }: MonthlyTargetModalProps) {
   const {
-    addMonthlyPlan,
-  } = useMonthlyPlanning();
-
-  const {
     lifeGoals,
   } = useLifeGoals();
+
+  const {
+    createMonthlyOutcome,
+  } = usePlanningExecution();
 
   const [
     title,
@@ -66,6 +66,13 @@ export default function MonthlyTargetModal({
     goalId,
     setGoalId,
   ] = useState("");
+
+  const [
+    error,
+    setError,
+  ] = useState<
+    string | undefined
+  >(undefined);
 
   // ==========================================
   // Derived State
@@ -120,6 +127,10 @@ export default function MonthlyTargetModal({
   function resetForm() {
     setTitle("");
 
+    setError(
+      undefined
+    );
+
     if (
       lockedGoalId ===
       undefined
@@ -143,8 +154,8 @@ export default function MonthlyTargetModal({
       title.trim();
 
     if (!trimmedTitle) {
-      alert(
-        "Please enter a target title."
+      setError(
+        "Please enter a Monthly Outcome."
       );
 
       return;
@@ -158,12 +169,23 @@ export default function MonthlyTargetModal({
           ? Number(goalId)
           : undefined;
 
-    addMonthlyPlan(
-      trimmedTitle,
-      month,
-      year,
-      resolvedGoalId
-    );
+    const result =
+      createMonthlyOutcome(
+        trimmedTitle,
+        month,
+        year,
+        resolvedGoalId
+      );
+
+    if (
+      !result.created
+    ) {
+      setError(
+        result.message
+      );
+
+      return;
+    }
 
     resetForm();
 
@@ -253,7 +275,7 @@ export default function MonthlyTargetModal({
                 text-slate-500
               "
             >
-              This monthly target will be linked
+              This Monthly Outcome will be linked
               automatically.
             </p>
           </div>
@@ -276,11 +298,17 @@ export default function MonthlyTargetModal({
               }
               onChange={(
                 event
-              ) =>
+              ) => {
                 setGoalId(
                   event.target.value
-                )
-              }
+                );
+
+                if (error) {
+                  setError(
+                    undefined
+                  );
+                }
+              }}
               className="
                 w-full
                 rounded-2xl
@@ -422,12 +450,51 @@ export default function MonthlyTargetModal({
             }
             onChange={(
               event
-            ) =>
+            ) => {
               setTitle(
                 event.target.value
-              )
-            }
+              );
+
+              if (error) {
+                setError(
+                  undefined
+                );
+              }
+            }}
+            onKeyDown={(
+              event
+            ) => {
+              if (
+                event.key ===
+                "Enter"
+              ) {
+                event.preventDefault();
+
+                handleCreate();
+              }
+
+              if (
+                event.key ===
+                "Escape"
+              ) {
+                event.preventDefault();
+
+                handleClose();
+              }
+            }}
           />
+
+          {error && (
+            <p
+              className="
+                mt-2
+                text-xs
+                text-amber-400
+              "
+            >
+              {error}
+            </p>
+          )}
 
           <p
             className="
@@ -437,7 +504,7 @@ export default function MonthlyTargetModal({
               text-slate-600
             "
           >
-            Keep this outcome focused. Weekly targets
+            Keep this outcome focused. Weekly Focuses
             and Universal Tasks will break it into
             execution later.
           </p>

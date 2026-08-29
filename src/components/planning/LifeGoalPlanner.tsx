@@ -137,7 +137,6 @@ function clampProgress(
 export default function LifeGoalPlanner() {
   const {
     lifeGoals,
-    addGoal,
   } = useLifeGoals();
 
   const {
@@ -153,6 +152,7 @@ export default function LifeGoalPlanner() {
   } = useTasks();
 
   const {
+    createLifeGoal,
     deleteLifeGoal,
   } = usePlanningExecution();
 
@@ -289,11 +289,18 @@ export default function LifeGoalPlanner() {
     description: string,
     targetDate?: string
   ) {
-    addGoal(
-      title,
-      description,
-      targetDate
-    );
+    const result =
+      createLifeGoal({
+        title,
+        description,
+        targetDate,
+      });
+
+    if (
+      !result.created
+    ) {
+      return;
+    }
   }
 
   // ==========================================
@@ -1100,12 +1107,12 @@ export default function LifeGoalPlanner() {
                                   month
                                 ) => (
                                   <GoalMonthPlanner
-  key={month.id}
-  month={month}
-  weeklyTargets={weeklyTargets}
-  goalStartDate={goal.startDate}
-  goalTargetDate={goal.targetDate}
-/>
+                                    key={month.id}
+                                    month={month}
+                                    weeklyTargets={weeklyTargets}
+                                    goalStartDate={goal.startDate}
+                                    goalTargetDate={goal.targetDate}
+                                  />
                                 )
                               )}
 

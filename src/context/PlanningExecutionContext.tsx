@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Planning Execution Context
-// Version: 2.1
+// Version: 5.0
 // ==========================================
 
 import {
@@ -17,8 +17,12 @@ import {
 } from "../engines/ExecutionCoordinator";
 
 import {
-  PlanningKernel,
-} from "../engines/PlanningKernel";
+  PlanningMutationEngine,
+} from "../engines/PlanningMutationEngine";
+
+import {
+  GoalPlanningMutationEngine,
+} from "../engines/GoalPlanningMutationEngine";
 
 import {
   useLifeGoals,
@@ -37,8 +41,27 @@ import {
 } from "./TaskContext";
 
 import type {
+  PlanningState,
+} from "../engines/PlanningKernel";
+
+import type {
+  GoalWeeklyFocusCreationResult,
+  MonthlyOutcomeCreationResult,
+  MonthlyOutcomeUpdateResult,
+  TaskUpdateResult,
+  WeeklyFocusUpdateResult,
+} from "../engines/planningMutationTypes";
+
+import type {
+  CreateLifeGoalInput,
+  LifeGoalCreationResult,
+  LifeGoalUpdateResult,
+  UpdateLifeGoalInput,
+} from "../engines/GoalPlanningMutationEngine";
+
+import type {
   CreateTaskInput,
-  Task,
+  UpdateTaskInput,
 } from "../shared/types";
 
 // ==========================================
@@ -46,18 +69,67 @@ import type {
 // ==========================================
 
 interface PlanningExecutionContextType {
-  /**
-   * Creates one Universal Task as a planning
-   * mutation.
-   *
-   * Creation does not award XP and does not
-   * create an execution-history record.
-   *
-   * Planning progress is recalculated immediately.
-   */
+  // ========================================
+  // Life Goal Planning
+  // ========================================
+
+  createLifeGoal: (
+    input: CreateLifeGoalInput
+  ) => LifeGoalCreationResult;
+
+  updateLifeGoal: (
+    goalId: number,
+    updates: UpdateLifeGoalInput
+  ) => LifeGoalUpdateResult;
+
+  // ========================================
+  // Monthly Outcome Planning
+  // ========================================
+
+  createMonthlyOutcome: (
+    title: string,
+    month: number,
+    year: number,
+    goalId?: number
+  ) => MonthlyOutcomeCreationResult;
+
+  updateMonthlyOutcomeTitle: (
+    monthlyTargetId: number,
+    title: string
+  ) => MonthlyOutcomeUpdateResult;
+
+  // ========================================
+  // Weekly Focus Planning
+  // ========================================
+
+  createGoalWeeklyFocus: (
+    title: string,
+    monthlyTargetId: number,
+    weekStartDate: string,
+    weekEndDate: string
+  ) => GoalWeeklyFocusCreationResult;
+
+  updateWeeklyFocusTitle: (
+    weeklyTargetId: number,
+    title: string
+  ) => WeeklyFocusUpdateResult;
+
+  // ========================================
+  // Universal Task Planning
+  // ========================================
+
   createTask: (
     input: CreateTaskInput
   ) => void;
+
+  updateTask: (
+    taskId: number,
+    updates: UpdateTaskInput
+  ) => TaskUpdateResult;
+
+  // ========================================
+  // Task Execution
+  // ========================================
 
   completeTask: (
     taskId: number
@@ -71,6 +143,10 @@ interface PlanningExecutionContextType {
     taskId: number
   ) => void;
 
+  // ========================================
+  // Weekly Execution
+  // ========================================
+
   completeWeeklyTarget: (
     weeklyTargetId: number
   ) => void;
@@ -83,6 +159,10 @@ interface PlanningExecutionContextType {
     weeklyTargetId: number
   ) => void;
 
+  // ========================================
+  // Monthly Execution
+  // ========================================
+
   completeMonthlyTarget: (
     monthlyTargetId: number
   ) => void;
@@ -94,6 +174,10 @@ interface PlanningExecutionContextType {
   deleteMonthlyTarget: (
     monthlyTargetId: number
   ) => void;
+
+  // ========================================
+  // Life Goal Execution
+  // ========================================
 
   completeLifeGoal: (
     goalId: number
@@ -138,6 +222,7 @@ export function PlanningExecutionProvider({
 
   const {
     weeklyTargets,
+    addCalendarWeeklyTarget,
     replaceWeeklyTargets,
   } = useWeeklyPlanning();
 
@@ -147,42 +232,28 @@ export function PlanningExecutionProvider({
   } = useTasks();
 
   // ==========================================
-  // Apply Execution Result
+  // Current Planning State
   // ==========================================
 
-  function applyResult(
-    result: ReturnType<
-      typeof ExecutionCoordinator.completeTask
-    >
-  ) {
-    replaceLifeGoals(
-      result.lifeGoals
-    );
+  function getState(): PlanningState {
+    return {
+      lifeGoals,
 
-    replaceMonthlyPlans(
-      result.monthlyTargets
-    );
+      monthlyTargets:
+        monthlyPlans,
 
-    replaceWeeklyTargets(
-      result.weeklyTargets
-    );
+      weeklyTargets,
 
-    replaceTasks(
-      result.tasks
-    );
+      tasks,
+    };
   }
 
   // ==========================================
-  // Apply Planning State
+  // State Synchronization Boundary
   // ==========================================
 
-  function applyPlanningState(
-    state: {
-      lifeGoals: typeof lifeGoals;
-      monthlyTargets: typeof monthlyPlans;
-      weeklyTargets: typeof weeklyTargets;
-      tasks: Task[];
-    }
+  function applyState(
+    state: PlanningState
   ) {
     replaceLifeGoals(
       state.lifeGoals
@@ -202,96 +273,263 @@ export function PlanningExecutionProvider({
   }
 
   // ==========================================
-  // Current Planning State
+  // Life Goal Planning
   // ==========================================
 
-  function getState() {
-    return {
-      lifeGoals,
+  function createLifeGoal(
+    input: CreateLifeGoalInput
+  ): LifeGoalCreationResult {
+    const result =
+      GoalPlanningMutationEngine.createGoal(
+        getState(),
+        input
+      );
 
-      monthlyTargets:
-        monthlyPlans,
+    if (
+      result.created
+    ) {
+      applyState(
+        result.state
+      );
+    }
 
-      weeklyTargets,
+    return result;
+  }
 
-      tasks,
-    };
+  function updateLifeGoal(
+    goalId: number,
+    updates: UpdateLifeGoalInput
+  ): LifeGoalUpdateResult {
+    const result =
+      GoalPlanningMutationEngine.updateGoal(
+        getState(),
+        goalId,
+        updates
+      );
+
+    if (
+      result.updated
+    ) {
+      applyState(
+        result.state
+      );
+    }
+
+    return result;
   }
 
   // ==========================================
-  // Universal Task Creation
+  // Monthly Outcome Planning
+  // ==========================================
+
+  function createMonthlyOutcome(
+    title: string,
+    month: number,
+    year: number,
+    goalId?: number
+  ): MonthlyOutcomeCreationResult {
+    const result =
+      PlanningMutationEngine.createMonthlyOutcome(
+        getState(),
+        title,
+        month,
+        year,
+        goalId
+      );
+
+    if (
+      result.created
+    ) {
+      applyState(
+        result.state
+      );
+    }
+
+    return result;
+  }
+
+  function updateMonthlyOutcomeTitle(
+    monthlyTargetId: number,
+    title: string
+  ): MonthlyOutcomeUpdateResult {
+    const result =
+      PlanningMutationEngine.updateMonthlyOutcomeTitle(
+        getState(),
+        monthlyTargetId,
+        title
+      );
+
+    if (
+      result.updated
+    ) {
+      applyState(
+        result.state
+      );
+    }
+
+    return result;
+  }
+
+  // ==========================================
+  // Weekly Focus Planning
+  // ==========================================
+
+  function createGoalWeeklyFocus(
+    title: string,
+    monthlyTargetId: number,
+    weekStartDate: string,
+    weekEndDate: string
+  ): GoalWeeklyFocusCreationResult {
+    const validation =
+      PlanningMutationEngine.validateGoalWeeklyFocus(
+        getState(),
+        title,
+        monthlyTargetId,
+        weekStartDate,
+        weekEndDate
+      );
+
+    if (
+      validation.status !==
+      "available"
+    ) {
+      return {
+        status:
+          validation.status,
+
+        created:
+          false,
+
+        message:
+          validation.message,
+
+        ownerMonth:
+          validation.ownerMonth,
+
+        ownerYear:
+          validation.ownerYear,
+
+        ownerMonthlyTargetId:
+          validation.ownerMonthlyTargetId,
+
+        existingWeeklyTargetId:
+          validation.existingWeeklyTargetId,
+      };
+    }
+
+    if (
+      !validation.title
+    ) {
+      return {
+        status:
+          "invalid_title",
+
+        created:
+          false,
+
+        message:
+          "Weekly Focus title cannot be empty.",
+      };
+    }
+
+    addCalendarWeeklyTarget(
+      validation.title,
+      monthlyTargetId,
+      weekStartDate,
+      weekEndDate
+    );
+
+    return {
+      status:
+        "created",
+
+      created:
+        true,
+
+      message:
+        "Weekly Focus created successfully.",
+
+      ownerMonth:
+        validation.ownerMonth,
+
+      ownerYear:
+        validation.ownerYear,
+
+      ownerMonthlyTargetId:
+        validation.ownerMonthlyTargetId,
+    };
+  }
+
+  function updateWeeklyFocusTitle(
+    weeklyTargetId: number,
+    title: string
+  ): WeeklyFocusUpdateResult {
+    const result =
+      PlanningMutationEngine.updateWeeklyFocusTitle(
+        getState(),
+        weeklyTargetId,
+        title
+      );
+
+    if (
+      result.updated
+    ) {
+      applyState(
+        result.state
+      );
+    }
+
+    return result;
+  }
+
+  // ==========================================
+  // Universal Task Planning
   // ==========================================
 
   function createTask(
     input: CreateTaskInput
   ) {
-    const trimmedTitle =
-      input.title.trim();
+    const result =
+      PlanningMutationEngine.createTask(
+        getState(),
+        input
+      );
 
-    if (!trimmedTitle) {
+    if (
+      !result.created
+    ) {
       return;
     }
 
-    const task: Task = {
-      id:
-        Date.now(),
-
-      title:
-        trimmedTitle,
-
-      description:
-        input.description?.trim() ||
-        undefined,
-
-      dueDate:
-        input.dueDate,
-
-      priority:
-        input.priority ??
-        "medium",
-
-      weeklyTargetId:
-        input.weeklyTargetId,
-
-      completed:
-        false,
-
-      completedAt:
-        undefined,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    const nextTasks = [
-      ...tasks,
-      task,
-    ];
-
-    // ========================================
-    // Creation is Planning, not Execution
-    // ========================================
-
-    const recalculated =
-      PlanningKernel.recalculateAll({
-        lifeGoals,
-
-        monthlyTargets:
-          monthlyPlans,
-
-        weeklyTargets,
-
-        tasks:
-          nextTasks,
-      });
-
-    applyPlanningState(
-      recalculated
+    applyState(
+      result.state
     );
   }
 
+  function updateTask(
+    taskId: number,
+    updates: UpdateTaskInput
+  ): TaskUpdateResult {
+    const result =
+      PlanningMutationEngine.updateTask(
+        getState(),
+        taskId,
+        updates
+      );
+
+    if (
+      result.updated
+    ) {
+      applyState(
+        result.state
+      );
+    }
+
+    return result;
+  }
+
   // ==========================================
-  // Tasks
+  // Task Execution
   // ==========================================
 
   function completeTask(
@@ -303,7 +541,7 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -317,7 +555,7 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -331,13 +569,13 @@ export function PlanningExecutionProvider({
         taskId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
 
   // ==========================================
-  // Weekly Targets
+  // Weekly Execution
   // ==========================================
 
   function completeWeeklyTarget(
@@ -349,7 +587,7 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -363,7 +601,7 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -377,13 +615,13 @@ export function PlanningExecutionProvider({
         weeklyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
 
   // ==========================================
-  // Monthly Targets
+  // Monthly Execution
   // ==========================================
 
   function completeMonthlyTarget(
@@ -395,7 +633,7 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -409,7 +647,7 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -423,13 +661,13 @@ export function PlanningExecutionProvider({
         monthlyTargetId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
 
   // ==========================================
-  // Life Goals
+  // Life Goal Execution
   // ==========================================
 
   function completeLifeGoal(
@@ -441,7 +679,7 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -455,7 +693,7 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -469,7 +707,7 @@ export function PlanningExecutionProvider({
         goalId
       );
 
-    applyResult(
+    applyState(
       result
     );
   }
@@ -481,7 +719,17 @@ export function PlanningExecutionProvider({
   return (
     <PlanningExecutionContext.Provider
       value={{
+        createLifeGoal,
+        updateLifeGoal,
+
+        createMonthlyOutcome,
+        updateMonthlyOutcomeTitle,
+
+        createGoalWeeklyFocus,
+        updateWeeklyFocusTitle,
+
         createTask,
+        updateTask,
 
         completeTask,
         uncompleteTask,

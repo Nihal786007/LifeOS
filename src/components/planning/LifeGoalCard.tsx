@@ -4,10 +4,6 @@ import {
 } from "react-icons/fa";
 
 import {
-  ProgressEngine,
-} from "../../engines/ProgressEngine";
-
-import {
   TaskRelationshipEngine,
 } from "../../engines/TaskRelationshipEngine";
 
@@ -80,11 +76,15 @@ export default function LifeGoalCard({
       );
 
   const progress =
-    ProgressEngine
-      .getLifeGoalProgress(
-        relationshipState,
-        goal.id
-      );
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Math.round(
+          goal.progress
+        )
+      )
+    );
 
   function handleDelete() {
     const confirmed =

@@ -1,7 +1,14 @@
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
-import { useLifeGoals } from "../../context/LifeGoalsContext";
-import { usePlanningExecution } from "../../context/PlanningExecutionContext";
+import {
+  useLifeGoals,
+} from "../../context/LifeGoalsContext";
+
+import {
+  usePlanningExecution,
+} from "../../context/PlanningExecutionContext";
 
 import GoalModal from "./GoalModal";
 import GoalEmptyState from "./GoalEmptyState";
@@ -10,15 +17,36 @@ import LifeGoalCard from "./LifeGoalCard";
 export default function GoalsCard() {
   const {
     lifeGoals,
-    addGoal,
   } = useLifeGoals();
 
   const {
+    createLifeGoal,
     deleteLifeGoal,
   } = usePlanningExecution();
 
-  const [openModal, setOpenModal] =
-    useState(false);
+  const [
+    openModal,
+    setOpenModal,
+  ] = useState(false);
+
+  function handleCreateGoal(
+    title: string,
+    description: string,
+    targetDate?: string
+  ) {
+    const result =
+      createLifeGoal({
+        title,
+        description,
+        targetDate,
+      });
+
+    if (
+      !result.created
+    ) {
+      return;
+    }
+  }
 
   return (
     <>
@@ -40,7 +68,9 @@ export default function GoalsCard() {
 
           <button
             onClick={() =>
-              setOpenModal(true)
+              setOpenModal(
+                true
+              )
             }
             className="rounded-xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
           >
@@ -52,21 +82,29 @@ export default function GoalsCard() {
         {lifeGoals.length === 0 ? (
           <GoalEmptyState
             onCreate={() =>
-              setOpenModal(true)
+              setOpenModal(
+                true
+              )
             }
           />
         ) : (
           <div className="space-y-6">
 
-            {lifeGoals.map((goal) => (
-              <LifeGoalCard
-                key={goal.id}
-                goal={goal}
-                onDelete={
-                  deleteLifeGoal
-                }
-              />
-            ))}
+            {lifeGoals.map(
+              (goal) => (
+                <LifeGoalCard
+                  key={
+                    goal.id
+                  }
+                  goal={
+                    goal
+                  }
+                  onDelete={
+                    deleteLifeGoal
+                  }
+                />
+              )
+            )}
 
           </div>
         )}
@@ -74,11 +112,17 @@ export default function GoalsCard() {
       </div>
 
       <GoalModal
-        open={openModal}
-        onClose={() =>
-          setOpenModal(false)
+        open={
+          openModal
         }
-        onCreate={addGoal}
+        onClose={() =>
+          setOpenModal(
+            false
+          )
+        }
+        onCreate={
+          handleCreateGoal
+        }
       />
     </>
   );

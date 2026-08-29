@@ -25,10 +25,6 @@ import {
 } from "../../context/MonthlyPlanningContext";
 
 import {
-  useWeeklyPlanning,
-} from "../../context/WeeklyPlanningContext";
-
-import {
   useTasks,
 } from "../../context/TaskContext";
 
@@ -118,13 +114,8 @@ export default function GoalMonthPlanner({
   // ==========================================
 
   const {
-    updateMonthlyPlanTitle,
+    monthlyPlans,
   } = useMonthlyPlanning();
-
-  const {
-    addCalendarWeeklyTarget,
-    updateWeeklyTargetTitle,
-  } = useWeeklyPlanning();
 
   const {
     tasks,
@@ -136,6 +127,12 @@ export default function GoalMonthPlanner({
 
   const {
     createTask,
+
+    createGoalWeeklyFocus,
+
+    updateMonthlyOutcomeTitle,
+    updateWeeklyFocusTitle,
+
     completeTask,
     uncompleteTask,
     deleteTask,
@@ -177,6 +174,13 @@ export default function GoalMonthPlanner({
     weeklyFocus,
     setWeeklyFocus,
   ] = useState("");
+
+  const [
+    weeklyFocusError,
+    setWeeklyFocusError,
+  ] = useState<
+    string | undefined
+  >(undefined);
 
   // ==========================================
   // Week Editing State
@@ -329,15 +333,14 @@ export default function GoalMonthPlanner({
       () => ({
         lifeGoals,
 
-        monthlyTargets: [
-          month,
-        ],
+        monthlyTargets:
+          monthlyPlans,
 
         weeklyTargets,
       }),
       [
         lifeGoals,
-        month,
+        monthlyPlans,
         weeklyTargets,
       ]
     );
@@ -402,10 +405,17 @@ export default function GoalMonthPlanner({
       return;
     }
 
-    updateMonthlyPlanTitle(
-      month.id,
-      trimmed
-    );
+    const result =
+      updateMonthlyOutcomeTitle(
+        month.id,
+        trimmed
+      );
+
+    if (
+      !result.updated
+    ) {
+      return;
+    }
 
     setEditingMonth(
       false
@@ -425,6 +435,10 @@ export default function GoalMonthPlanner({
 
     setWeeklyFocus("");
 
+    setWeeklyFocusError(
+      undefined
+    );
+
     setEditingWeeklyTargetId(
       undefined
     );
@@ -436,6 +450,10 @@ export default function GoalMonthPlanner({
     );
 
     setWeeklyFocus("");
+
+    setWeeklyFocusError(
+      undefined
+    );
   }
 
   function createWeeklyFocus() {
@@ -450,18 +468,33 @@ export default function GoalMonthPlanner({
       return;
     }
 
-    addCalendarWeeklyTarget(
-      trimmed,
-      month.id,
-      selectedWeek.weekStartDate,
-      selectedWeek.weekEndDate
-    );
+    const result =
+      createGoalWeeklyFocus(
+        trimmed,
+        month.id,
+        selectedWeek.weekStartDate,
+        selectedWeek.weekEndDate
+      );
+
+    if (
+      !result.created
+    ) {
+      setWeeklyFocusError(
+        result.message
+      );
+
+      return;
+    }
 
     setSelectedWeek(
       undefined
     );
 
     setWeeklyFocus("");
+
+    setWeeklyFocusError(
+      undefined
+    );
   }
 
   // ==========================================
@@ -484,6 +517,10 @@ export default function GoalMonthPlanner({
     );
 
     setWeeklyFocus("");
+
+    setWeeklyFocusError(
+      undefined
+    );
   }
 
   function cancelEditingWeeklyTarget() {
@@ -509,10 +546,17 @@ export default function GoalMonthPlanner({
       return;
     }
 
-    updateWeeklyTargetTitle(
-      editingWeeklyTargetId,
-      trimmed
-    );
+    const result =
+      updateWeeklyFocusTitle(
+        editingWeeklyTargetId,
+        trimmed
+      );
+
+    if (
+      !result.updated
+    ) {
+      return;
+    }
 
     setEditingWeeklyTargetId(
       undefined
@@ -1503,11 +1547,19 @@ export default function GoalMonthPlanner({
                             }
                             onChange={(
                               event
-                            ) =>
+                            ) => {
                               setWeeklyFocus(
                                 event.target.value
-                              )
-                            }
+                              );
+
+                              if (
+                                weeklyFocusError
+                              ) {
+                                setWeeklyFocusError(
+                                  undefined
+                                );
+                              }
+                            }}
                             onKeyDown={(
                               event
                             ) => {
@@ -1548,6 +1600,18 @@ export default function GoalMonthPlanner({
                             "
                             autoFocus
                           />
+
+                          {weeklyFocusError && (
+                            <p
+                              className="
+                                mt-2
+                                text-[10px]
+                                text-amber-400
+                              "
+                            >
+                              {weeklyFocusError}
+                            </p>
+                          )}
 
                           <div
                             className="
@@ -1843,7 +1907,6 @@ export default function GoalMonthPlanner({
                                       border
                                       px-3
                                       py-2
-
                                       ${
                                         taskPlacementResult.status ===
                                         "matched"
@@ -1858,7 +1921,6 @@ export default function GoalMonthPlanner({
                                         font-semibold
                                         uppercase
                                         tracking-wider
-
                                         ${
                                           taskPlacementResult.status ===
                                           "matched"

@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Monthly Planning Context
-// Version: 2.2
+// Version: 3.0
 // ==========================================
 
 import {
@@ -29,24 +29,13 @@ import type {
 interface MonthlyPlanningContextType {
   monthlyPlans: MonthlyTarget[];
 
-  addMonthlyPlan: (
-    title: string,
-    month: number,
-    year: number,
-    goalId?: number
-  ) => void;
-
-  updateMonthlyPlanTitle: (
-    id: number,
-    title: string
-  ) => void;
-
   /**
-   * Applies complete Monthly Planning state
-   * produced by the LifeOS execution architecture.
+   * Applies a complete Monthly Planning state
+   * produced by the LifeOS planning/execution architecture.
    *
-   * Completion, uncompletion, and deletion must
-   * flow through PlanningExecutionContext.
+   * Monthly Outcome creation, editing, completion,
+   * uncompletion, and deletion must flow through
+   * PlanningExecutionContext.
    */
   replaceMonthlyPlans: (
     monthlyPlans: MonthlyTarget[]
@@ -74,7 +63,9 @@ export function MonthlyPlanningProvider({
   const [
     monthlyPlans,
     setMonthlyPlans,
-  ] = useState<MonthlyTarget[]>(() => {
+  ] = useState<
+    MonthlyTarget[]
+  >(() => {
     const saved =
       localStorage.getItem(
         STORAGE_KEYS.MONTHLY_TARGETS
@@ -104,90 +95,12 @@ export function MonthlyPlanningProvider({
         monthlyPlans
       )
     );
-  }, [monthlyPlans]);
+  }, [
+    monthlyPlans,
+  ]);
 
   // ==========================================
-  // Monthly Plan Creation
-  // ==========================================
-
-  function addMonthlyPlan(
-    title: string,
-    month: number,
-    year: number,
-    goalId?: number
-  ) {
-    const trimmedTitle =
-      title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    const plan: MonthlyTarget = {
-      id: Date.now(),
-
-      title:
-        trimmedTitle,
-
-      month,
-
-      year,
-
-      goalId,
-
-      progress:
-        0,
-
-      completed:
-        false,
-
-      completedAt:
-        undefined,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    setMonthlyPlans(
-      (previous) => [
-        ...previous,
-        plan,
-      ]
-    );
-  }
-
-  // ==========================================
-  // Monthly Plan Editing
-  // ==========================================
-
-  function updateMonthlyPlanTitle(
-    id: number,
-    title: string
-  ) {
-    const trimmedTitle =
-      title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    setMonthlyPlans(
-      (previous) =>
-        previous.map(
-          (plan) =>
-            plan.id === id
-              ? {
-                  ...plan,
-                  title:
-                    trimmedTitle,
-                }
-              : plan
-        )
-    );
-  }
-
-  // ==========================================
-  // Execution State Application
+  // State Application
   // ==========================================
 
   function replaceMonthlyPlans(
@@ -206,8 +119,6 @@ export function MonthlyPlanningProvider({
     <MonthlyPlanningContext.Provider
       value={{
         monthlyPlans,
-        addMonthlyPlan,
-        updateMonthlyPlanTitle,
         replaceMonthlyPlans,
       }}
     >
