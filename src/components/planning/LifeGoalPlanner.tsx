@@ -24,20 +24,13 @@ import {
 } from "../../context/WeeklyPlanningContext";
 
 import {
-  useTasks,
-} from "../../context/TaskContext";
-
-import {
   usePlanningExecution,
 } from "../../context/PlanningExecutionContext";
-
-import {
-  TaskRelationshipEngine,
-} from "../../engines/TaskRelationshipEngine";
 
 import GoalModal from "./GoalModal";
 import MonthlyTargetModal from "./MonthlyTargetModal";
 import SmartGoalTimeline from "./SmartGoalTimeline";
+import GoalPlanningHealthPanel from "./GoalPlanningHealthPanel";
 import GoalMonthPlanner from "./GoalMonthPlanner";
 
 import type {
@@ -50,12 +43,14 @@ import type {
 
 interface SelectedGoalMonth {
   goalId: number;
+
   month: number;
+
   year: number;
 }
 
 // ==========================================
-// Helpers
+// Date Helpers
 // ==========================================
 
 function parseDate(
@@ -71,21 +66,46 @@ function parseDate(
     );
 
   if (dateOnly) {
-    return new Date(
+    const year =
       Number(
         dateOnly[1]
-      ),
+      );
+
+    const month =
       Number(
         dateOnly[2]
-      ) - 1,
+      );
+
+    const day =
       Number(
         dateOnly[3]
-      )
-    );
+      );
+
+    const date =
+      new Date(
+        year,
+        month - 1,
+        day
+      );
+
+    if (
+      date.getFullYear() !==
+        year ||
+      date.getMonth() !==
+        month - 1 ||
+      date.getDate() !==
+        day
+    ) {
+      return undefined;
+    }
+
+    return date;
   }
 
   const date =
-    new Date(value);
+    new Date(
+      value
+    );
 
   if (
     Number.isNaN(
@@ -102,7 +122,9 @@ function formatDate(
   value?: string
 ) {
   const date =
-    parseDate(value);
+    parseDate(
+      value
+    );
 
   if (!date) {
     return undefined;
@@ -125,7 +147,9 @@ function clampProgress(
     100,
     Math.max(
       0,
-      Math.round(progress)
+      Math.round(
+        progress
+      )
     )
   );
 }
@@ -146,10 +170,6 @@ export default function LifeGoalPlanner() {
   const {
     weeklyTargets,
   } = useWeeklyPlanning();
-
-  const {
-    tasks,
-  } = useTasks();
 
   const {
     createLifeGoal,
@@ -173,76 +193,53 @@ export default function LifeGoalPlanner() {
   >(undefined);
 
   // ==========================================
-  // Expansion State
+  // Active Goal Workspace
   // ==========================================
 
   const [
-    expandedGoals,
-    setExpandedGoals,
+    expandedGoalId,
+    setExpandedGoalId,
   ] = useState<
-    Set<number>
-  >(
-    () =>
-      new Set<number>()
-  );
-
-  // ==========================================
-  // Relationship State
-  // ==========================================
-
-  const relationshipState =
-    useMemo(
-      () => ({
-        lifeGoals,
-
-        monthlyTargets:
-          monthlyPlans,
-
-        weeklyTargets,
-
-        tasks,
-      }),
-      [
-        lifeGoals,
-        monthlyPlans,
-        weeklyTargets,
-        tasks,
-      ]
-    );
+    number | undefined
+  >(undefined);
 
   // ==========================================
   // Goal Ordering
   // ==========================================
 
   const orderedGoals =
-    useMemo(() => {
-      return [
-        ...lifeGoals,
-      ].sort(
-        (
-          first,
-          second
-        ) => {
-          if (
-            first.completed !==
-            second.completed
-          ) {
-            return first.completed
-              ? 1
-              : -1;
-          }
+    useMemo(
+      () =>
+        [
+          ...lifeGoals,
+        ].sort(
+          (
+            first,
+            second
+          ) => {
+            if (
+              first.completed !==
+              second.completed
+            ) {
+              return first.completed
+                ? 1
+                : -1;
+            }
 
-          return (
-            new Date(
-              first.createdAt
-            ).getTime() -
-            new Date(
-              second.createdAt
-            ).getTime()
-          );
-        }
-      );
-    }, [lifeGoals]);
+            return (
+              new Date(
+                first.createdAt
+              ).getTime() -
+              new Date(
+                second.createdAt
+              ).getTime()
+            );
+          }
+        ),
+      [
+        lifeGoals,
+      ]
+    );
 
   // ==========================================
   // Goal Months
@@ -296,9 +293,7 @@ export default function LifeGoalPlanner() {
         targetDate,
       });
 
-    if (
-      !result.created
-    ) {
+    if (!result.created) {
       return;
     }
   }
@@ -341,33 +336,18 @@ export default function LifeGoalPlanner() {
   }
 
   // ==========================================
-  // Goal Expansion
+  // Goal Workspace
   // ==========================================
 
   function toggleGoal(
     goalId: number
   ) {
-    setExpandedGoals(
-      (previous) => {
-        const next =
-          new Set(
-            previous
-          );
-
-        if (
-          next.has(goalId)
-        ) {
-          next.delete(
-            goalId
-          );
-        } else {
-          next.add(
-            goalId
-          );
-        }
-
-        return next;
-      }
+    setExpandedGoalId(
+      (current) =>
+        current ===
+        goalId
+          ? undefined
+          : goalId
     );
   }
 
@@ -390,6 +370,15 @@ export default function LifeGoalPlanner() {
     deleteLifeGoal(
       goal.id
     );
+
+    if (
+      expandedGoalId ===
+      goal.id
+    ) {
+      setExpandedGoalId(
+        undefined
+      );
+    }
   }
 
   // ==========================================
@@ -412,21 +401,38 @@ export default function LifeGoalPlanner() {
             gap-3
           "
         >
-          <p
-            className="
-              text-xs
-              font-medium
-              text-slate-500
-            "
-          >
-            {orderedGoals.length === 0
-              ? "Start designing your long-term direction."
-              : `${orderedGoals.length} ${
-                  orderedGoals.length === 1
-                    ? "life goal"
-                    : "life goals"
-                }`}
-          </p>
+          <div>
+            <p
+              className="
+                text-xs
+                font-medium
+                text-slate-500
+              "
+            >
+              {orderedGoals.length ===
+              0
+                ? "Start designing your long-term direction."
+                : `${orderedGoals.length} ${
+                    orderedGoals.length ===
+                    1
+                      ? "life goal"
+                      : "life goals"
+                  }`}
+            </p>
+
+            {orderedGoals.length >
+              0 && (
+              <p
+                className="
+                  mt-0.5
+                  text-[10px]
+                  text-slate-700
+                "
+              >
+                Select a goal to enter its planning workspace.
+              </p>
+            )}
+          </div>
 
           <button
             type="button"
@@ -465,7 +471,8 @@ export default function LifeGoalPlanner() {
             Empty State
         ====================================== */}
 
-        {orderedGoals.length === 0 ? (
+        {orderedGoals.length ===
+        0 ? (
           <div
             className="
               rounded-xl
@@ -517,9 +524,7 @@ export default function LifeGoalPlanner() {
                 text-slate-600
               "
             >
-              Create a long-term outcome and LifeOS
-              will organize it into months, real
-              calendar weeks, and Universal Tasks.
+              Create a long-term outcome and LifeOS will organize it into months, real calendar weeks, and Universal Tasks.
             </p>
 
             <button
@@ -560,23 +565,9 @@ export default function LifeGoalPlanner() {
                     goal.id
                   );
 
-                const goalTasks =
-                  TaskRelationshipEngine
-                    .getTasksForLifeGoal(
-                      relationshipState,
-                      goal.id
-                    );
-
-                const completedTasks =
-                  goalTasks.filter(
-                    (task) =>
-                      task.completed
-                  ).length;
-
                 const goalExpanded =
-                  expandedGoals.has(
-                    goal.id
-                  );
+                  expandedGoalId ===
+                  goal.id;
 
                 const progress =
                   clampProgress(
@@ -598,27 +589,30 @@ export default function LifeGoalPlanner() {
                     key={
                       goal.id
                     }
-                    className="
+                    className={`
                       overflow-hidden
                       rounded-xl
                       border
-                      border-slate-800
-                      bg-slate-950/35
-                    "
+                      transition
+                      ${
+                        goalExpanded
+                          ? "border-cyan-500/20 bg-slate-950/45"
+                          : "border-slate-800 bg-slate-950/35"
+                      }
+                    `}
                   >
-
                     {/* =========================
-                        Compact Goal Row
+                        Goal Selector Row
                     ========================= */}
 
                     <div
                       className="
                         flex
-                        min-h-14
+                        min-h-16
                         items-center
                         gap-3
                         px-3
-                        py-2
+                        py-2.5
                       "
                     >
                       <button
@@ -643,8 +637,8 @@ export default function LifeGoalPlanner() {
                         "
                         aria-label={
                           goalExpanded
-                            ? "Close goal profile"
-                            : "Open goal profile"
+                            ? "Close goal workspace"
+                            : "Open goal workspace"
                         }
                       >
                         {goalExpanded ? (
@@ -700,7 +694,8 @@ export default function LifeGoalPlanner() {
                                 md:inline
                               "
                             >
-                              Target {targetDate}
+                              Target{" "}
+                              {targetDate}
                             </span>
                           )}
                         </div>
@@ -716,7 +711,7 @@ export default function LifeGoalPlanner() {
                           <div
                             className="
                               h-1
-                              max-w-40
+                              max-w-48
                               flex-1
                               overflow-hidden
                               rounded-full
@@ -756,58 +751,38 @@ export default function LifeGoalPlanner() {
                               sm:inline
                             "
                           >
-                            {completedTasks}/
-                            {goalTasks.length}
-                            {" "}
-                            tasks
+                            {
+                              goalMonths.length
+                            }{" "}
+                            {goalMonths.length ===
+                            1
+                              ? "month planned"
+                              : "months planned"}
                           </span>
                         </div>
                       </button>
 
-                      <div
-                        className="
+                      <span
+                        className={`
                           hidden
-                          items-center
-                          gap-2
-                          lg:flex
-                        "
+                          rounded-md
+                          border
+                          px-2
+                          py-1
+                          text-[10px]
+                          font-medium
+                          sm:inline
+                          ${
+                            goal.completed
+                              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                              : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300"
+                          }
+                        `}
                       >
-                        <span
-                          className="
-                            rounded-md
-                            border
-                            border-slate-800
-                            bg-slate-900
-                            px-2
-                            py-1
-                            text-[10px]
-                            text-slate-500
-                          "
-                        >
-                          {goalMonths.length}
-                          {" "}
-                          planned
-                        </span>
-
-                        <span
-                          className={`
-                            rounded-md
-                            border
-                            px-2
-                            py-1
-                            text-[10px]
-                            ${
-                              goal.completed
-                                ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                                : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300"
-                            }
-                          `}
-                        >
-                          {goal.completed
-                            ? "Completed"
-                            : "Active"}
-                        </span>
-                      </div>
+                        {goal.completed
+                          ? "Completed"
+                          : "Active"}
+                      </span>
 
                       <button
                         type="button"
@@ -836,33 +811,27 @@ export default function LifeGoalPlanner() {
                     </div>
 
                     {/* =========================
-                        Goal Profile
+                        Goal Workspace
                     ========================= */}
 
                     {goalExpanded && (
                       <div
                         className="
-                          space-y-4
                           border-t
                           border-slate-800
                           bg-slate-950/20
-                          px-3
-                          py-4
-                          sm:px-4
                         "
                       >
-
                         {/* =====================
-                            Profile Overview
+                            Workspace Header
                         ===================== */}
 
                         <div
                           className="
-                            rounded-xl
-                            border
+                            border-b
                             border-slate-800
-                            bg-slate-900/45
-                            p-4
+                            px-4
+                            py-4
                           "
                         >
                           <div
@@ -876,41 +845,31 @@ export default function LifeGoalPlanner() {
                             "
                           >
                             <div className="min-w-0">
-
                               <p
                                 className="
                                   text-[10px]
                                   font-bold
                                   uppercase
-                                  tracking-[0.2em]
+                                  tracking-[0.18em]
                                   text-cyan-400
                                 "
                               >
-                                Goal Profile
+                                Goal Workspace
                               </p>
-
-                              <h4
-                                className="
-                                  mt-1
-                                  text-lg
-                                  font-bold
-                                  text-white
-                                "
-                              >
-                                {goal.title}
-                              </h4>
 
                               {goal.description ? (
                                 <p
                                   className="
                                     mt-2
-                                    max-w-2xl
+                                    max-w-3xl
                                     text-xs
                                     leading-5
                                     text-slate-400
                                   "
                                 >
-                                  {goal.description}
+                                  {
+                                    goal.description
+                                  }
                                 </p>
                               ) : (
                                 <p
@@ -923,158 +882,117 @@ export default function LifeGoalPlanner() {
                                   No description added yet.
                                 </p>
                               )}
-
                             </div>
 
                             <div
                               className="
-                                grid
+                                flex
                                 shrink-0
-                                grid-cols-2
+                                flex-wrap
                                 gap-x-6
                                 gap-y-2
-                                text-xs
                               "
                             >
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                                  Start
-                                </p>
+                              <WorkspaceDate
+                                label="Start"
+                                value={
+                                  startDate ??
+                                  "Unknown"
+                                }
+                              />
 
-                                <p className="mt-1 font-medium text-slate-300">
-                                  {startDate ??
-                                    "Unknown"}
-                                </p>
-                              </div>
-
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                                  Target
-                                </p>
-
-                                <p className="mt-1 font-medium text-slate-300">
-                                  {targetDate ??
-                                    "Not set"}
-                                </p>
-                              </div>
-
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                                  Tasks
-                                </p>
-
-                                <p className="mt-1 font-medium text-slate-300">
-                                  {completedTasks}
-                                  {" / "}
-                                  {goalTasks.length}
-                                </p>
-                              </div>
-
-                              <div>
-                                <p className="text-[10px] uppercase tracking-wider text-slate-600">
-                                  Progress
-                                </p>
-
-                                <p className="mt-1 font-medium text-cyan-300">
-                                  {progress}%
-                                </p>
-                              </div>
+                              <WorkspaceDate
+                                label="Target"
+                                value={
+                                  targetDate ??
+                                  "Not set"
+                                }
+                              />
                             </div>
                           </div>
                         </div>
 
                         {/* =====================
-                            Smart Goal Timeline
+                            Planning Intelligence
                         ===================== */}
 
-                        <SmartGoalTimeline
-                          goal={
-                            goal
-                          }
-                          monthlyPlans={
-                            monthlyPlans
-                          }
-                          onPlanMonth={(
-                            month,
-                            year
-                          ) =>
-                            handlePlanMonth(
-                              goal.id,
+                        <div
+                          className="
+                            space-y-3
+                            border-b
+                            border-slate-800
+                            px-3
+                            py-4
+                            sm:px-4
+                          "
+                        >
+                          <SectionHeading
+                            title="Planning Intelligence"
+                            description="Understand where the goal is going and what needs attention."
+                          />
+
+                          <SmartGoalTimeline
+                            goal={
+                              goal
+                            }
+                            monthlyPlans={
+                              monthlyPlans
+                            }
+                            onPlanMonth={(
                               month,
                               year
-                            )
-                          }
-                        />
+                            ) =>
+                              handlePlanMonth(
+                                goal.id,
+                                month,
+                                year
+                              )
+                            }
+                          />
+
+                          <GoalPlanningHealthPanel
+                            goalId={
+                              goal.id
+                            }
+                          />
+                        </div>
 
                         {/* =====================
-                            Planned Structure
+                            Execution Plan
                         ===================== */}
 
-                        <div>
-                          <div
-                            className="
-                              mb-2
-                              flex
-                              items-center
-                              justify-between
-                              gap-3
-                            "
-                          >
-                            <div>
-                              <p
-                                className="
-                                  text-xs
-                                  font-semibold
-                                  text-slate-300
-                                "
-                              >
-                                Planned Structure
-                              </p>
-
-                              <p
-                                className="
-                                  mt-0.5
-                                  text-[10px]
-                                  text-slate-600
-                                "
-                              >
-                                Open a month to plan real
-                                Monday–Sunday calendar weeks.
-                              </p>
-                            </div>
-
-                            <span
-                              className="
-                                rounded-md
-                                border
-                                border-slate-800
-                                bg-slate-900/60
-                                px-2
-                                py-1
-                                text-[10px]
-                                text-slate-500
-                              "
-                            >
-                              {goalMonths.length}
-                              {" "}
-                              {goalMonths.length ===
-                              1
-                                ? "month"
-                                : "months"}
-                            </span>
-                          </div>
+                        <div
+                          className="
+                            px-3
+                            py-4
+                            sm:px-4
+                          "
+                        >
+                          <SectionHeading
+                            title="Execution Plan"
+                            description="Monthly Outcomes become real calendar weeks and Universal Tasks."
+                            trailing={
+                              `${goalMonths.length} ${
+                                goalMonths.length ===
+                                1
+                                  ? "month planned"
+                                  : "months planned"
+                              }`
+                            }
+                          />
 
                           {goalMonths.length ===
                           0 ? (
                             <div
                               className="
+                                mt-3
                                 rounded-lg
                                 border
                                 border-dashed
                                 border-slate-800
                                 bg-slate-950/30
                                 px-4
-                                py-5
+                                py-6
                                 text-center
                               "
                             >
@@ -1085,44 +1003,55 @@ export default function LifeGoalPlanner() {
                                   text-slate-400
                                 "
                               >
-                                No months planned yet
+                                No Monthly Outcomes yet
                               </p>
 
                               <p
                                 className="
                                   mt-1
                                   text-[10px]
+                                  leading-5
                                   text-slate-600
                                 "
                               >
-                                Choose Plan Month from the
-                                smart timeline above.
+                                Choose an unplanned month from the Smart Timeline above. LifeOS already knows the goal, month, and year.
                               </p>
                             </div>
                           ) : (
-                            <div className="space-y-2">
-
+                            <div
+                              className="
+                                mt-3
+                                space-y-2
+                              "
+                            >
                               {goalMonths.map(
                                 (
                                   month
                                 ) => (
                                   <GoalMonthPlanner
-                                    key={month.id}
-                                    month={month}
-                                    weeklyTargets={weeklyTargets}
-                                    goalStartDate={goal.startDate}
-                                    goalTargetDate={goal.targetDate}
+                                    key={
+                                      month.id
+                                    }
+                                    month={
+                                      month
+                                    }
+                                    weeklyTargets={
+                                      weeklyTargets
+                                    }
+                                    goalStartDate={
+                                      goal.startDate
+                                    }
+                                    goalTargetDate={
+                                      goal.targetDate
+                                    }
                                   />
                                 )
                               )}
-
                             </div>
                           )}
                         </div>
-
                       </div>
                     )}
-
                   </article>
                 );
               }
@@ -1175,5 +1104,113 @@ export default function LifeGoalPlanner() {
         />
       )}
     </>
+  );
+}
+
+// ==========================================
+// Workspace Date
+// ==========================================
+
+interface WorkspaceDateProps {
+  label: string;
+
+  value: string;
+}
+
+function WorkspaceDate({
+  label,
+  value,
+}: WorkspaceDateProps) {
+  return (
+    <div>
+      <p
+        className="
+          text-[9px]
+          font-semibold
+          uppercase
+          tracking-wider
+          text-slate-600
+        "
+      >
+        {label}
+      </p>
+
+      <p
+        className="
+          mt-1
+          whitespace-nowrap
+          text-xs
+          font-medium
+          text-slate-300
+        "
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+// ==========================================
+// Section Heading
+// ==========================================
+
+interface SectionHeadingProps {
+  title: string;
+
+  description: string;
+
+  trailing?: string;
+}
+
+function SectionHeading({
+  title,
+  description,
+  trailing,
+}: SectionHeadingProps) {
+  return (
+    <div
+      className="
+        flex
+        flex-wrap
+        items-end
+        justify-between
+        gap-3
+      "
+    >
+      <div>
+        <p
+          className="
+            text-xs
+            font-semibold
+            text-slate-300
+          "
+        >
+          {title}
+        </p>
+
+        <p
+          className="
+            mt-0.5
+            text-[10px]
+            leading-4
+            text-slate-600
+          "
+        >
+          {description}
+        </p>
+      </div>
+
+      {trailing && (
+        <span
+          className="
+            text-[10px]
+            font-medium
+            text-slate-500
+          "
+        >
+          {trailing}
+        </span>
+      )}
+    </div>
   );
 }

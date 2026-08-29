@@ -1,33 +1,89 @@
-import { useState } from "react";
+import {
+  useState,
+} from "react";
 
-import { useTasks } from "../../context/TaskContext";
-import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
+import {
+  useWeeklyPlanning,
+} from "../../context/WeeklyPlanningContext";
+
+import {
+  usePlanningExecution,
+} from "../../context/PlanningExecutionContext";
 
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Modal from "../ui/Modal";
 
+import type {
+  TaskPriority,
+} from "../../shared/types";
+
+// ==========================================
+// Types
+// ==========================================
+
 interface TaskModalProps {
   open: boolean;
+
   onClose: () => void;
 }
+
+// ==========================================
+// Date Helpers
+// ==========================================
+
+function getTodayLocalDate() {
+  const today =
+    new Date();
+
+  const year =
+    today.getFullYear();
+
+  const month =
+    String(
+      today.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      today.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return `${year}-${month}-${day}`;
+}
+
+function getTodayLabel() {
+  return new Date().toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
+}
+
+// ==========================================
+// Component
+// ==========================================
 
 export default function TaskModal({
   open,
   onClose,
 }: TaskModalProps) {
   const {
-    addTask,
-  } = useTasks();
-
-  const {
     weeklyTargets,
   } = useWeeklyPlanning();
 
-  const today =
-    new Date()
-      .toISOString()
-      .split("T")[0];
+  const {
+    createTask,
+  } = usePlanningExecution();
 
   const [
     title,
@@ -37,31 +93,53 @@ export default function TaskModal({
   const [
     priority,
     setPriority,
-  ] = useState<
-    "low" | "medium" | "high"
-  >("medium");
+  ] = useState<TaskPriority>(
+    "medium"
+  );
 
   const [
     weeklyTargetId,
     setWeeklyTargetId,
   ] = useState("");
 
+  // ==========================================
+  // Reset / Close
+  // ==========================================
+
+  function resetForm() {
+    setTitle("");
+
+    setPriority(
+      "medium"
+    );
+
+    setWeeklyTargetId("");
+  }
+
+  function handleClose() {
+    resetForm();
+
+    onClose();
+  }
+
+  // ==========================================
+  // Creation
+  // ==========================================
+
   function handleCreate() {
     const trimmedTitle =
       title.trim();
 
     if (!trimmedTitle) {
-      alert(
-        "Please enter a task."
-      );
       return;
     }
 
-    addTask({
-      title: trimmedTitle,
+    createTask({
+      title:
+        trimmedTitle,
 
       dueDate:
-        today,
+        getTodayLocalDate(),
 
       priority,
 
@@ -73,23 +151,29 @@ export default function TaskModal({
           : undefined,
     });
 
-    setTitle("");
-    setPriority("medium");
-    setWeeklyTargetId("");
+    resetForm();
 
     onClose();
   }
 
+  // ==========================================
+  // UI
+  // ==========================================
+
   return (
     <Modal
-      open={open}
-      title="✅ New Task"
-      description="Plan what you want to accomplish today."
+      open={
+        open
+      }
+      title="New Task"
+      description="Create a task for today. LifeOS already knows today's date."
       footer={
         <>
           <Button
             variant="secondary"
-            onClick={onClose}
+            onClick={
+              handleClose
+            }
           >
             Cancel
           </Button>
@@ -106,14 +190,97 @@ export default function TaskModal({
     >
       <div className="space-y-5">
 
+        {/* ====================================
+            Smart Date Context
+        ==================================== */}
+
+        <div
+          className="
+            rounded-xl
+            border
+            border-cyan-500/15
+            bg-cyan-500/5
+            px-4
+            py-3
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              justify-between
+              gap-4
+            "
+          >
+            <div>
+              <p
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                  text-cyan-400
+                "
+              >
+                Due
+              </p>
+
+              <p
+                className="
+                  mt-1
+                  text-sm
+                  font-semibold
+                  text-slate-200
+                "
+              >
+                Today
+              </p>
+            </div>
+
+            <p
+              className="
+                text-xs
+                font-medium
+                text-slate-400
+              "
+            >
+              {getTodayLabel()}
+            </p>
+          </div>
+
+          <p
+            className="
+              mt-2
+              text-[10px]
+              leading-4
+              text-slate-600
+            "
+          >
+            Tasks created here are due today automatically.
+          </p>
+        </div>
+
+        {/* ====================================
+            Task
+        ==================================== */}
+
         <div>
-          <label className="mb-2 block text-sm text-slate-400">
+          <label
+            className="
+              mb-2
+              block
+              text-sm
+              text-slate-400
+            "
+          >
             Task
           </label>
 
           <Input
-            placeholder="Finish SAT Practice"
-            value={title}
+            placeholder="What needs to be done?"
+            value={
+              title
+            }
             onChange={(
               event
             ) =>
@@ -121,46 +288,108 @@ export default function TaskModal({
                 event.target.value
               )
             }
+            onKeyDown={(
+              event
+            ) => {
+              if (
+                event.key ===
+                "Enter"
+              ) {
+                event.preventDefault();
+
+                handleCreate();
+              }
+
+              if (
+                event.key ===
+                "Escape"
+              ) {
+                event.preventDefault();
+
+                handleClose();
+              }
+            }}
           />
         </div>
 
+        {/* ====================================
+            Priority
+        ==================================== */}
+
         <div>
-          <label className="mb-2 block text-sm text-slate-400">
+          <label
+            className="
+              mb-2
+              block
+              text-sm
+              text-slate-400
+            "
+          >
             Priority
           </label>
 
           <select
-            value={priority}
+            value={
+              priority
+            }
             onChange={(
               event
             ) =>
               setPriority(
-                event.target
-                  .value as
-                  | "low"
-                  | "medium"
-                  | "high"
+                event.target.value as TaskPriority
               )
             }
-            className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none focus:border-cyan-500"
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-800
+              bg-slate-950
+              px-4
+              py-3
+              text-sm
+              text-white
+              outline-none
+              transition
+              focus:border-cyan-500
+            "
           >
             <option value="low">
-              🟢 Low
+              Low
             </option>
 
             <option value="medium">
-              🟡 Medium
+              Medium
             </option>
 
             <option value="high">
-              🔴 High
+              High
             </option>
           </select>
         </div>
 
+        {/* ====================================
+            Optional Weekly Focus
+        ==================================== */}
+
         <div>
-          <label className="mb-2 block text-sm text-slate-400">
-            Weekly Target (Optional)
+          <label
+            className="
+              mb-2
+              block
+              text-sm
+              text-slate-400
+            "
+          >
+            Weekly Focus
+            <span
+              className="
+                ml-1
+                text-slate-600
+              "
+            >
+              Optional
+            </span>
           </label>
 
           <select
@@ -174,7 +403,20 @@ export default function TaskModal({
                 event.target.value
               )
             }
-            className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none focus:border-cyan-500"
+            className="
+              w-full
+              rounded-xl
+              border
+              border-slate-800
+              bg-slate-950
+              px-4
+              py-3
+              text-sm
+              text-white
+              outline-none
+              transition
+              focus:border-cyan-500
+            "
           >
             <option value="">
               Standalone Task
@@ -190,13 +432,22 @@ export default function TaskModal({
                     target.id
                   }
                 >
-                  {
-                    target.title
-                  }
+                  {target.title}
                 </option>
               )
             )}
           </select>
+
+          <p
+            className="
+              mt-2
+              text-[10px]
+              leading-4
+              text-slate-600
+            "
+          >
+            Link the task only when it belongs to an existing Weekly Focus.
+          </p>
         </div>
 
       </div>

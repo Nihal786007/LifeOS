@@ -14,22 +14,22 @@ import {
 } from "../constants/storage";
 
 import type {
-  CreateTaskInput,
   Task,
 } from "../shared/types";
 
+// ==========================================
+// Types
+// ==========================================
+
 interface TaskContextType {
   tasks: Task[];
-
-  addTask: (
-    input: CreateTaskInput
-  ) => void;
 
   /**
    * Applies task state produced by the
    * LifeOS execution/planning architecture.
    *
-   * Execution mutations themselves must go
+   * Task creation, updates, completion,
+   * deletion, and other mutations must go
    * through PlanningExecutionContext.
    */
   replaceTasks: (
@@ -37,10 +37,18 @@ interface TaskContextType {
   ) => void;
 }
 
+// ==========================================
+// Context
+// ==========================================
+
 const TaskContext =
   createContext<
     TaskContextType | null
   >(null);
+
+// ==========================================
+// Provider
+// ==========================================
 
 export function TaskProvider({
   children,
@@ -76,61 +84,13 @@ export function TaskProvider({
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEYS.TASKS,
-      JSON.stringify(tasks)
+      JSON.stringify(
+        tasks
+      )
     );
-  }, [tasks]);
-
-  // ==========================================
-  // Universal Task Creation
-  // ==========================================
-
-  function addTask(
-    input: CreateTaskInput
-  ) {
-    const trimmedTitle =
-      input.title.trim();
-
-    if (!trimmedTitle) {
-      return;
-    }
-
-    const task: Task = {
-      id: Date.now(),
-
-      title:
-        trimmedTitle,
-
-      description:
-        input.description?.trim() ||
-        undefined,
-
-      dueDate:
-        input.dueDate,
-
-      priority:
-        input.priority ??
-        "medium",
-
-      weeklyTargetId:
-        input.weeklyTargetId,
-
-      completed:
-        false,
-
-      completedAt:
-        undefined,
-
-      createdAt:
-        new Date().toISOString(),
-    };
-
-    setTasks(
-      (previous) => [
-        ...previous,
-        task,
-      ]
-    );
-  }
+  }, [
+    tasks,
+  ]);
 
   // ==========================================
   // Orchestration Synchronization
@@ -144,11 +104,14 @@ export function TaskProvider({
     );
   }
 
+  // ==========================================
+  // Provider
+  // ==========================================
+
   return (
     <TaskContext.Provider
       value={{
         tasks,
-        addTask,
         replaceTasks,
       }}
     >
@@ -156,6 +119,10 @@ export function TaskProvider({
     </TaskContext.Provider>
   );
 }
+
+// ==========================================
+// Hook
+// ==========================================
 
 export function useTasks() {
   const context =

@@ -21,6 +21,10 @@ import {
 } from "../../engines/TaskWeekPlacementEngine";
 
 import {
+  GoalWeekOwnershipEngine,
+} from "../../engines/GoalWeekOwnershipEngine";
+
+import {
   useMonthlyPlanning,
 } from "../../context/MonthlyPlanningContext";
 
@@ -67,8 +71,108 @@ interface SelectedCalendarWeek {
 }
 
 // ==========================================
-// Helpers
+// Date Helpers
 // ==========================================
+
+function getTodayDateOnly() {
+  const today =
+    new Date();
+
+  const year =
+    today.getFullYear();
+
+  const month =
+    String(
+      today.getMonth() + 1
+    ).padStart(
+      2,
+      "0"
+    );
+
+  const day =
+    String(
+      today.getDate()
+    ).padStart(
+      2,
+      "0"
+    );
+
+  return `${year}-${month}-${day}`;
+}
+
+function parseDateOnly(
+  value?: string
+) {
+  if (!value) {
+    return undefined;
+  }
+
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})$/.exec(
+      value
+    );
+
+  if (!match) {
+    return undefined;
+  }
+
+  const year =
+    Number(
+      match[1]
+    );
+
+  const month =
+    Number(
+      match[2]
+    );
+
+  const day =
+    Number(
+      match[3]
+    );
+
+  const date =
+    new Date(
+      year,
+      month - 1,
+      day
+    );
+
+  if (
+    date.getFullYear() !==
+      year ||
+    date.getMonth() !==
+      month - 1 ||
+    date.getDate() !==
+      day
+  ) {
+    return undefined;
+  }
+
+  return date;
+}
+
+function formatDateLabel(
+  value?: string
+) {
+  const date =
+    parseDateOnly(
+      value
+    );
+
+  if (!date) {
+    return value ?? "";
+  }
+
+  return date.toLocaleDateString(
+    undefined,
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }
+  );
+}
 
 function clampProgress(
   progress: number
@@ -77,7 +181,9 @@ function clampProgress(
     100,
     Math.max(
       0,
-      Math.round(progress)
+      Math.round(
+        progress
+      )
     )
   );
 }
@@ -97,6 +203,83 @@ function formatMonthLabel(
       year: "numeric",
     }
   );
+}
+
+function getOwnerLabel(
+  ownerMonth?: number,
+  ownerYear?: number
+) {
+  if (
+    ownerMonth === undefined ||
+    ownerYear === undefined
+  ) {
+    return undefined;
+  }
+
+  return formatMonthLabel(
+    ownerMonth,
+    ownerYear
+  );
+}
+
+// ==========================================
+// Smart Task Date
+// ==========================================
+
+function getSmartTaskDueDate(
+  weekStartDate?: string,
+  weekEndDate?: string,
+  goalStartDate?: string,
+  goalTargetDate?: string
+) {
+  if (
+    !weekStartDate ||
+    !weekEndDate
+  ) {
+    return getTodayDateOnly();
+  }
+
+  const today =
+    getTodayDateOnly();
+
+  let activeStart =
+    weekStartDate;
+
+  let activeEnd =
+    weekEndDate;
+
+  if (
+    goalStartDate &&
+    goalStartDate >
+      activeStart &&
+    goalStartDate <=
+      activeEnd
+  ) {
+    activeStart =
+      goalStartDate;
+  }
+
+  if (
+    goalTargetDate &&
+    goalTargetDate <
+      activeEnd &&
+    goalTargetDate >=
+      activeStart
+  ) {
+    activeEnd =
+      goalTargetDate;
+  }
+
+  if (
+    today >=
+      activeStart &&
+    today <=
+      activeEnd
+  ) {
+    return today;
+  }
+
+  return activeStart;
 }
 
 // ==========================================
@@ -199,17 +382,6 @@ export default function GoalMonthPlanner({
   ] = useState("");
 
   // ==========================================
-  // Week Task Expansion
-  // ==========================================
-
-  const [
-    expandedWeeklyTargetId,
-    setExpandedWeeklyTargetId,
-  ] = useState<
-    number | undefined
-  >(undefined);
-
-  // ==========================================
   // Task Creation State
   // ==========================================
 
@@ -238,6 +410,24 @@ export default function GoalMonthPlanner({
   ] = useState("");
 
   // ==========================================
+  // Goal
+  // ==========================================
+
+  const currentGoal =
+    useMemo(
+      () =>
+        lifeGoals.find(
+          (goal) =>
+            goal.id ===
+            month.goalId
+        ),
+      [
+        lifeGoals,
+        month.goalId,
+      ]
+    );
+
+  // ==========================================
   // Real Calendar Weeks
   // ==========================================
 
@@ -264,24 +454,6 @@ export default function GoalMonthPlanner({
     );
 
   // ==========================================
-  // Goal
-  // ==========================================
-
-  const currentGoal =
-    useMemo(
-      () =>
-        lifeGoals.find(
-          (goal) =>
-            goal.id ===
-            month.goalId
-        ),
-      [
-        lifeGoals,
-        month.goalId,
-      ]
-    );
-
-  // ==========================================
   // Existing Weekly Targets
   // ==========================================
 
@@ -303,14 +475,12 @@ export default function GoalMonthPlanner({
     weekStartDate: string,
     weekEndDate: string
   ) {
-    return (
-      monthWeeklyTargets.find(
-        (target) =>
-          target.weekStartDate ===
-            weekStartDate &&
-          target.weekEndDate ===
-            weekEndDate
-      )
+    return monthWeeklyTargets.find(
+      (target) =>
+        target.weekStartDate ===
+          weekStartDate &&
+        target.weekEndDate ===
+          weekEndDate
     );
   }
 
@@ -325,7 +495,7 @@ export default function GoalMonthPlanner({
   }
 
   // ==========================================
-  // Placement State
+  // Planning State
   // ==========================================
 
   const placementState =
@@ -344,6 +514,72 @@ export default function GoalMonthPlanner({
         weeklyTargets,
       ]
     );
+
+  // ==========================================
+  // Canonical Week Ownership
+  // ==========================================
+
+  const weekOwnership =
+    useMemo(
+      () =>
+        calendarWeeks.map(
+          (week) => ({
+            week,
+
+            result:
+              GoalWeekOwnershipEngine.resolve(
+                placementState,
+                month.id,
+                week.weekStartDate,
+                week.weekEndDate
+              ),
+          })
+        ),
+      [
+        calendarWeeks,
+        placementState,
+        month.id,
+      ]
+    );
+
+  const ownedWeeks =
+    useMemo(
+      () =>
+        weekOwnership.filter(
+          ({ result }) =>
+            result.ownerMonth ===
+              month.month &&
+            result.ownerYear ===
+              month.year
+        ),
+      [
+        weekOwnership,
+        month.month,
+        month.year,
+      ]
+    );
+
+  const plannedOwnedWeeks =
+    useMemo(
+      () =>
+        ownedWeeks.filter(
+          ({ week }) =>
+            Boolean(
+              getWeeklyTargetForSlot(
+                week.weekStartDate,
+                week.weekEndDate
+              )
+            )
+        ).length,
+      [
+        ownedWeeks,
+        monthWeeklyTargets,
+      ]
+    );
+
+  // ==========================================
+  // Smart Task Placement
+  // ==========================================
 
   const taskPlacementResult =
     useMemo(() => {
@@ -411,9 +647,7 @@ export default function GoalMonthPlanner({
         trimmed
       );
 
-    if (
-      !result.updated
-    ) {
+    if (!result.updated) {
       return;
     }
 
@@ -476,9 +710,7 @@ export default function GoalMonthPlanner({
         selectedWeek.weekEndDate
       );
 
-    if (
-      !result.created
-    ) {
+    if (!result.created) {
       setWeeklyFocusError(
         result.message
       );
@@ -552,9 +784,7 @@ export default function GoalMonthPlanner({
         trimmed
       );
 
-    if (
-      !result.updated
-    ) {
+    if (!result.updated) {
       return;
     }
 
@@ -566,34 +796,14 @@ export default function GoalMonthPlanner({
   }
 
   // ==========================================
-  // Weekly Task Expansion
-  // ==========================================
-
-  function toggleWeeklyTasks(
-    weeklyTargetId: number
-  ) {
-    setExpandedWeeklyTargetId(
-      (current) =>
-        current ===
-        weeklyTargetId
-          ? undefined
-          : weeklyTargetId
-    );
-  }
-
-  // ==========================================
   // Universal Task Creation
   // ==========================================
 
   function startAddingTask(
-    weeklyTargetId: number
+    target: WeeklyTarget
   ) {
-    setExpandedWeeklyTargetId(
-      weeklyTargetId
-    );
-
     setAddingTaskForWeekId(
-      weeklyTargetId
+      target.id
     );
 
     setTaskTitle("");
@@ -602,7 +812,14 @@ export default function GoalMonthPlanner({
       "medium"
     );
 
-    setTaskDueDate("");
+    setTaskDueDate(
+      getSmartTaskDueDate(
+        target.weekStartDate,
+        target.weekEndDate,
+        goalStartDate,
+        goalTargetDate
+      )
+    );
   }
 
   function cancelAddingTask() {
@@ -676,10 +893,6 @@ export default function GoalMonthPlanner({
 
     setAddingTaskForWeekId(
       undefined
-    );
-
-    setExpandedWeeklyTargetId(
-      resolvedWeeklyTargetId
     );
   }
 
@@ -833,9 +1046,9 @@ export default function GoalMonthPlanner({
               sm:inline
             "
           >
-            {monthWeeklyTargets.length}
+            {plannedOwnedWeeks}
             /
-            {calendarWeeks.length}
+            {ownedWeeks.length}
             {" "}
             weeks planned
           </span>
@@ -1034,7 +1247,7 @@ export default function GoalMonthPlanner({
       )}
 
       {/* ======================================
-          Real Calendar Weeks
+          Month Workspace
       ====================================== */}
 
       {expanded && (
@@ -1047,6 +1260,60 @@ export default function GoalMonthPlanner({
             p-3
           "
         >
+          <div
+            className="
+              flex
+              flex-wrap
+              items-center
+              justify-between
+              gap-2
+              px-1
+              pb-1
+            "
+          >
+            <div>
+              <p
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                  text-slate-500
+                "
+              >
+                Month Workspace
+              </p>
+
+              <p
+                className="
+                  mt-1
+                  text-[10px]
+                  text-slate-600
+                "
+              >
+                Real calendar weeks for{" "}
+                {formatMonthLabel(
+                  month.month,
+                  month.year
+                )}.
+              </p>
+            </div>
+
+            <span
+              className="
+                text-[10px]
+                font-medium
+                text-slate-500
+              "
+            >
+              {plannedOwnedWeeks}
+              /
+              {ownedWeeks.length}
+              {" "}
+              owned weeks planned
+            </span>
+          </div>
+
           {calendarWeeks.length ===
           0 ? (
             <div
@@ -1089,6 +1356,41 @@ export default function GoalMonthPlanner({
                     week.weekEndDate
                   );
 
+                const ownershipEntry =
+                  weekOwnership.find(
+                    (entry) =>
+                      entry.week
+                        .weekStartDate ===
+                      week.weekStartDate
+                  );
+
+                const ownership =
+                  ownershipEntry?.result ??
+                  GoalWeekOwnershipEngine.resolve(
+                    placementState,
+                    month.id,
+                    week.weekStartDate,
+                    week.weekEndDate
+                  );
+
+                const currentMonthOwnsWeek =
+                  ownership.ownerMonth ===
+                    month.month &&
+                  ownership.ownerYear ===
+                    month.year;
+
+                const ownerLabel =
+                  getOwnerLabel(
+                    ownership.ownerMonth,
+                    ownership.ownerYear
+                  );
+
+                const ownerMonthlyTarget =
+                  ownership.ownerMonthlyTarget;
+
+                const existingOwnerWeeklyTarget =
+                  ownership.existingWeeklyTarget;
+
                 const isPlanningThisWeek =
                   selectedWeek?.weekStartDate ===
                     week.weekStartDate &&
@@ -1098,11 +1400,6 @@ export default function GoalMonthPlanner({
                 const isEditingThisWeek =
                   target !== undefined &&
                   editingWeeklyTargetId ===
-                    target.id;
-
-                const isTasksExpanded =
-                  target !== undefined &&
-                  expandedWeeklyTargetId ===
                     target.id;
 
                 const isAddingTask =
@@ -1116,6 +1413,12 @@ export default function GoalMonthPlanner({
                         target.id
                       )
                     : [];
+
+                const completedTaskCount =
+                  weeklyTasks.filter(
+                    (task) =>
+                      task.completed
+                  ).length;
 
                 return (
                   <div
@@ -1134,14 +1437,14 @@ export default function GoalMonthPlanner({
                     `}
                   >
                     {/* ======================================
-                        Week Header
+                        Week Context
                     ====================================== */}
 
                     <div className="p-3">
                       <div
                         className="
                           flex
-                          items-center
+                          items-start
                           justify-between
                           gap-3
                         "
@@ -1201,86 +1504,79 @@ export default function GoalMonthPlanner({
                               </span>
                             )}
 
-                            {target && (
-                              <span
-                                className="
-                                  text-[9px]
-                                  text-slate-600
-                                "
-                              >
-                                {weeklyTasks.length}
-                                {" "}
-                                {weeklyTasks.length ===
-                                1
-                                  ? "task"
-                                  : "tasks"}
-                              </span>
-                            )}
+                            {!currentMonthOwnsWeek &&
+                              ownerLabel && (
+                                <span
+                                  className="
+                                    rounded
+                                    border
+                                    border-violet-500/20
+                                    bg-violet-500/5
+                                    px-1.5
+                                    py-0.5
+                                    text-[9px]
+                                    font-medium
+                                    text-violet-300
+                                  "
+                                >
+                                  Owned by{" "}
+                                  {ownerLabel}
+                                </span>
+                              )}
                           </div>
+
+                          {/* ==================================
+                              Planned Weekly Focus
+                          ================================== */}
 
                           {target ? (
                             <div
                               className="
-                                mt-1
+                                mt-2
                                 flex
+                                flex-wrap
                                 items-center
-                                gap-2
+                                gap-x-3
+                                gap-y-1
                               "
                             >
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  toggleWeeklyTasks(
-                                    target.id
-                                  )
-                                }
+                              <span
                                 className="
-                                  flex
-                                  min-w-0
-                                  flex-1
-                                  items-center
-                                  gap-2
-                                  text-left
+                                  text-[11px]
+                                  font-semibold
+                                  text-slate-300
                                 "
                               >
-                                <span
-                                  className="
-                                    text-[9px]
-                                    text-slate-600
-                                  "
-                                >
-                                  {isTasksExpanded ? (
-                                    <FaChevronDown />
-                                  ) : (
-                                    <FaChevronRight />
-                                  )}
-                                </span>
+                                {target.title}
+                              </span>
 
-                                <span
-                                  className="
-                                    truncate
-                                    text-[11px]
-                                    font-medium
-                                    text-slate-400
-                                    transition
-                                    hover:text-slate-200
-                                  "
-                                >
-                                  {target.title}
-                                </span>
+                              <span
+                                className="
+                                  text-[10px]
+                                  text-slate-600
+                                "
+                              >
+                                {clampProgress(
+                                  target.progress
+                                )}
+                                %
+                              </span>
 
-                                <span
-                                  className="
-                                    text-[10px]
-                                    text-slate-600
-                                  "
-                                >
-                                  {clampProgress(
-                                    target.progress
-                                  )}
-                                  %
-                                </span>
-                              </button>
+                              <span
+                                className="
+                                  text-[10px]
+                                  text-slate-600
+                                "
+                              >
+                                {
+                                  completedTaskCount
+                                }
+                                /
+                                {
+                                  weeklyTasks.length
+                                }{" "}
+                                tasks
+                              </span>
 
                               {!isEditingThisWeek && (
                                 <button
@@ -1295,7 +1591,6 @@ export default function GoalMonthPlanner({
                                     flex
                                     h-6
                                     w-6
-                                    shrink-0
                                     items-center
                                     justify-center
                                     rounded-md
@@ -1310,20 +1605,88 @@ export default function GoalMonthPlanner({
                                 </button>
                               )}
                             </div>
+                          ) : !currentMonthOwnsWeek ? (
+                            <div className="mt-2">
+                              {existingOwnerWeeklyTarget ? (
+                                <>
+                                  <p
+                                    className="
+                                      text-[11px]
+                                      text-slate-500
+                                    "
+                                  >
+                                    Weekly Focus:{" "}
+                                    <span
+                                      className="
+                                        font-medium
+                                        text-slate-400
+                                      "
+                                    >
+                                      {
+                                        existingOwnerWeeklyTarget.title
+                                      }
+                                    </span>
+                                  </p>
+
+                                  {ownerMonthlyTarget && (
+                                    <p
+                                      className="
+                                        mt-0.5
+                                        text-[10px]
+                                        text-slate-600
+                                      "
+                                    >
+                                      Managed from{" "}
+                                      {ownerLabel}.
+                                    </p>
+                                  )}
+                                </>
+                              ) : ownerMonthlyTarget ? (
+                                <p
+                                  className="
+                                    text-[11px]
+                                    text-slate-600
+                                  "
+                                >
+                                  This real week is planned from{" "}
+                                  <span
+                                    className="
+                                      font-medium
+                                      text-violet-300
+                                    "
+                                  >
+                                    {ownerLabel}
+                                  </span>
+                                  .
+                                </p>
+                              ) : (
+                                <p
+                                  className="
+                                    text-[11px]
+                                    text-amber-400/80
+                                  "
+                                >
+                                  {ownerLabel
+                                    ? `${ownerLabel} owns this week, but its Monthly Outcome has not been planned yet.`
+                                    : ownership.message}
+                                </p>
+                              )}
+                            </div>
                           ) : (
                             <p
                               className="
-                                mt-1
+                                mt-2
                                 text-[11px]
                                 text-slate-600
                               "
                             >
-                              No weekly focus planned.
+                              No Weekly Focus planned.
                             </p>
                           )}
                         </div>
 
                         {!target &&
+                          currentMonthOwnsWeek &&
                           !isPlanningThisWeek && (
                             <button
                               type="button"
@@ -1376,6 +1739,125 @@ export default function GoalMonthPlanner({
                           <div
                             className="
                               mt-3
+                              flex
+                              items-center
+                              gap-2
+                              rounded-lg
+                              border
+                              border-cyan-500/15
+                              bg-slate-950/35
+                              p-2.5
+                            "
+                          >
+                            <input
+                              value={
+                                weeklyTitleDraft
+                              }
+                              onChange={(
+                                event
+                              ) =>
+                                setWeeklyTitleDraft(
+                                  event.target.value
+                                )
+                              }
+                              onKeyDown={(
+                                event
+                              ) => {
+                                if (
+                                  event.key ===
+                                  "Enter"
+                                ) {
+                                  event.preventDefault();
+
+                                  saveWeeklyTargetTitle();
+                                }
+
+                                if (
+                                  event.key ===
+                                  "Escape"
+                                ) {
+                                  event.preventDefault();
+
+                                  cancelEditingWeeklyTarget();
+                                }
+                              }}
+                              placeholder="Weekly focus"
+                              className="
+                                min-w-0
+                                flex-1
+                                rounded-lg
+                                border
+                                border-slate-800
+                                bg-slate-950
+                                px-3
+                                py-2
+                                text-sm
+                                text-white
+                                outline-none
+                                transition
+                                placeholder:text-slate-700
+                                focus:border-cyan-500/50
+                              "
+                              autoFocus
+                            />
+
+                            <button
+                              type="button"
+                              onClick={
+                                saveWeeklyTargetTitle
+                              }
+                              title="Save"
+                              className="
+                                flex
+                                h-9
+                                w-9
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-cyan-500
+                                text-xs
+                                text-slate-950
+                              "
+                            >
+                              <FaCheck />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={
+                                cancelEditingWeeklyTarget
+                              }
+                              title="Cancel"
+                              className="
+                                flex
+                                h-9
+                                w-9
+                                shrink-0
+                                items-center
+                                justify-center
+                                rounded-lg
+                                border
+                                border-slate-800
+                                bg-slate-900
+                                text-xs
+                                text-slate-500
+                              "
+                            >
+                              <FaXmark />
+                            </button>
+                          </div>
+                        )}
+
+                      {/* ======================================
+                          Weekly Focus Creation
+                      ====================================== */}
+
+                      {isPlanningThisWeek &&
+                        currentMonthOwnsWeek && (
+                          <div
+                            className="
+                              mt-3
                               rounded-lg
                               border
                               border-cyan-500/20
@@ -1383,34 +1865,315 @@ export default function GoalMonthPlanner({
                               p-3
                             "
                           >
+                            <div>
+                              <p
+                                className="
+                                  text-[10px]
+                                  font-semibold
+                                  uppercase
+                                  tracking-wider
+                                  text-cyan-400
+                                "
+                              >
+                                New Weekly Focus
+                              </p>
+
+                              <p
+                                className="
+                                  mt-1
+                                  text-[10px]
+                                  text-slate-600
+                                "
+                              >
+                                {
+                                  selectedWeek?.displayLabel
+                                }
+                              </p>
+                            </div>
+
+                            <input
+                              value={
+                                weeklyFocus
+                              }
+                              onChange={(
+                                event
+                              ) => {
+                                setWeeklyFocus(
+                                  event.target.value
+                                );
+
+                                if (
+                                  weeklyFocusError
+                                ) {
+                                  setWeeklyFocusError(
+                                    undefined
+                                  );
+                                }
+                              }}
+                              onKeyDown={(
+                                event
+                              ) => {
+                                if (
+                                  event.key ===
+                                  "Enter"
+                                ) {
+                                  event.preventDefault();
+
+                                  createWeeklyFocus();
+                                }
+
+                                if (
+                                  event.key ===
+                                  "Escape"
+                                ) {
+                                  event.preventDefault();
+
+                                  cancelPlanningWeek();
+                                }
+                              }}
+                              placeholder="What should this week accomplish?"
+                              className="
+                                mt-3
+                                w-full
+                                rounded-lg
+                                border
+                                border-slate-800
+                                bg-slate-950
+                                px-3
+                                py-2.5
+                                text-sm
+                                text-white
+                                outline-none
+                                transition
+                                placeholder:text-slate-700
+                                focus:border-cyan-500/50
+                              "
+                              autoFocus
+                            />
+
+                            {weeklyFocusError && (
+                              <p
+                                className="
+                                  mt-2
+                                  text-[10px]
+                                  text-amber-400
+                                "
+                              >
+                                {weeklyFocusError}
+                              </p>
+                            )}
+
+                            <div
+                              className="
+                                mt-3
+                                flex
+                                justify-end
+                                gap-2
+                              "
+                            >
+                              <button
+                                type="button"
+                                onClick={
+                                  cancelPlanningWeek
+                                }
+                                className="
+                                  rounded-md
+                                  px-3
+                                  py-1.5
+                                  text-[10px]
+                                  font-medium
+                                  text-slate-500
+                                  hover:bg-slate-800
+                                "
+                              >
+                                Cancel
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={
+                                  createWeeklyFocus
+                                }
+                                className="
+                                  rounded-md
+                                  bg-cyan-500
+                                  px-3
+                                  py-1.5
+                                  text-[10px]
+                                  font-bold
+                                  text-slate-950
+                                  hover:bg-cyan-400
+                                "
+                              >
+                                Create Weekly Focus
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                    </div>
+
+                    {/* ======================================
+                        Tasks — No Extra Accordion
+                    ====================================== */}
+
+                    {target && (
+                      <div
+                        className="
+                          border-t
+                          border-slate-800
+                          bg-slate-950/25
+                          p-3
+                        "
+                      >
+                        <div
+                          className="
+                            flex
+                            items-center
+                            justify-between
+                            gap-3
+                          "
+                        >
+                          <div>
                             <p
                               className="
                                 text-[10px]
                                 font-semibold
                                 uppercase
                                 tracking-wider
-                                text-cyan-400
+                                text-slate-500
                               "
                             >
-                              Edit Weekly Focus
+                              Tasks
                             </p>
+
+                            <p
+                              className="
+                                mt-0.5
+                                text-[10px]
+                                text-slate-600
+                              "
+                            >
+                              {weeklyTasks.length ===
+                              0
+                                ? "No tasks yet."
+                                : `${completedTaskCount}/${weeklyTasks.length} completed`}
+                            </p>
+                          </div>
+
+                          {!isAddingTask && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                startAddingTask(
+                                  target
+                                )
+                              }
+                              className="
+                                inline-flex
+                                shrink-0
+                                items-center
+                                gap-1.5
+                                rounded-md
+                                border
+                                border-cyan-500/20
+                                bg-cyan-500/5
+                                px-2.5
+                                py-1.5
+                                text-[10px]
+                                font-semibold
+                                text-cyan-400
+                                transition
+                                hover:bg-cyan-500/10
+                              "
+                            >
+                              <FaPlus />
+
+                              Add Task
+                            </button>
+                          )}
+                        </div>
+
+                        {/* ==================================
+                            Smart Task Form
+                        ================================== */}
+
+                        {isAddingTask && (
+                          <div
+                            className="
+                              mt-3
+                              rounded-lg
+                              border
+                              border-cyan-500/15
+                              bg-slate-950/45
+                              p-3
+                            "
+                          >
+                            <div
+                              className="
+                                flex
+                                flex-wrap
+                                items-center
+                                justify-between
+                                gap-2
+                              "
+                            >
+                              <div>
+                                <p
+                                  className="
+                                    text-[10px]
+                                    font-semibold
+                                    uppercase
+                                    tracking-wider
+                                    text-cyan-400
+                                  "
+                                >
+                                  New Task
+                                </p>
+
+                                <p
+                                  className="
+                                    mt-1
+                                    text-[10px]
+                                    text-slate-600
+                                  "
+                                >
+                                  Context:{" "}
+                                  {week.displayLabel}
+                                </p>
+                              </div>
+
+                              {taskDueDate && (
+                                <span
+                                  className="
+                                    text-[10px]
+                                    font-medium
+                                    text-slate-500
+                                  "
+                                >
+                                  Due{" "}
+                                  {formatDateLabel(
+                                    taskDueDate
+                                  )}
+                                </span>
+                              )}
+                            </div>
 
                             <div
                               className="
                                 mt-3
-                                flex
-                                items-center
+                                grid
                                 gap-2
+                                lg:grid-cols-[minmax(220px,1fr)_120px_170px]
                               "
                             >
                               <input
                                 value={
-                                  weeklyTitleDraft
+                                  taskTitle
                                 }
                                 onChange={(
                                   event
                                 ) =>
-                                  setWeeklyTitleDraft(
+                                  setTaskTitle(
                                     event.target.value
                                   )
                                 }
@@ -1423,7 +2186,9 @@ export default function GoalMonthPlanner({
                                   ) {
                                     event.preventDefault();
 
-                                    saveWeeklyTargetTitle();
+                                    handleCreateTask(
+                                      target.id
+                                    );
                                   }
 
                                   if (
@@ -1432,19 +2197,18 @@ export default function GoalMonthPlanner({
                                   ) {
                                     event.preventDefault();
 
-                                    cancelEditingWeeklyTarget();
+                                    cancelAddingTask();
                                   }
                                 }}
-                                placeholder="Weekly focus"
+                                placeholder="What needs to be done?"
                                 className="
+                                  h-10
                                   min-w-0
-                                  flex-1
                                   rounded-lg
                                   border
                                   border-slate-800
                                   bg-slate-950
                                   px-3
-                                  py-2
                                   text-sm
                                   text-white
                                   outline-none
@@ -1455,589 +2219,223 @@ export default function GoalMonthPlanner({
                                 autoFocus
                               />
 
+                              <select
+                                value={
+                                  taskPriority
+                                }
+                                onChange={(
+                                  event
+                                ) =>
+                                  setTaskPriority(
+                                    event.target.value as TaskPriority
+                                  )
+                                }
+                                className="
+                                  h-10
+                                  rounded-lg
+                                  border
+                                  border-slate-800
+                                  bg-slate-950
+                                  px-3
+                                  text-sm
+                                  text-slate-300
+                                  outline-none
+                                  focus:border-cyan-500/50
+                                "
+                              >
+                                <option value="low">
+                                  Low
+                                </option>
+
+                                <option value="medium">
+                                  Medium
+                                </option>
+
+                                <option value="high">
+                                  High
+                                </option>
+                              </select>
+
+                              <input
+                                type="date"
+                                value={
+                                  taskDueDate
+                                }
+                                onChange={(
+                                  event
+                                ) =>
+                                  setTaskDueDate(
+                                    event.target.value
+                                  )
+                                }
+                                className="
+                                  h-10
+                                  rounded-lg
+                                  border
+                                  border-slate-800
+                                  bg-slate-950
+                                  px-3
+                                  text-sm
+                                  text-slate-300
+                                  outline-none
+                                  focus:border-cyan-500/50
+                                "
+                              />
+                            </div>
+
+                            {/* ==================================
+                                Quiet Smart Placement
+                            ================================== */}
+
+                            {taskDueDate &&
+                              taskPlacementResult && (
+                                <>
+                                  {taskPlacementResult.status ===
+                                    "matched" &&
+                                  taskPlacementResult.weeklyTarget ? (
+                                    <p
+                                      className="
+                                        mt-2
+                                        text-[10px]
+                                        text-emerald-400/80
+                                      "
+                                    >
+                                      <FaCheck
+                                        className="
+                                          mr-1
+                                          inline
+                                          text-[9px]
+                                        "
+                                      />
+
+                                      LifeOS will place this task in{" "}
+                                      <span className="font-semibold">
+                                        {
+                                          taskPlacementResult
+                                            .weeklyTarget
+                                            .title
+                                        }
+                                      </span>
+                                      .
+                                    </p>
+                                  ) : (
+                                    <div
+                                      className="
+                                        mt-3
+                                        rounded-lg
+                                        border
+                                        border-amber-500/20
+                                        bg-amber-500/5
+                                        px-3
+                                        py-2
+                                      "
+                                    >
+                                      <p
+                                        className="
+                                          text-[10px]
+                                          font-semibold
+                                          text-amber-400
+                                        "
+                                      >
+                                        {
+                                          taskPlacementResult.message
+                                        }
+                                      </p>
+                                    </div>
+                                  )}
+                                </>
+                              )}
+
+                            <div
+                              className="
+                                mt-3
+                                flex
+                                justify-end
+                                gap-2
+                              "
+                            >
                               <button
                                 type="button"
                                 onClick={
-                                  saveWeeklyTargetTitle
+                                  cancelAddingTask
                                 }
-                                title="Save"
                                 className="
-                                  flex
-                                  h-9
-                                  w-9
-                                  shrink-0
-                                  items-center
-                                  justify-center
-                                  rounded-lg
-                                  bg-cyan-500
-                                  text-xs
-                                  text-slate-950
+                                  rounded-md
+                                  px-3
+                                  py-1.5
+                                  text-[10px]
+                                  font-medium
+                                  text-slate-500
+                                  hover:bg-slate-800
                                 "
                               >
-                                <FaCheck />
+                                Cancel
                               </button>
 
                               <button
                                 type="button"
-                                onClick={
-                                  cancelEditingWeeklyTarget
+                                onClick={() =>
+                                  handleCreateTask(
+                                    target.id
+                                  )
                                 }
-                                title="Cancel"
+                                disabled={
+                                  Boolean(
+                                    taskDueDate &&
+                                    taskPlacementResult?.status !==
+                                      "matched"
+                                  )
+                                }
                                 className="
-                                  flex
-                                  h-9
-                                  w-9
-                                  shrink-0
-                                  items-center
-                                  justify-center
-                                  rounded-lg
-                                  border
-                                  border-slate-800
-                                  bg-slate-900
-                                  text-xs
-                                  text-slate-500
+                                  rounded-md
+                                  bg-cyan-500
+                                  px-3
+                                  py-1.5
+                                  text-[10px]
+                                  font-bold
+                                  text-slate-950
+                                  transition
+                                  hover:bg-cyan-400
+                                  disabled:cursor-not-allowed
+                                  disabled:opacity-40
                                 "
                               >
-                                <FaXmark />
+                                Add Task
                               </button>
                             </div>
                           </div>
                         )}
 
-                      {/* ======================================
-                          Weekly Focus Creation
-                      ====================================== */}
+                        {/* ==================================
+                            Universal Task List
+                        ================================== */}
 
-                      {isPlanningThisWeek && (
-                        <div
-                          className="
-                            mt-3
-                            rounded-lg
-                            border
-                            border-cyan-500/20
-                            bg-slate-950/40
-                            p-3
-                          "
-                        >
-                          <p
-                            className="
-                              text-[10px]
-                              font-semibold
-                              uppercase
-                              tracking-wider
-                              text-cyan-400
-                            "
-                          >
-                            Weekly Focus
-                          </p>
-
-                          <p
-                            className="
-                              mt-1
-                              text-[10px]
-                              text-slate-600
-                            "
-                          >
-                            {selectedWeek.displayLabel}
-                          </p>
-
-                          <input
-                            value={
-                              weeklyFocus
-                            }
-                            onChange={(
-                              event
-                            ) => {
-                              setWeeklyFocus(
-                                event.target.value
-                              );
-
-                              if (
-                                weeklyFocusError
-                              ) {
-                                setWeeklyFocusError(
-                                  undefined
-                                );
+                        {weeklyTasks.length >
+                          0 && (
+                          <div className="mt-3">
+                            <UniversalTaskTable
+                              tasks={
+                                weeklyTasks
                               }
-                            }}
-                            onKeyDown={(
-                              event
-                            ) => {
-                              if (
-                                event.key ===
-                                "Enter"
-                              ) {
-                                event.preventDefault();
-
-                                createWeeklyFocus();
+                              variant="compact"
+                              getPlanIcon={() =>
+                                "goal"
                               }
-
-                              if (
-                                event.key ===
-                                "Escape"
-                              ) {
-                                event.preventDefault();
-
-                                cancelPlanningWeek();
+                              getWeeklyTargetTitle={() =>
+                                target.title
                               }
-                            }}
-                            placeholder="What should this week accomplish?"
-                            className="
-                              mt-3
-                              w-full
-                              rounded-lg
-                              border
-                              border-slate-800
-                              bg-slate-950
-                              px-3
-                              py-2.5
-                              text-sm
-                              text-white
-                              outline-none
-                              transition
-                              placeholder:text-slate-700
-                              focus:border-cyan-500/50
-                            "
-                            autoFocus
-                          />
-
-                          {weeklyFocusError && (
-                            <p
-                              className="
-                                mt-2
-                                text-[10px]
-                                text-amber-400
-                              "
-                            >
-                              {weeklyFocusError}
-                            </p>
-                          )}
-
-                          <div
-                            className="
-                              mt-3
-                              flex
-                              justify-end
-                              gap-2
-                            "
-                          >
-                            <button
-                              type="button"
-                              onClick={
-                                cancelPlanningWeek
+                              onToggle={
+                                handleToggleTask
                               }
-                              className="
-                                rounded-md
-                                px-3
-                                py-1.5
-                                text-[10px]
-                                font-medium
-                                text-slate-500
-                                hover:bg-slate-800
-                              "
-                            >
-                              Cancel
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={
-                                createWeeklyFocus
+                              onDelete={
+                                handleDeleteTask
                               }
-                              className="
-                                rounded-md
-                                bg-cyan-500
-                                px-3
-                                py-1.5
-                                text-[10px]
-                                font-bold
-                                text-slate-950
-                                hover:bg-cyan-400
-                              "
-                            >
-                              Create Weekly Focus
-                            </button>
+                              emptyMessage="No tasks in this Weekly Focus yet."
+                            />
                           </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* ======================================
-                        Universal Tasks
-                    ====================================== */}
-
-                    {target &&
-                      isTasksExpanded && (
-                        <div
-                          className="
-                            border-t
-                            border-slate-800
-                            bg-slate-950/30
-                            p-3
-                          "
-                        >
-                          <div
-                            className="
-                              mb-3
-                              flex
-                              items-center
-                              justify-between
-                              gap-3
-                            "
-                          >
-                            <div>
-                              <p
-                                className="
-                                  text-[10px]
-                                  font-semibold
-                                  uppercase
-                                  tracking-wider
-                                  text-slate-500
-                                "
-                              >
-                                Universal Tasks
-                              </p>
-
-                              <p
-                                className="
-                                  mt-0.5
-                                  text-[10px]
-                                  text-slate-600
-                                "
-                              >
-                                Tasks linked to this weekly focus.
-                              </p>
-                            </div>
-
-                            {!isAddingTask && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  startAddingTask(
-                                    target.id
-                                  )
-                                }
-                                className="
-                                  inline-flex
-                                  shrink-0
-                                  items-center
-                                  gap-1.5
-                                  rounded-md
-                                  border
-                                  border-cyan-500/20
-                                  bg-cyan-500/5
-                                  px-2.5
-                                  py-1.5
-                                  text-[10px]
-                                  font-semibold
-                                  text-cyan-400
-                                  transition
-                                  hover:bg-cyan-500/10
-                                "
-                              >
-                                <FaPlus />
-
-                                Add Task
-                              </button>
-                            )}
-                          </div>
-
-                          {/* ==================================
-                              Add Task Form
-                          ================================== */}
-
-                          {isAddingTask && (
-                            <div
-                              className="
-                                mb-3
-                                rounded-lg
-                                border
-                                border-cyan-500/20
-                                bg-slate-950/50
-                                p-3
-                              "
-                            >
-                              <p
-                                className="
-                                  text-[10px]
-                                  font-semibold
-                                  uppercase
-                                  tracking-wider
-                                  text-cyan-400
-                                "
-                              >
-                                New Universal Task
-                              </p>
-
-                              <div
-                                className="
-                                  mt-3
-                                  grid
-                                  gap-2
-                                  lg:grid-cols-[minmax(220px,1fr)_120px_150px]
-                                "
-                              >
-                                <input
-                                  value={
-                                    taskTitle
-                                  }
-                                  onChange={(
-                                    event
-                                  ) =>
-                                    setTaskTitle(
-                                      event.target.value
-                                    )
-                                  }
-                                  onKeyDown={(
-                                    event
-                                  ) => {
-                                    if (
-                                      event.key ===
-                                      "Enter"
-                                    ) {
-                                      event.preventDefault();
-
-                                      handleCreateTask(
-                                        target.id
-                                      );
-                                    }
-
-                                    if (
-                                      event.key ===
-                                      "Escape"
-                                    ) {
-                                      event.preventDefault();
-
-                                      cancelAddingTask();
-                                    }
-                                  }}
-                                  placeholder="What needs to be done?"
-                                  className="
-                                    h-10
-                                    min-w-0
-                                    rounded-lg
-                                    border
-                                    border-slate-800
-                                    bg-slate-950
-                                    px-3
-                                    text-sm
-                                    text-white
-                                    outline-none
-                                    transition
-                                    placeholder:text-slate-700
-                                    focus:border-cyan-500/50
-                                  "
-                                  autoFocus
-                                />
-
-                                <select
-                                  value={
-                                    taskPriority
-                                  }
-                                  onChange={(
-                                    event
-                                  ) =>
-                                    setTaskPriority(
-                                      event.target.value as TaskPriority
-                                    )
-                                  }
-                                  className="
-                                    h-10
-                                    rounded-lg
-                                    border
-                                    border-slate-800
-                                    bg-slate-950
-                                    px-3
-                                    text-sm
-                                    text-slate-300
-                                    outline-none
-                                    focus:border-cyan-500/50
-                                  "
-                                >
-                                  <option value="low">
-                                    Low
-                                  </option>
-
-                                  <option value="medium">
-                                    Medium
-                                  </option>
-
-                                  <option value="high">
-                                    High
-                                  </option>
-                                </select>
-
-                                <input
-                                  type="date"
-                                  value={
-                                    taskDueDate
-                                  }
-                                  onChange={(
-                                    event
-                                  ) =>
-                                    setTaskDueDate(
-                                      event.target.value
-                                    )
-                                  }
-                                  className="
-                                    h-10
-                                    rounded-lg
-                                    border
-                                    border-slate-800
-                                    bg-slate-950
-                                    px-3
-                                    text-sm
-                                    text-slate-300
-                                    outline-none
-                                    focus:border-cyan-500/50
-                                  "
-                                />
-                              </div>
-
-                              {/* ==================================
-                                  Smart Placement Preview
-                              ================================== */}
-
-                              {taskDueDate &&
-                                taskPlacementResult && (
-                                  <div
-                                    className={`
-                                      mt-3
-                                      rounded-lg
-                                      border
-                                      px-3
-                                      py-2
-                                      ${
-                                        taskPlacementResult.status ===
-                                        "matched"
-                                          ? "border-emerald-500/20 bg-emerald-500/5"
-                                          : "border-amber-500/20 bg-amber-500/5"
-                                      }
-                                    `}
-                                  >
-                                    <p
-                                      className={`
-                                        text-[10px]
-                                        font-semibold
-                                        uppercase
-                                        tracking-wider
-                                        ${
-                                          taskPlacementResult.status ===
-                                          "matched"
-                                            ? "text-emerald-400"
-                                            : "text-amber-400"
-                                        }
-                                      `}
-                                    >
-                                      Smart Placement
-                                    </p>
-
-                                    <p className="mt-1 text-[11px] text-slate-400">
-                                      {
-                                        taskPlacementResult.message
-                                      }
-                                    </p>
-
-                                    {taskPlacementResult.status ===
-                                      "matched" &&
-                                      taskPlacementResult.weeklyTarget && (
-                                        <p className="mt-1 text-[10px] text-slate-600">
-                                          Weekly focus:{" "}
-                                          {
-                                            taskPlacementResult
-                                              .weeklyTarget
-                                              .title
-                                          }
-                                        </p>
-                                      )}
-                                  </div>
-                                )}
-
-                              <div
-                                className="
-                                  mt-3
-                                  flex
-                                  justify-end
-                                  gap-2
-                                "
-                              >
-                                <button
-                                  type="button"
-                                  onClick={
-                                    cancelAddingTask
-                                  }
-                                  className="
-                                    rounded-md
-                                    px-3
-                                    py-1.5
-                                    text-[10px]
-                                    font-medium
-                                    text-slate-500
-                                    hover:bg-slate-800
-                                  "
-                                >
-                                  Cancel
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handleCreateTask(
-                                      target.id
-                                    )
-                                  }
-                                  disabled={
-                                    Boolean(
-                                      taskDueDate &&
-                                      taskPlacementResult?.status !==
-                                        "matched"
-                                    )
-                                  }
-                                  className="
-                                    rounded-md
-                                    bg-cyan-500
-                                    px-3
-                                    py-1.5
-                                    text-[10px]
-                                    font-bold
-                                    text-slate-950
-                                    transition
-                                    hover:bg-cyan-400
-                                    disabled:cursor-not-allowed
-                                    disabled:opacity-40
-                                  "
-                                >
-                                  Add Task
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* ==================================
-                              Shared Compact Universal Tasks
-                          ================================== */}
-
-                          <UniversalTaskTable
-                            tasks={
-                              weeklyTasks
-                            }
-                            variant="compact"
-                            getPlanIcon={() =>
-                              "goal"
-                            }
-                            getWeeklyTargetTitle={() =>
-                              target.title
-                            }
-                            onToggle={
-                              handleToggleTask
-                            }
-                            onDelete={
-                              handleDeleteTask
-                            }
-                            emptyMessage="No tasks in this weekly focus yet."
-                          />
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               }

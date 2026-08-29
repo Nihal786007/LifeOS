@@ -29,13 +29,34 @@ interface MonthlyTargetModalProps {
   year: number;
 
   /**
-   * When provided, the Monthly Target is
+   * When provided, the Monthly Outcome is
    * automatically linked to this Life Goal.
    *
-   * Used by the Smart Goal Timeline so the
-   * user never needs to re-select the goal.
+   * Used by Smart Goal Timeline so the user
+   * never needs to re-select the goal.
    */
   lockedGoalId?: number;
+}
+
+// ==========================================
+// Helpers
+// ==========================================
+
+function formatMonthYear(
+  month: number,
+  year: number
+) {
+  return new Date(
+    year,
+    month - 1,
+    1
+  ).toLocaleDateString(
+    undefined,
+    {
+      month: "long",
+      year: "numeric",
+    }
+  );
 }
 
 // ==========================================
@@ -75,19 +96,13 @@ export default function MonthlyTargetModal({
   >(undefined);
 
   // ==========================================
-  // Derived State
+  // Derived Context
   // ==========================================
 
-  const monthName =
-    new Date(
-      year,
-      month - 1,
-      1
-    ).toLocaleString(
-      "default",
-      {
-        month: "long",
-      }
+  const planningPeriod =
+    formatMonthYear(
+      month,
+      year
     );
 
   const lockedGoal =
@@ -105,6 +120,10 @@ export default function MonthlyTargetModal({
   // ==========================================
 
   useEffect(() => {
+    if (!open) {
+      return;
+    }
+
     if (
       lockedGoalId !==
       undefined
@@ -114,14 +133,18 @@ export default function MonthlyTargetModal({
           lockedGoalId
         )
       );
+
+      return;
     }
+
+    setGoalId("");
   }, [
     lockedGoalId,
     open,
   ]);
 
   // ==========================================
-  // Close / Reset
+  // Reset / Close
   // ==========================================
 
   function resetForm() {
@@ -166,7 +189,9 @@ export default function MonthlyTargetModal({
       undefined
         ? lockedGoalId
         : goalId
-          ? Number(goalId)
+          ? Number(
+              goalId
+            )
           : undefined;
 
     const result =
@@ -201,11 +226,11 @@ export default function MonthlyTargetModal({
       open={
         open
       }
-      title={`Plan ${monthName} ${year}`}
+      title={`Plan ${planningPeriod}`}
       description={
         lockedGoal
-          ? `Define what ${monthName} should achieve for "${lockedGoal.title}".`
-          : `Create a target for ${monthName} ${year}.`
+          ? `Define what ${planningPeriod} should accomplish for "${lockedGoal.title}".`
+          : `Define the main outcome for ${planningPeriod}.`
       }
       footer={
         <>
@@ -231,55 +256,116 @@ export default function MonthlyTargetModal({
       <div className="space-y-5">
 
         {/* ====================================
-            Goal Context
+            Smart Context
         ==================================== */}
 
-        {lockedGoal ? (
+        <div
+          className="
+            rounded-xl
+            border
+            border-cyan-500/15
+            bg-cyan-500/5
+            px-4
+            py-4
+          "
+        >
           <div
             className="
-              rounded-xl
-              border
-              border-cyan-500/20
-              bg-cyan-500/5
-              px-4
-              py-3
+              flex
+              flex-col
+              gap-4
+              sm:flex-row
+              sm:items-start
+              sm:justify-between
             "
           >
-            <p
-              className="
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-wider
-                text-cyan-400
-              "
-            >
-              Life Goal
-            </p>
+            <div className="min-w-0">
+              <p
+                className="
+                  text-[10px]
+                  font-bold
+                  uppercase
+                  tracking-wider
+                  text-cyan-400
+                "
+              >
+                Planning Period
+              </p>
 
-            <p
-              className="
-                mt-1
-                text-sm
-                font-medium
-                text-white
-              "
-            >
-              {lockedGoal.title}
-            </p>
+              <p
+                className="
+                  mt-1
+                  text-base
+                  font-semibold
+                  text-white
+                "
+              >
+                {planningPeriod}
+              </p>
 
-            <p
-              className="
-                mt-1
-                text-xs
-                text-slate-500
-              "
-            >
-              This Monthly Outcome will be linked
-              automatically.
-            </p>
+              <p
+                className="
+                  mt-1
+                  text-[10px]
+                  leading-4
+                  text-slate-600
+                "
+              >
+                Selected automatically from the planning timeline.
+              </p>
+            </div>
+
+            {lockedGoal && (
+              <div
+                className="
+                  min-w-0
+                  sm:max-w-[50%]
+                  sm:text-right
+                "
+              >
+                <p
+                  className="
+                    text-[10px]
+                    font-bold
+                    uppercase
+                    tracking-wider
+                    text-slate-500
+                  "
+                >
+                  Life Goal
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    truncate
+                    text-sm
+                    font-medium
+                    text-slate-200
+                  "
+                >
+                  {lockedGoal.title}
+                </p>
+
+                <p
+                  className="
+                    mt-1
+                    text-[10px]
+                    text-slate-600
+                  "
+                >
+                  Linked automatically
+                </p>
+              </div>
+            )}
           </div>
-        ) : (
+        </div>
+
+        {/* ====================================
+            Optional Goal Selection
+        ==================================== */}
+
+        {!lockedGoal && (
           <div>
             <label
               className="
@@ -289,7 +375,7 @@ export default function MonthlyTargetModal({
                 text-slate-400
               "
             >
-              Connect to Life Goal
+              Planning Context
             </label>
 
             <select
@@ -311,12 +397,13 @@ export default function MonthlyTargetModal({
               }}
               className="
                 w-full
-                rounded-2xl
+                rounded-xl
                 border
                 border-slate-800
-                bg-slate-900
-                px-5
-                py-4
+                bg-slate-950
+                px-4
+                py-3
+                text-sm
                 text-white
                 outline-none
                 transition
@@ -324,7 +411,7 @@ export default function MonthlyTargetModal({
               "
             >
               <option value="">
-                Personal / Standalone Target
+                Personal / Standalone
               </option>
 
               {lifeGoals.map(
@@ -342,86 +429,19 @@ export default function MonthlyTargetModal({
                 )
               )}
             </select>
+
+            <p
+              className="
+                mt-2
+                text-[10px]
+                leading-4
+                text-slate-600
+              "
+            >
+              Choose a Life Goal only when this month is being planned outside a goal timeline.
+            </p>
           </div>
         )}
-
-        {/* ====================================
-            Month
-        ==================================== */}
-
-        <div
-          className="
-            grid
-            grid-cols-2
-            gap-3
-          "
-        >
-          <div
-            className="
-              rounded-xl
-              border
-              border-slate-800
-              bg-slate-950/40
-              px-4
-              py-3
-            "
-          >
-            <p
-              className="
-                text-[10px]
-                uppercase
-                tracking-wider
-                text-slate-600
-              "
-            >
-              Month
-            </p>
-
-            <p
-              className="
-                mt-1
-                text-sm
-                font-medium
-                text-slate-300
-              "
-            >
-              {monthName}
-            </p>
-          </div>
-
-          <div
-            className="
-              rounded-xl
-              border
-              border-slate-800
-              bg-slate-950/40
-              px-4
-              py-3
-            "
-          >
-            <p
-              className="
-                text-[10px]
-                uppercase
-                tracking-wider
-                text-slate-600
-              "
-            >
-              Year
-            </p>
-
-            <p
-              className="
-                mt-1
-                text-sm
-                font-medium
-                text-slate-300
-              "
-            >
-              {year}
-            </p>
-          </div>
-        </div>
 
         {/* ====================================
             Monthly Outcome
@@ -433,17 +453,18 @@ export default function MonthlyTargetModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              font-medium
+              text-slate-300
             "
           >
-            What should this month achieve?
+            What should {planningPeriod} achieve?
           </label>
 
           <Input
             placeholder={
               lockedGoal
-                ? `Example: Complete the ${monthName} milestone`
-                : "Example: Finish SAT Math preparation"
+                ? `Example: Complete the ${planningPeriod} milestone`
+                : `Example: Finish SAT Math preparation in ${planningPeriod}`
             }
             value={
               title
@@ -485,15 +506,26 @@ export default function MonthlyTargetModal({
           />
 
           {error && (
-            <p
+            <div
               className="
-                mt-2
-                text-xs
-                text-amber-400
+                mt-3
+                rounded-lg
+                border
+                border-amber-500/20
+                bg-amber-500/5
+                px-3
+                py-2
               "
             >
-              {error}
-            </p>
+              <p
+                className="
+                  text-xs
+                  text-amber-400
+                "
+              >
+                {error}
+              </p>
+            </div>
           )}
 
           <p
@@ -504,9 +536,7 @@ export default function MonthlyTargetModal({
               text-slate-600
             "
           >
-            Keep this outcome focused. Weekly Focuses
-            and Universal Tasks will break it into
-            execution later.
+            Keep this outcome focused. LifeOS will break it into real calendar weeks and Universal Tasks later.
           </p>
         </div>
 

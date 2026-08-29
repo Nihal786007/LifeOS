@@ -27,17 +27,21 @@ interface SmartGoalTimelineProps {
 
 interface GoalMonthSlot {
   month: number;
+
   year: number;
 
   label: string;
 
   startDate: Date;
+
   endDate: Date;
 
-  monthlyTargets: MonthlyTarget[];
+  monthlyOutcome?: MonthlyTarget;
 
   isCurrentMonth: boolean;
+
   isStartMonth: boolean;
+
   isTargetMonth: boolean;
 }
 
@@ -73,15 +77,31 @@ function parseDate(
         dateOnlyMatch[3]
       );
 
-    return new Date(
-      year,
-      month - 1,
-      day
-    );
+    const date =
+      new Date(
+        year,
+        month - 1,
+        day
+      );
+
+    if (
+      date.getFullYear() !==
+        year ||
+      date.getMonth() !==
+        month - 1 ||
+      date.getDate() !==
+        day
+    ) {
+      return undefined;
+    }
+
+    return date;
   }
 
   const parsed =
-    new Date(value);
+    new Date(
+      value
+    );
 
   if (
     Number.isNaN(
@@ -121,14 +141,18 @@ function getMonthLabel(
   );
 }
 
-function getLongDate(
-  date: Date
+function getLongMonthLabel(
+  month: number,
+  year: number
 ) {
-  return date.toLocaleDateString(
+  return new Date(
+    year,
+    month - 1,
+    1
+  ).toLocaleDateString(
     undefined,
     {
-      month: "short",
-      day: "numeric",
+      month: "long",
       year: "numeric",
     }
   );
@@ -144,6 +168,24 @@ function getShortDate(
       day: "numeric",
     }
   );
+}
+
+function getDateRangeLabel(
+  startDate: Date,
+  endDate: Date,
+  year: number
+) {
+  const start =
+    getShortDate(
+      startDate
+    );
+
+  const end =
+    getShortDate(
+      endDate
+    );
+
+  return `${start} – ${end}, ${year}`;
 }
 
 function getDaysRemaining(
@@ -165,7 +207,26 @@ function getDaysRemaining(
 
   return Math.ceil(
     difference /
-      (1000 * 60 * 60 * 24)
+      (
+        1000 *
+        60 *
+        60 *
+        24
+      )
+  );
+}
+
+function clampProgress(
+  progress: number
+) {
+  return Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(
+        progress
+      )
+    )
   );
 }
 
@@ -180,7 +241,8 @@ function buildGoalMonths(
   const start =
     parseDate(
       goal.startDate
-    ) ?? new Date();
+    ) ??
+    new Date();
 
   const rawTarget =
     parseDate(
@@ -262,38 +324,30 @@ function buildGoalMonths(
 
     const slotStart =
       isStartMonth
-        ? startOfDay(start)
+        ? startOfDay(
+            start
+          )
         : calendarMonthStart;
 
     const slotEnd =
       isTargetMonth
-        ? startOfDay(target)
+        ? startOfDay(
+            target
+          )
         : calendarMonthEnd;
 
-    const monthlyTargets =
-      goalPlans
-        .filter(
-          (plan) =>
-            plan.month ===
-              month &&
-            plan.year ===
-              year
-        )
-        .sort(
-          (
-            first,
-            second
-          ) =>
-            new Date(
-              first.createdAt
-            ).getTime() -
-            new Date(
-              second.createdAt
-            ).getTime()
-        );
+    const monthlyOutcome =
+      goalPlans.find(
+        (plan) =>
+          plan.month ===
+            month &&
+          plan.year ===
+            year
+      );
 
     months.push({
       month,
+
       year,
 
       label:
@@ -308,7 +362,7 @@ function buildGoalMonths(
       endDate:
         slotEnd,
 
-      monthlyTargets,
+      monthlyOutcome,
 
       isStartMonth,
 
@@ -341,11 +395,6 @@ export default function SmartGoalTimeline({
   monthlyPlans,
   onPlanMonth,
 }: SmartGoalTimelineProps) {
-  const startDate =
-    parseDate(
-      goal.startDate
-    );
-
   const targetDate =
     parseDate(
       goal.targetDate
@@ -360,19 +409,15 @@ export default function SmartGoalTimeline({
   const plannedMonths =
     months.filter(
       (month) =>
-        month.monthlyTargets.length >
-        0
+        Boolean(
+          month.monthlyOutcome
+        )
     ).length;
 
-  const totalMonthlyTargets =
-    months.reduce(
-      (
-        total,
-        month
-      ) =>
-        total +
-        month.monthlyTargets.length,
-      0
+  const currentMonth =
+    months.find(
+      (month) =>
+        month.isCurrentMonth
     );
 
   const daysRemaining =
@@ -390,7 +435,7 @@ export default function SmartGoalTimeline({
     return (
       <div
         className="
-          rounded-lg
+          rounded-xl
           border
           border-slate-800
           bg-slate-950/35
@@ -407,8 +452,8 @@ export default function SmartGoalTimeline({
           <div
             className="
               flex
-              h-8
-              w-8
+              h-9
+              w-9
               shrink-0
               items-center
               justify-center
@@ -416,33 +461,33 @@ export default function SmartGoalTimeline({
               border
               border-cyan-500/20
               bg-cyan-500/10
-              text-xs
+              text-sm
               text-cyan-400
             "
           >
             <FaCalendarDays />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <p
               className="
-                text-xs
+                text-sm
                 font-semibold
                 text-slate-300
               "
             >
-              Smart timeline unavailable
+              Timeline needs a target date
             </p>
 
             <p
               className="
-                mt-0.5
+                mt-1
                 text-[11px]
+                leading-5
                 text-slate-600
               "
             >
-              Add a target date to generate
-              the goal calendar.
+              Add a target date from the goal editor and LifeOS will generate its monthly planning timeline automatically.
             </p>
           </div>
         </div>
@@ -465,62 +510,87 @@ export default function SmartGoalTimeline({
       "
     >
       {/* ======================================
-          Timeline Profile Header
+          Smart Timeline Header
       ====================================== */}
 
       <div
         className="
-          grid
+          flex
+          flex-col
           gap-3
           border-b
           border-slate-800
           px-4
-          py-3
-          sm:grid-cols-2
-          xl:grid-cols-4
+          py-4
+          lg:flex-row
+          lg:items-center
+          lg:justify-between
         "
       >
-        <TimelineMetric
-          label="Start"
-          value={
-            startDate
-              ? getLongDate(
-                  startDate
-                )
-              : "Unknown"
-          }
-        />
+        <div>
+          <p
+            className="
+              text-[10px]
+              font-bold
+              uppercase
+              tracking-wider
+              text-cyan-400
+            "
+          >
+            Smart Timeline
+          </p>
 
-        <TimelineMetric
-          label="Target"
-          value={
-            getLongDate(
-              targetDate
-            )
-          }
-        />
+          <p
+            className="
+              mt-1
+              text-xs
+              text-slate-500
+            "
+          >
+            LifeOS maps this goal across its real calendar months.
+          </p>
+        </div>
 
-        <TimelineMetric
-          label="Planning"
-          value={`${plannedMonths}/${months.length} months · ${totalMonthlyTargets} targets`}
-        />
+        <div
+          className="
+            flex
+            flex-wrap
+            items-center
+            gap-x-5
+            gap-y-2
+          "
+        >
+          <TimelineMetric
+            label="Planning"
+            value={`${plannedMonths}/${months.length} months planned`}
+          />
 
-        <TimelineMetric
-          label="Time Left"
-          value={
-            daysRemaining ===
-            undefined
-              ? "—"
-              : daysRemaining < 0
-                ? `${Math.abs(
-                    daysRemaining
-                  )} days overdue`
-                : daysRemaining ===
-                    0
-                  ? "Due today"
-                  : `${daysRemaining} days`
-          }
-        />
+          <TimelineMetric
+            label="Time Left"
+            value={
+              daysRemaining ===
+              undefined
+                ? "—"
+                : daysRemaining < 0
+                  ? `${Math.abs(
+                      daysRemaining
+                    )} days overdue`
+                  : daysRemaining ===
+                      0
+                    ? "Due today"
+                    : `${daysRemaining} days`
+            }
+          />
+
+          <TimelineMetric
+            label="Current"
+            value={
+              currentMonth
+                ? currentMonth.label
+                : "Outside timeline"
+            }
+          />
+        </div>
       </div>
 
       {/* ======================================
@@ -532,7 +602,7 @@ export default function SmartGoalTimeline({
           border-b
           border-slate-800
           px-4
-          py-4
+          py-3
         "
       >
         <div
@@ -540,7 +610,7 @@ export default function SmartGoalTimeline({
             flex
             items-center
             gap-2
-            text-[11px]
+            text-[10px]
             text-slate-600
           "
         >
@@ -549,6 +619,7 @@ export default function SmartGoalTimeline({
               flex
               items-center
               gap-1.5
+              font-medium
               text-cyan-400
             "
           >
@@ -577,6 +648,7 @@ export default function SmartGoalTimeline({
               flex
               items-center
               gap-1.5
+              font-medium
               text-slate-400
             "
           >
@@ -633,6 +705,7 @@ export default function SmartGoalTimeline({
 
 interface TimelineMetricProps {
   label: string;
+
   value: string;
 }
 
@@ -644,7 +717,7 @@ function TimelineMetric({
     <div>
       <p
         className="
-          text-[10px]
+          text-[9px]
           font-semibold
           uppercase
           tracking-wider
@@ -656,10 +729,10 @@ function TimelineMetric({
 
       <p
         className="
-          mt-1
-          truncate
-          text-xs
-          font-medium
+          mt-0.5
+          whitespace-nowrap
+          text-[11px]
+          font-semibold
           text-slate-300
         "
       >
@@ -686,14 +759,29 @@ function GoalMonthSlotCard({
   month,
   onPlanMonth,
 }: GoalMonthSlotCardProps) {
-  const targets =
-    month.monthlyTargets;
+  const outcome =
+    month.monthlyOutcome;
+
+  const progress =
+    outcome
+      ? clampProgress(
+          outcome.progress
+        )
+      : 0;
+
+  const planningPeriod =
+    getLongMonthLabel(
+      month.month,
+      month.year
+    );
 
   return (
     <div
       className={`
+        flex
         w-52
         shrink-0
+        flex-col
         rounded-lg
         border
         p-3
@@ -705,7 +793,9 @@ function GoalMonthSlotCard({
         }
       `}
     >
-      {/* Month Header */}
+      {/* ======================================
+          Month Header
+      ====================================== */}
 
       <div
         className="
@@ -715,7 +805,7 @@ function GoalMonthSlotCard({
           gap-2
         "
       >
-        <div>
+        <div className="min-w-0">
           <p
             className="
               text-xs
@@ -729,16 +819,14 @@ function GoalMonthSlotCard({
           <p
             className="
               mt-0.5
-              text-[10px]
+              text-[9px]
               text-slate-600
             "
           >
-            {getShortDate(
-              month.startDate
-            )}
-            {" – "}
-            {getShortDate(
-              month.endDate
+            {getDateRangeLabel(
+              month.startDate,
+              month.endDate,
+              month.year
             )}
           </p>
         </div>
@@ -746,6 +834,7 @@ function GoalMonthSlotCard({
         {month.isCurrentMonth && (
           <span
             className="
+              shrink-0
               rounded
               bg-cyan-500/10
               px-1.5
@@ -762,7 +851,9 @@ function GoalMonthSlotCard({
         )}
       </div>
 
-      {/* Start / Target Markers */}
+      {/* ======================================
+          Timeline Markers
+      ====================================== */}
 
       <div
         className="
@@ -770,7 +861,8 @@ function GoalMonthSlotCard({
           flex
           min-h-4
           flex-wrap
-          gap-1
+          gap-x-2
+          gap-y-1
         "
       >
         {month.isStartMonth && (
@@ -781,179 +873,207 @@ function GoalMonthSlotCard({
               text-cyan-400
             "
           >
-            ● Goal Start
+            Goal Start
           </span>
         )}
 
         {month.isTargetMonth && (
           <span
             className="
+              flex
+              items-center
+              gap-1
               text-[9px]
               font-medium
               text-cyan-400
             "
           >
-            🎯 Target
+            <FaBullseye />
+
+            Goal Target
           </span>
         )}
       </div>
 
-      {/* Targets */}
+      {/* ======================================
+          Monthly Outcome
+      ====================================== */}
 
-      <div className="mt-3 space-y-1.5">
-
-        {targets.length === 0 ? (
-          <div
-            className="
-              rounded-md
-              border
-              border-dashed
-              border-slate-800
-              p-2
-            "
-          >
-            <p
+      <div
+        className="
+          mt-3
+          flex
+          flex-1
+          flex-col
+        "
+      >
+        {outcome ? (
+          <>
+            <div
               className="
-                text-[10px]
-                text-slate-600
+                flex
+                flex-1
+                items-start
+                gap-2
+                rounded-md
+                border
+                border-emerald-500/15
+                bg-emerald-500/5
+                p-2.5
               "
             >
-              No monthly targets
-            </p>
-          </div>
-        ) : (
-          targets.map(
-            (target) => (
-              <div
-                key={
-                  target.id
-                }
+              <FaCheck
                 className="
-                  rounded-md
-                  border
-                  border-emerald-500/15
-                  bg-emerald-500/5
-                  p-2
+                  mt-0.5
+                  shrink-0
+                  text-[9px]
+                  text-emerald-400
                 "
-              >
-                <div
+              />
+
+              <div className="min-w-0 flex-1">
+                <p
                   className="
-                    flex
-                    items-start
-                    gap-1.5
+                    line-clamp-3
+                    text-[11px]
+                    font-medium
+                    leading-4
+                    text-slate-300
                   "
                 >
-                  <FaCheck
+                  {outcome.title}
+                </p>
+
+                <div
+                  className="
+                    mt-2
+                    flex
+                    items-center
+                    gap-2
+                  "
+                >
+                  <div
                     className="
-                      mt-0.5
-                      shrink-0
-                      text-[9px]
-                      text-emerald-400
+                      h-1
+                      flex-1
+                      overflow-hidden
+                      rounded-full
+                      bg-slate-800
                     "
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className="
-                        line-clamp-2
-                        text-[11px]
-                        leading-4
-                        text-slate-300
-                      "
-                    >
-                      {target.title}
-                    </p>
-
+                  >
                     <div
                       className="
-                        mt-1
-                        flex
-                        items-center
-                        gap-2
+                        h-full
+                        rounded-full
+                        bg-emerald-400
                       "
-                    >
-                      <div
-                        className="
-                          h-1
-                          flex-1
-                          overflow-hidden
-                          rounded-full
-                          bg-slate-800
-                        "
-                      >
-                        <div
-                          className="
-                            h-full
-                            rounded-full
-                            bg-emerald-400
-                          "
-                          style={{
-                            width:
-                              `${Math.min(
-                                100,
-                                Math.max(
-                                  0,
-                                  Math.round(
-                                    target.progress
-                                  )
-                                )
-                              )}%`,
-                          }}
-                        />
-                      </div>
-
-                      <span
-                        className="
-                          text-[9px]
-                          text-slate-600
-                        "
-                      >
-                        {Math.round(
-                          target.progress
-                        )}
-                        %
-                      </span>
-                    </div>
+                      style={{
+                        width:
+                          `${progress}%`,
+                      }}
+                    />
                   </div>
+
+                  <span
+                    className="
+                      shrink-0
+                      text-[9px]
+                      text-slate-600
+                    "
+                  >
+                    {progress}%
+                  </span>
                 </div>
               </div>
-            )
-          )
+            </div>
+
+            <p
+              className="
+                mt-2
+                text-[9px]
+                font-bold
+                uppercase
+                tracking-wider
+                text-emerald-400
+              "
+            >
+              Monthly Outcome planned
+            </p>
+          </>
+        ) : (
+          <>
+            <div
+              className="
+                flex
+                flex-1
+                flex-col
+                justify-center
+                rounded-md
+                border
+                border-dashed
+                border-slate-800
+                p-3
+              "
+            >
+              <p
+                className="
+                  text-[10px]
+                  font-medium
+                  text-slate-500
+                "
+              >
+                No Monthly Outcome
+              </p>
+
+              <p
+                className="
+                  mt-1
+                  text-[9px]
+                  leading-4
+                  text-slate-700
+                "
+              >
+                Define what this month should accomplish toward the goal.
+              </p>
+            </div>
+
+            {onPlanMonth && (
+              <button
+                type="button"
+                onClick={() =>
+                  onPlanMonth(
+                    month.month,
+                    month.year
+                  )
+                }
+                className="
+                  mt-2
+                  inline-flex
+                  items-center
+                  justify-center
+                  gap-1.5
+                  rounded-md
+                  border
+                  border-cyan-500/20
+                  bg-cyan-500/5
+                  px-2.5
+                  py-2
+                  text-[10px]
+                  font-semibold
+                  text-cyan-400
+                  transition
+                  hover:bg-cyan-500/10
+                  hover:text-cyan-300
+                "
+              >
+                <FaPlus />
+
+                Plan {planningPeriod}
+              </button>
+            )}
+          </>
         )}
-
       </div>
-
-      {/* Add Another Target */}
-
-      {onPlanMonth && (
-        <button
-          type="button"
-          onClick={() =>
-            onPlanMonth(
-              month.month,
-              month.year
-            )
-          }
-          className="
-            mt-2
-            inline-flex
-            items-center
-            gap-1.5
-            text-[10px]
-            font-semibold
-            text-cyan-400
-            transition
-            hover:text-cyan-300
-          "
-        >
-          <FaPlus />
-
-          {targets.length === 0
-            ? "Plan Month"
-            : "Add Target"}
-        </button>
-      )}
-
     </div>
   );
 }
