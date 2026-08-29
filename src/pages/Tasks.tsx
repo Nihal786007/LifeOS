@@ -962,7 +962,7 @@ export default function Tasks() {
 
           </div>
 
-          {/* Task Input */}
+          {/* Task */}
 
           <Input
             value={
@@ -1021,7 +1021,7 @@ export default function Tasks() {
             </option>
           </select>
 
-          {/* Due Date */}
+          {/* Due */}
 
           <Input
             type="date"
@@ -1276,10 +1276,6 @@ export default function Tasks() {
               }
             </p>
 
-            {/* ==================================
-                Matched Placement Details
-            ================================== */}
-
             {placementResult.status ===
               "matched" && (
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
@@ -1324,10 +1320,6 @@ export default function Tasks() {
 
               </div>
             )}
-
-            {/* ==================================
-                Missing Weekly Focus
-            ================================== */}
 
             {placementResult.status ===
               "weekly_focus_missing" && (
@@ -1465,9 +1457,12 @@ export default function Tasks() {
                   >
                     Create Weekly Focus
                   </button>
+
                 </div>
+
               </div>
             )}
+
           </div>
         )}
 

@@ -71,8 +71,11 @@ function formatDate(
   ).toLocaleDateString(
     undefined,
     {
-      month: "short",
-      day: "numeric",
+      month:
+        "short",
+
+      day:
+        "numeric",
     }
   );
 }
@@ -83,7 +86,9 @@ function getPlanSymbol(
     | "goal"
     | "none"
 ) {
-  switch (planType) {
+  switch (
+    planType
+  ) {
     case "goal":
       return "🎯";
 
@@ -101,12 +106,14 @@ function getPlanLabel(
     | "goal"
     | "none"
 ) {
-  switch (planType) {
+  switch (
+    planType
+  ) {
     case "goal":
-      return "Life Goal Planner";
+      return "Life Goal";
 
     case "personal":
-      return "Personal Planner";
+      return "Personal";
 
     default:
       return "Standalone";
@@ -220,9 +227,11 @@ export default function UniversalTaskRow({
         }
       `}
     >
-      {task.completed
-        ? "✓"
-        : ""}
+      {
+        task.completed
+          ? "✓"
+          : ""
+      }
     </button>
   );
 
@@ -286,7 +295,9 @@ export default function UniversalTaskRow({
   // Compact Desktop / Tablet Row
   // ==========================================
 
-  if (isCompact) {
+  if (
+    isCompact
+  ) {
     return (
       <>
         <div
@@ -307,12 +318,15 @@ export default function UniversalTaskRow({
           {/* Complete */}
 
           <div className="flex items-center justify-center">
-            {completionButton}
+            {
+              completionButton
+            }
           </div>
 
           {/* Task */}
 
           <div className="min-w-0 px-2">
+
             <p
               className={`
                 truncate
@@ -329,7 +343,9 @@ export default function UniversalTaskRow({
                 task.title
               }
             >
-              {task.title}
+              {
+                task.title
+              }
             </p>
 
             {task.description && (
@@ -349,11 +365,13 @@ export default function UniversalTaskRow({
                 }
               </p>
             )}
+
           </div>
 
           {/* Priority */}
 
           <div className="px-1">
+
             <span
               className={`
                 inline-flex
@@ -376,29 +394,31 @@ export default function UniversalTaskRow({
                 task.priority
               }
             </span>
+
           </div>
 
           {/* Due */}
 
-          <div
-            className="
-              whitespace-nowrap
-              px-1
-              text-xs
-              text-slate-400
-            "
-          >
-            {formatDate(
-              task.dueDate
-            )}
+          <div className="whitespace-nowrap px-1 text-xs text-slate-400">
+            {
+              formatDate(
+                task.dueDate
+              )
+            }
           </div>
 
           {/* Actions */}
 
           <div className="flex items-center justify-center">
-            {editButton}
-            {deleteButton}
+            {
+              editButton
+            }
+
+            {
+              deleteButton
+            }
           </div>
+
         </div>
 
         {/* ==================================
@@ -419,7 +439,9 @@ export default function UniversalTaskRow({
           <div className="flex items-start gap-2.5">
 
             <div className="mt-0.5">
-              {completionButton}
+              {
+                completionButton
+              }
             </div>
 
             <div className="min-w-0 flex-1">
@@ -440,7 +462,9 @@ export default function UniversalTaskRow({
                   task.title
                 }
               >
-                {task.title}
+                {
+                  task.title
+                }
               </p>
 
               {task.description && (
@@ -461,17 +485,8 @@ export default function UniversalTaskRow({
                 </p>
               )}
 
-              <div
-                className="
-                  mt-1.5
-                  flex
-                  flex-wrap
-                  items-center
-                  gap-1.5
-                  text-[10px]
-                  text-slate-500
-                "
-              >
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500">
+
                 <span
                   className={`
                     rounded
@@ -499,12 +514,15 @@ export default function UniversalTaskRow({
                     </span>
 
                     <span>
-                      {formatDate(
-                        task.dueDate
-                      )}
+                      {
+                        formatDate(
+                          task.dueDate
+                        )
+                      }
                     </span>
                   </>
                 )}
+
               </div>
 
             </div>
@@ -512,8 +530,13 @@ export default function UniversalTaskRow({
             {(onEdit ||
               onDelete) && (
               <div className="flex shrink-0 items-center">
-                {editButton}
-                {deleteButton}
+                {
+                  editButton
+                }
+
+                {
+                  deleteButton
+                }
               </div>
             )}
 
@@ -532,8 +555,8 @@ export default function UniversalTaskRow({
       <div
         className="
           hidden
-          min-h-11
-          grid-cols-[44px_minmax(220px,1fr)_56px_140px_110px_110px_100px_76px]
+          min-h-12
+          grid-cols-[44px_minmax(240px,1.2fr)_110px_minmax(220px,1.4fr)_90px_88px_78px_76px]
           items-center
           border-b
           border-slate-800
@@ -547,12 +570,15 @@ export default function UniversalTaskRow({
         {/* Complete */}
 
         <div className="flex items-center justify-center">
-          {completionButton}
+          {
+            completionButton
+          }
         </div>
 
         {/* Task */}
 
         <div className="min-w-0 px-3">
+
           <p
             className={`
               truncate
@@ -568,7 +594,9 @@ export default function UniversalTaskRow({
               task.title
             }
           >
-            {task.title}
+            {
+              task.title
+            }
           </p>
 
           {task.description && (
@@ -588,34 +616,75 @@ export default function UniversalTaskRow({
               }
             </p>
           )}
+
         </div>
 
         {/* Plan */}
 
-        <div
-          className="flex items-center justify-center text-sm"
-          title={
-            planLabel
-          }
-        >
-          {planSymbol}
+        <div className="px-2">
+
+          <div
+            className="
+              flex
+              items-center
+              justify-center
+              gap-1.5
+              whitespace-nowrap
+              text-xs
+              font-medium
+            "
+            title={
+              planLabel
+            }
+          >
+            <span className="text-sm">
+              {
+                planSymbol
+              }
+            </span>
+
+            <span
+              className={
+                planType ===
+                "none"
+                  ? "text-slate-600"
+                  : "text-slate-400"
+              }
+            >
+              {
+                planLabel
+              }
+            </span>
+
+          </div>
+
         </div>
 
-        {/* Week */}
+        {/* Weekly Focus */}
 
         <div
-          className="truncate px-3 text-slate-400"
+          className="
+            min-w-0
+            px-3
+            text-sm
+            text-slate-400
+          "
           title={
             weeklyTargetTitle
           }
         >
-          {weeklyTargetTitle ??
-            "—"}
+          <p className="truncate">
+            {
+              weeklyTargetTitle ??
+              "—"
+            }
+          </p>
         </div>
 
         {/* Priority */}
 
-        <div className="px-2">
+        <div className="px-1">
+
           <span
             className={`
               inline-flex
@@ -623,7 +692,7 @@ export default function UniversalTaskRow({
               border
               px-2
               py-0.5
-              text-xs
+              text-[11px]
               font-medium
               capitalize
 
@@ -638,19 +707,23 @@ export default function UniversalTaskRow({
               task.priority
             }
           </span>
+
         </div>
 
         {/* Due */}
 
-        <div className="px-3 text-slate-400">
-          {formatDate(
-            task.dueDate
-          )}
+        <div className="whitespace-nowrap px-1 text-xs text-slate-400">
+          {
+            formatDate(
+              task.dueDate
+            )
+          }
         </div>
 
         {/* Status */}
 
-        <div className="px-3">
+        <div className="px-1 text-xs">
+
           <span
             className={
               task.completed
@@ -658,18 +731,27 @@ export default function UniversalTaskRow({
                 : "text-slate-400"
             }
           >
-            {task.completed
-              ? "Done"
-              : "Pending"}
+            {
+              task.completed
+                ? "Done"
+                : "Pending"
+            }
           </span>
+
         </div>
 
         {/* Actions */}
 
         <div className="flex items-center justify-center">
-          {editButton}
-          {deleteButton}
+          {
+            editButton
+          }
+
+          {
+            deleteButton
+          }
         </div>
+
       </div>
 
       {/* ======================================
@@ -690,7 +772,9 @@ export default function UniversalTaskRow({
         <div className="flex items-start gap-3">
 
           <div className="mt-0.5">
-            {completionButton}
+            {
+              completionButton
+            }
           </div>
 
           <div className="min-w-0 flex-1">
@@ -712,16 +796,35 @@ export default function UniversalTaskRow({
                   }
                 `}
               >
-                {task.title}
+                {
+                  task.title
+                }
               </p>
 
               <span
-                className="shrink-0 text-sm"
+                className="
+                  inline-flex
+                  shrink-0
+                  items-center
+                  gap-1
+                  text-[11px]
+                  text-slate-500
+                "
                 title={
                   planLabel
                 }
               >
-                {planSymbol}
+                <span>
+                  {
+                    planSymbol
+                  }
+                </span>
+
+                <span>
+                  {
+                    planLabel
+                  }
+                </span>
               </span>
 
             </div>
@@ -773,22 +876,10 @@ export default function UniversalTaskRow({
                   </span>
 
                   <span>
-                    {formatDate(
-                      task.dueDate
-                    )}
-                  </span>
-                </>
-              )}
-
-              {weeklyTargetTitle && (
-                <>
-                  <span>
-                    •
-                  </span>
-
-                  <span className="max-w-[150px] truncate">
                     {
-                      weeklyTargetTitle
+                      formatDate(
+                        task.dueDate
+                      )
                     }
                   </span>
                 </>
@@ -796,13 +887,38 @@ export default function UniversalTaskRow({
 
             </div>
 
+            {weeklyTargetTitle && (
+              <p
+                className="
+                  mt-1.5
+                  truncate
+                  text-[11px]
+                  text-slate-500
+                "
+                title={
+                  weeklyTargetTitle
+                }
+              >
+                {
+                  weeklyTargetTitle
+                }
+              </p>
+            )}
+
           </div>
 
           {(onEdit ||
             onDelete) && (
             <div className="flex shrink-0 items-center">
-              {editButton}
-              {deleteButton}
+
+              {
+                editButton
+              }
+
+              {
+                deleteButton
+              }
+
             </div>
           )}
 

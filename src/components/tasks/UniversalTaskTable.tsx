@@ -32,6 +32,10 @@ interface UniversalTaskTableProps {
     taskId: number
   ) => void;
 
+  onEdit?: (
+    taskId: number
+  ) => void;
+
   onDelete?: (
     taskId: number
   ) => void;
@@ -53,6 +57,8 @@ export default function UniversalTaskTable({
   variant = "full",
 
   onToggle,
+
+  onEdit,
 
   onDelete,
 
@@ -114,7 +120,7 @@ export default function UniversalTaskTable({
           className="
             hidden
             min-h-9
-            grid-cols-[40px_minmax(150px,1fr)_90px_90px_40px]
+            grid-cols-[40px_minmax(150px,1fr)_90px_90px_76px]
             items-center
             border-b
             border-slate-700
@@ -142,7 +148,9 @@ export default function UniversalTaskTable({
             Due
           </div>
 
-          <div />
+          <div className="text-center">
+            Actions
+          </div>
         </div>
       )}
 
@@ -155,13 +163,13 @@ export default function UniversalTaskTable({
           className="
             hidden
             min-h-10
-            grid-cols-[44px_minmax(220px,1fr)_56px_140px_110px_110px_100px_44px]
+            grid-cols-[44px_minmax(240px,1.2fr)_110px_minmax(220px,1.4fr)_90px_88px_78px_76px]
             items-center
             border-b
             border-slate-700
             bg-slate-950/80
             px-3
-            text-xs
+            text-[11px]
             font-semibold
             uppercase
             tracking-wider
@@ -169,33 +177,51 @@ export default function UniversalTaskTable({
             md:grid
           "
         >
+          {/* Complete */}
+
           <div />
+
+          {/* Task */}
 
           <div className="px-3">
             Task
           </div>
 
+          {/* Plan */}
+
           <div className="text-center">
             Plan
           </div>
 
+          {/* Weekly Focus */}
+
           <div className="px-3">
-            Week
+            Weekly Focus
           </div>
 
-          <div className="px-2">
+          {/* Priority */}
+
+          <div className="px-1">
             Priority
           </div>
 
-          <div className="px-3">
+          {/* Due */}
+
+          <div className="px-1">
             Due
           </div>
 
-          <div className="px-3">
+          {/* Status */}
+
+          <div className="px-1">
             Status
           </div>
 
-          <div />
+          {/* Actions */}
+
+          <div className="text-center">
+            Actions
+          </div>
         </div>
       )}
 
@@ -239,6 +265,9 @@ export default function UniversalTaskTable({
                 }
                 onToggle={
                   onToggle
+                }
+                onEdit={
+                  onEdit
                 }
                 onDelete={
                   onDelete
