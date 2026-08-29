@@ -1,6 +1,11 @@
-import { useMemo, useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
-import { useTasks } from "../../context/TaskContext";
+import {
+  useTasks,
+} from "../../context/TaskContext";
 
 import Button from "../ui/Button";
 
@@ -8,27 +13,67 @@ import TaskModal from "./TaskModal";
 import TaskCard from "./TaskCard";
 import TaskEmptyState from "./TaskEmptyState";
 
-export default function TodayTasks() {
-  const { tasks } = useTasks();
+// ==========================================
+// Date Helpers
+// ==========================================
 
-  const [open, setOpen] =
-    useState(false);
+function pad2(
+  value: number
+) {
+  return String(
+    value
+  ).padStart(
+    2,
+    "0"
+  );
+}
+
+function getTodayLocalDate() {
+  const today =
+    new Date();
+
+  return `${today.getFullYear()}-${pad2(
+    today.getMonth() + 1
+  )}-${pad2(
+    today.getDate()
+  )}`;
+}
+
+// ==========================================
+// Component
+// ==========================================
+
+export default function TodayTasks() {
+  const {
+    tasks,
+  } = useTasks();
+
+  const [
+    open,
+    setOpen,
+  ] = useState(false);
 
   const today =
-    new Date().toISOString().split("T")[0];
+    getTodayLocalDate();
 
-  const todayTasks = useMemo(
-  () =>
-    tasks.filter(
-      (task) =>
-        task.dueDate === today
-    ),
-  [tasks, today]
-);
+  const todayTasks =
+    useMemo(
+      () =>
+        tasks.filter(
+          (task) =>
+            task.dueDate ===
+            today
+        ),
+      [
+        tasks,
+        today,
+      ]
+    );
 
   const completed =
     todayTasks.filter(
-      (task) => task.completed
+      (task) =>
+        task.completed
     ).length;
 
   return (
@@ -39,7 +84,7 @@ export default function TodayTasks() {
         <div>
 
           <h2 className="text-3xl font-bold text-white">
-            ✅ Today's Tasks
+            ✅ Today&apos;s Tasks
           </h2>
 
           <p className="mt-2 text-slate-400">
@@ -50,7 +95,9 @@ export default function TodayTasks() {
 
         <Button
           onClick={() =>
-            setOpen(true)
+            setOpen(
+              true
+            )
           }
         >
           + Add Task
@@ -66,7 +113,7 @@ export default function TodayTasks() {
             Progress
           </h3>
 
-          <span className="text-cyan-400 font-semibold">
+          <span className="font-semibold text-cyan-400">
             {completed} / {todayTasks.length}
           </span>
 
@@ -78,7 +125,8 @@ export default function TodayTasks() {
             className="h-full rounded-full bg-cyan-500 transition-all"
             style={{
               width:
-                todayTasks.length === 0
+                todayTasks.length ===
+                0
                   ? "0%"
                   : `${
                       (completed /
@@ -96,7 +144,9 @@ export default function TodayTasks() {
 
         <TaskEmptyState
           onAdd={() =>
-            setOpen(true)
+            setOpen(
+              true
+            )
           }
         />
 
@@ -104,23 +154,36 @@ export default function TodayTasks() {
 
         <div className="space-y-4">
 
-          {todayTasks.map((task) => (
+          {todayTasks.map(
+            (task) => (
 
-            <TaskCard
-              key={task.id}
-              id={task.id}
-            />
+              <TaskCard
+                key={
+                  task.id
+                }
+                id={
+                  task.id
+                }
+              />
 
-          ))}
+            )
+          )}
 
         </div>
 
       )}
 
       <TaskModal
-        open={open}
+        open={
+          open
+        }
+        defaultDueDate={
+          today
+        }
         onClose={() =>
-          setOpen(false)
+          setOpen(
+            false
+          )
         }
       />
 

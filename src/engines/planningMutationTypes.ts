@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Planning Mutation Types
-// Version: 2.0
+// Version: 2.1
 // ==========================================
 
 import type {
@@ -16,6 +16,10 @@ import type {
 import type {
   GoalWeekOwnershipStatus,
 } from "./GoalWeekOwnershipEngine";
+
+import type {
+  PersonalWeekOwnershipStatus,
+} from "./PersonalWeekOwnershipEngine";
 
 // ==========================================
 // Task Creation
@@ -71,7 +75,8 @@ export type MonthlyOutcomeCreationStatus =
   | "invalid_year"
   | "goal_not_found"
   | "outside_goal_timeline"
-  | "duplicate_goal_month";
+  | "duplicate_goal_month"
+  | "duplicate_personal_month";
 
 export interface MonthlyOutcomeCreationResult {
   status: MonthlyOutcomeCreationStatus;
@@ -150,6 +155,64 @@ export type GoalWeeklyFocusCreationStatus =
 
 export interface GoalWeeklyFocusCreationResult {
   status: GoalWeeklyFocusCreationStatus;
+
+  created: boolean;
+
+  message: string;
+
+  ownerMonth?: number;
+
+  ownerYear?: number;
+
+  ownerMonthlyTargetId?: number;
+
+  existingWeeklyTargetId?: number;
+}
+
+// ==========================================
+// Personal Weekly Focus Validation
+// ==========================================
+
+export type PersonalWeekOwnershipFailureStatus =
+  Exclude<
+    PersonalWeekOwnershipStatus,
+    "available"
+  >;
+
+export type PersonalWeeklyFocusValidationStatus =
+  | "available"
+  | "invalid_title"
+  | PersonalWeekOwnershipFailureStatus;
+
+export interface PersonalWeeklyFocusValidationResult {
+  status: PersonalWeeklyFocusValidationStatus;
+
+  allowed: boolean;
+
+  title?: string;
+
+  message: string;
+
+  ownerMonth?: number;
+
+  ownerYear?: number;
+
+  ownerMonthlyTargetId?: number;
+
+  existingWeeklyTargetId?: number;
+}
+
+// ==========================================
+// Personal Weekly Focus Creation
+// ==========================================
+
+export type PersonalWeeklyFocusCreationStatus =
+  | "created"
+  | "invalid_title"
+  | PersonalWeekOwnershipFailureStatus;
+
+export interface PersonalWeeklyFocusCreationResult {
+  status: PersonalWeeklyFocusCreationStatus;
 
   created: boolean;
 

@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Planning Mutation Engine
-// Version: 2.0
+// Version: 2.1
 // ==========================================
 
 import {
@@ -15,6 +15,10 @@ import {
   GoalWeekOwnershipEngine,
 } from "./GoalWeekOwnershipEngine";
 
+import {
+  PersonalWeekOwnershipEngine,
+} from "./PersonalWeekOwnershipEngine";
+
 import type {
   PlanningState,
 } from "./PlanningKernel";
@@ -23,6 +27,7 @@ import type {
   GoalWeeklyFocusValidationResult,
   MonthlyOutcomeCreationResult,
   MonthlyOutcomeUpdateResult,
+  PersonalWeeklyFocusValidationResult,
   TaskCreationResult,
   TaskUpdateResult,
   WeeklyFocusUpdateResult,
@@ -704,6 +709,10 @@ export class PlanningMutationEngine {
       };
     }
 
+    // ======================================
+    // Goal Monthly Outcome
+    // ======================================
+
     if (
       goalId !==
       undefined
@@ -813,6 +822,40 @@ export class PlanningMutationEngine {
       }
     }
 
+    // ======================================
+    // Personal Monthly Outcome
+    // ======================================
+
+    else {
+      const duplicatePersonalMonth =
+        state.monthlyTargets.some(
+          (target) =>
+            target.goalId ===
+              undefined &&
+            target.month ===
+              month &&
+            target.year ===
+              year
+        );
+
+      if (
+        duplicatePersonalMonth
+      ) {
+        return {
+          status:
+            "duplicate_personal_month",
+
+          created:
+            false,
+
+          state,
+
+          message:
+            "A Personal Monthly Outcome already exists for that month.",
+        };
+      }
+    }
+
     const now =
       new Date().toISOString();
 
@@ -865,7 +908,10 @@ export class PlanningMutationEngine {
         recalculated,
 
       message:
-        "Monthly Outcome created successfully.",
+        goalId ===
+        undefined
+          ? "Personal Monthly Outcome created successfully."
+          : "Monthly Outcome created successfully.",
     };
   }
 
@@ -996,6 +1042,108 @@ export class PlanningMutationEngine {
           lifeGoals:
             state.lifeGoals,
 
+          monthlyTargets:
+            state.monthlyTargets,
+
+          weeklyTargets:
+            state.weeklyTargets,
+        },
+        monthlyTargetId,
+        weekStartDate,
+        weekEndDate
+      );
+
+    if (
+      ownership.status !==
+      "available"
+    ) {
+      return {
+        status:
+          ownership.status,
+
+        allowed:
+          false,
+
+        title:
+          trimmedTitle,
+
+        message:
+          ownership.message,
+
+        ownerMonth:
+          ownership.ownerMonth,
+
+        ownerYear:
+          ownership.ownerYear,
+
+        ownerMonthlyTargetId:
+          ownership
+            .ownerMonthlyTarget
+            ?.id,
+
+        existingWeeklyTargetId:
+          ownership
+            .existingWeeklyTarget
+            ?.id,
+      };
+    }
+
+    return {
+      status:
+        "available",
+
+      allowed:
+        true,
+
+      title:
+        trimmedTitle,
+
+      message:
+        ownership.message,
+
+      ownerMonth:
+        ownership.ownerMonth,
+
+      ownerYear:
+        ownership.ownerYear,
+
+      ownerMonthlyTargetId:
+        ownership
+          .ownerMonthlyTarget
+          ?.id,
+    };
+  }
+
+  // ========================================
+  // Validate Personal Weekly Focus Creation
+  // ========================================
+
+  static validatePersonalWeeklyFocus(
+    state: PlanningState,
+    title: string,
+    monthlyTargetId: number,
+    weekStartDate: string,
+    weekEndDate: string
+  ): PersonalWeeklyFocusValidationResult {
+    const trimmedTitle =
+      title.trim();
+
+    if (!trimmedTitle) {
+      return {
+        status:
+          "invalid_title",
+
+        allowed:
+          false,
+
+        message:
+          "Weekly Focus title cannot be empty.",
+      };
+    }
+
+    const ownership =
+      PersonalWeekOwnershipEngine.resolve(
+        {
           monthlyTargets:
             state.monthlyTargets,
 

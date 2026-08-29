@@ -1,5 +1,6 @@
 import PlanningSummary from "../components/planning/PlanningSummary";
 import LifeGoalPlanner from "../components/planning/LifeGoalPlanner";
+import PersonalPlanner from "../components/planning/PersonalPlanner";
 
 export default function Planning() {
   return (
@@ -152,26 +153,8 @@ export default function Planning() {
 
           </div>
 
-          <div
-            className="
-              mt-5
-              rounded-xl
-              border
-              border-dashed
-              border-slate-800
-              bg-slate-950/40
-              px-4
-              py-10
-              text-center
-            "
-          >
-            <p className="text-sm font-medium text-slate-300">
-              Personal hierarchy coming next
-            </p>
-
-            <p className="mt-1 text-xs text-slate-600">
-              Month → Week → Universal Tasks
-            </p>
+          <div className="mt-5">
+            <PersonalPlanner />
           </div>
 
         </section>

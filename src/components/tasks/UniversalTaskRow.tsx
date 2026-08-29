@@ -1,4 +1,5 @@
 import {
+  FaPen,
   FaTrash,
 } from "react-icons/fa";
 
@@ -27,6 +28,10 @@ interface UniversalTaskRowProps {
   variant?: UniversalTaskRowVariant;
 
   onToggle: (
+    taskId: number
+  ) => void;
+
+  onEdit?: (
     taskId: number
   ) => void;
 
@@ -123,6 +128,8 @@ export default function UniversalTaskRow({
 
   onToggle,
 
+  onEdit,
+
   onDelete,
 }: UniversalTaskRowProps) {
   const planSymbol =
@@ -138,6 +145,20 @@ export default function UniversalTaskRow({
   const isCompact =
     variant ===
     "compact";
+
+  // ==========================================
+  // Edit
+  // ==========================================
+
+  function handleEdit() {
+    if (!onEdit) {
+      return;
+    }
+
+    onEdit(
+      task.id
+    );
+  }
 
   // ==========================================
   // Delete
@@ -206,6 +227,62 @@ export default function UniversalTaskRow({
   );
 
   // ==========================================
+  // Edit Button
+  // ==========================================
+
+  const editButton =
+    onEdit ? (
+      <button
+        type="button"
+        onClick={
+          handleEdit
+        }
+        className="
+          rounded-md
+          p-2
+          text-slate-600
+          transition
+          hover:bg-cyan-500/10
+          hover:text-cyan-300
+        "
+        aria-label={
+          `Edit ${task.title}`
+        }
+        title="Edit task"
+      >
+        <FaPen />
+      </button>
+    ) : null;
+
+  // ==========================================
+  // Delete Button
+  // ==========================================
+
+  const deleteButton =
+    onDelete ? (
+      <button
+        type="button"
+        onClick={
+          handleDelete
+        }
+        className="
+          rounded-md
+          p-2
+          text-slate-600
+          transition
+          hover:bg-red-500/10
+          hover:text-red-400
+        "
+        aria-label={
+          `Delete ${task.title}`
+        }
+        title="Delete task"
+      >
+        <FaTrash />
+      </button>
+    ) : null;
+
+  // ==========================================
   // Compact Desktop / Tablet Row
   // ==========================================
 
@@ -216,7 +293,7 @@ export default function UniversalTaskRow({
           className="
             hidden
             min-h-11
-            grid-cols-[40px_minmax(150px,1fr)_90px_90px_40px]
+            grid-cols-[40px_minmax(150px,1fr)_90px_90px_76px]
             items-center
             border-b
             border-slate-800
@@ -316,30 +393,11 @@ export default function UniversalTaskRow({
             )}
           </div>
 
-          {/* Delete */}
+          {/* Actions */}
 
           <div className="flex items-center justify-center">
-            {onDelete && (
-              <button
-                type="button"
-                onClick={
-                  handleDelete
-                }
-                className="
-                  rounded-md
-                  p-2
-                  text-slate-600
-                  transition
-                  hover:bg-red-500/10
-                  hover:text-red-400
-                "
-                aria-label={
-                  `Delete ${task.title}`
-                }
-              >
-                <FaTrash />
-              </button>
-            )}
+            {editButton}
+            {deleteButton}
           </div>
         </div>
 
@@ -393,6 +451,9 @@ export default function UniversalTaskRow({
                     text-[11px]
                     text-slate-600
                   "
+                  title={
+                    task.description
+                  }
                 >
                   {
                     task.description
@@ -448,27 +509,12 @@ export default function UniversalTaskRow({
 
             </div>
 
-            {onDelete && (
-              <button
-                type="button"
-                onClick={
-                  handleDelete
-                }
-                className="
-                  shrink-0
-                  rounded-md
-                  p-1.5
-                  text-slate-600
-                  transition
-                  hover:bg-red-500/10
-                  hover:text-red-400
-                "
-                aria-label={
-                  `Delete ${task.title}`
-                }
-              >
-                <FaTrash />
-              </button>
+            {(onEdit ||
+              onDelete) && (
+              <div className="flex shrink-0 items-center">
+                {editButton}
+                {deleteButton}
+              </div>
             )}
 
           </div>
@@ -487,7 +533,7 @@ export default function UniversalTaskRow({
         className="
           hidden
           min-h-11
-          grid-cols-[44px_minmax(220px,1fr)_56px_140px_110px_110px_100px_44px]
+          grid-cols-[44px_minmax(220px,1fr)_56px_140px_110px_110px_100px_76px]
           items-center
           border-b
           border-slate-800
@@ -621,27 +667,8 @@ export default function UniversalTaskRow({
         {/* Actions */}
 
         <div className="flex items-center justify-center">
-          {onDelete && (
-            <button
-              type="button"
-              onClick={
-                handleDelete
-              }
-              className="
-                rounded-md
-                p-2
-                text-slate-500
-                transition
-                hover:bg-red-500/10
-                hover:text-red-400
-              "
-              aria-label={
-                `Delete ${task.title}`
-              }
-            >
-              <FaTrash />
-            </button>
-          )}
+          {editButton}
+          {deleteButton}
         </div>
       </div>
 
@@ -699,6 +726,24 @@ export default function UniversalTaskRow({
 
             </div>
 
+            {task.description && (
+              <p
+                className="
+                  mt-0.5
+                  truncate
+                  text-xs
+                  text-slate-600
+                "
+                title={
+                  task.description
+                }
+              >
+                {
+                  task.description
+                }
+              </p>
+            )}
+
             <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
 
               <span
@@ -753,27 +798,12 @@ export default function UniversalTaskRow({
 
           </div>
 
-          {onDelete && (
-            <button
-              type="button"
-              onClick={
-                handleDelete
-              }
-              className="
-                shrink-0
-                rounded-md
-                p-1.5
-                text-slate-600
-                transition
-                hover:bg-red-500/10
-                hover:text-red-400
-              "
-              aria-label={
-                `Delete ${task.title}`
-              }
-            >
-              <FaTrash />
-            </button>
+          {(onEdit ||
+            onDelete) && (
+            <div className="flex shrink-0 items-center">
+              {editButton}
+              {deleteButton}
+            </div>
           )}
 
         </div>

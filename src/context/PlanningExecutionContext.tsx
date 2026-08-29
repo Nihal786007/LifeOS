@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Planning Execution Context
-// Version: 5.0
+// Version: 5.1
 // ==========================================
 
 import {
@@ -48,6 +48,7 @@ import type {
   GoalWeeklyFocusCreationResult,
   MonthlyOutcomeCreationResult,
   MonthlyOutcomeUpdateResult,
+  PersonalWeeklyFocusCreationResult,
   TaskUpdateResult,
   WeeklyFocusUpdateResult,
 } from "../engines/planningMutationTypes";
@@ -108,6 +109,13 @@ interface PlanningExecutionContextType {
     weekStartDate: string,
     weekEndDate: string
   ) => GoalWeeklyFocusCreationResult;
+
+  createPersonalWeeklyFocus: (
+    title: string,
+    monthlyTargetId: number,
+    weekStartDate: string,
+    weekEndDate: string
+  ) => PersonalWeeklyFocusCreationResult;
 
   updateWeeklyFocusTitle: (
     weeklyTargetId: number,
@@ -460,6 +468,95 @@ export function PlanningExecutionProvider({
     };
   }
 
+  function createPersonalWeeklyFocus(
+    title: string,
+    monthlyTargetId: number,
+    weekStartDate: string,
+    weekEndDate: string
+  ): PersonalWeeklyFocusCreationResult {
+    const validation =
+      PlanningMutationEngine.validatePersonalWeeklyFocus(
+        getState(),
+        title,
+        monthlyTargetId,
+        weekStartDate,
+        weekEndDate
+      );
+
+    if (
+      validation.status !==
+      "available"
+    ) {
+      return {
+        status:
+          validation.status,
+
+        created:
+          false,
+
+        message:
+          validation.message,
+
+        ownerMonth:
+          validation.ownerMonth,
+
+        ownerYear:
+          validation.ownerYear,
+
+        ownerMonthlyTargetId:
+          validation.ownerMonthlyTargetId,
+
+        existingWeeklyTargetId:
+          validation.existingWeeklyTargetId,
+      };
+    }
+
+    if (
+      !validation.title
+    ) {
+      return {
+        status:
+          "invalid_title",
+
+        created:
+          false,
+
+        message:
+          "Weekly Focus title cannot be empty.",
+      };
+    }
+
+    const ownerMonthlyTargetId =
+      validation.ownerMonthlyTargetId ??
+      monthlyTargetId;
+
+    addCalendarWeeklyTarget(
+      validation.title,
+      ownerMonthlyTargetId,
+      weekStartDate,
+      weekEndDate
+    );
+
+    return {
+      status:
+        "created",
+
+      created:
+        true,
+
+      message:
+        "Personal Weekly Focus created successfully.",
+
+      ownerMonth:
+        validation.ownerMonth,
+
+      ownerYear:
+        validation.ownerYear,
+
+      ownerMonthlyTargetId,
+    };
+  }
+
   function updateWeeklyFocusTitle(
     weeklyTargetId: number,
     title: string
@@ -726,6 +823,7 @@ export function PlanningExecutionProvider({
         updateMonthlyOutcomeTitle,
 
         createGoalWeeklyFocus,
+        createPersonalWeeklyFocus,
         updateWeeklyFocusTitle,
 
         createTask,
