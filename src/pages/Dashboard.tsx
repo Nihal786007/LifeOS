@@ -1,3 +1,21 @@
+// ==========================================
+// LifeOS Dashboard
+// Version: 2.1
+// ==========================================
+//
+// Dashboard now uses:
+// - AppContext only for Profile
+// - TaskContext for Universal Tasks
+// - HabitContext + HabitEngine for Habits 2.0
+//
+// Legacy AppContext habit ownership is no
+// longer consumed by the Dashboard.
+// ==========================================
+
+import {
+  useMemo,
+} from "react";
+
 import HeroSection from "../components/dashboard/HeroSection";
 import PerformanceOverview from "../components/dashboard/PerformanceOverview";
 import AtlasCommandCenter from "../components/dashboard/AtlasCommandCenter";
@@ -5,43 +23,115 @@ import AtlasPulse from "../components/dashboard/AtlasPulse";
 
 import RecentCaptures from "../components/capture/RecentCaptures";
 
-import { AtlasEngine } from "../atlas/atlasEngine";
+import {
+  AtlasEngine,
+} from "../atlas/atlasEngine";
 
-import { useApp } from "../context/AppContext";
-import { useTasks } from "../context/TaskContext";
+import type {
+  AtlasHabit,
+} from "../atlas/types";
+
+import {
+  useApp,
+} from "../context/AppContext";
+
+import {
+  useTasks,
+} from "../context/TaskContext";
+
+import {
+  useHabits,
+} from "../context/HabitContext";
+
+import {
+  HabitEngine,
+} from "../engines/HabitEngine";
 
 export default function Dashboard() {
-  // ==========================================
-  // Legacy App State
-  // ==========================================
-  // Profile and habits remain here temporarily
-  // until their dedicated systems are migrated.
-  // ==========================================
+  // ========================================
+  // Profile
+  // ========================================
 
   const {
-    habits,
     profile,
-  } = useApp();
+  } =
+    useApp();
 
-  // ==========================================
-  // Universal Task State
-  // ==========================================
+  // ========================================
+  // Universal Tasks
+  // ========================================
 
   const {
     tasks,
-  } = useTasks();
+  } =
+    useTasks();
 
-  // ==========================================
+  // ========================================
+  // Habits 2.0
+  // ========================================
+
+  const {
+    habitState,
+    habits,
+  } =
+    useHabits();
+
+  const referenceDate =
+    useMemo(
+      () =>
+        new Date(),
+      []
+    );
+
+  const atlasHabits =
+    useMemo<
+      AtlasHabit[]
+    >(
+      () =>
+        habits
+          .filter(
+            (habit) =>
+              !habit.archived
+          )
+          .map(
+            (habit) => ({
+              id:
+                habit.id,
+
+              name:
+                habit.name,
+
+              streak:
+                HabitEngine.getCurrentStreak(
+                  habitState,
+                  habit.id,
+                  referenceDate
+                ),
+            })
+          ),
+      [
+        habits,
+        habitState,
+        referenceDate,
+      ]
+    );
+
+  // ========================================
   // ATLAS
-  // ==========================================
-  // ATLAS now receives the same task state used
-  // by Planning, Tasks, Calendar and Analytics.
-  // ==========================================
+  // ========================================
+  //
+  // ATLAS receives:
+  // - canonical Universal Tasks
+  // - derived Habits 2.0 intelligence
+  //
+  // It no longer receives legacy Habit state
+  // from AppContext.
+  // ========================================
 
   const atlas =
     new AtlasEngine(
       tasks,
-      habits
+      atlasHabits
     );
 
   const atlasData =
@@ -52,14 +142,20 @@ export default function Dashboard() {
       {/* Hero */}
 
       <HeroSection
-        name={profile.name}
-        atlas={atlasData}
+        name={
+          profile.name
+        }
+        atlas={
+          atlasData
+        }
       />
 
       {/* Performance Overview */}
 
       <PerformanceOverview
-        atlas={atlasData}
+        atlas={
+          atlasData
+        }
       />
 
       {/* Dashboard Content */}
@@ -67,14 +163,18 @@ export default function Dashboard() {
       <div className="grid gap-8 xl:grid-cols-3">
         <div className="space-y-8 xl:col-span-2">
           <AtlasCommandCenter
-            atlas={atlasData}
+            atlas={
+              atlasData
+            }
           />
 
           <RecentCaptures />
         </div>
 
         <AtlasPulse
-          atlas={atlasData}
+          atlas={
+            atlasData
+          }
         />
       </div>
     </div>

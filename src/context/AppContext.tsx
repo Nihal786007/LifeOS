@@ -5,38 +5,22 @@ import {
   useState,
 } from "react";
 
-import type { ReactNode } from "react";
+import type {
+  ReactNode,
+} from "react";
 
 import type {
   Capture,
-  Habit,
   UserProfile,
 } from "../shared/types";
 
 type AppContextType = {
   // =========================
-  // HABITS
-  // =========================
-
-  habits: Habit[];
-
-  addHabit: (
-    name: string
-  ) => void;
-
-  toggleHabit: (
-    id: number
-  ) => void;
-
-  deleteHabit: (
-    id: number
-  ) => void;
-
-  // =========================
   // CAPTURE
   // =========================
 
-  captures: Capture[];
+  captures:
+    Capture[];
 
   addCapture: (
     text: string
@@ -50,7 +34,8 @@ type AppContextType = {
   // PROFILE
   // =========================
 
-  profile: UserProfile;
+  profile:
+    UserProfile;
 
   updateProfile: (
     data: Partial<UserProfile>
@@ -58,128 +43,18 @@ type AppContextType = {
 };
 
 const AppContext =
-  createContext<AppContextType | null>(
+  createContext<
+    AppContextType | null
+  >(
     null
   );
 
 export function AppProvider({
   children,
 }: {
-  children: ReactNode;
+  children:
+    ReactNode;
 }) {
-  // =========================
-  // HABITS
-  // =========================
-
-  const [
-    habits,
-    setHabits,
-  ] =
-    useState<Habit[]>(() => {
-      const saved =
-        localStorage.getItem(
-          "lifeos-habits"
-        );
-
-      if (!saved) {
-        return [];
-      }
-
-      try {
-        return JSON.parse(
-          saved
-        );
-      } catch {
-        return [];
-      }
-    });
-
-  useEffect(() => {
-    localStorage.setItem(
-      "lifeos-habits",
-      JSON.stringify(
-        habits
-      )
-    );
-  }, [habits]);
-
-  function addHabit(
-    name: string
-  ) {
-    const trimmedName =
-      name.trim();
-
-    if (!trimmedName) {
-      return;
-    }
-
-    setHabits(
-      (prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-
-          name: trimmedName,
-
-          streak: 0,
-
-          completedToday:
-            false,
-        },
-      ]
-    );
-  }
-
-  function toggleHabit(
-    id: number
-  ) {
-    setHabits(
-      (prev) =>
-        prev.map(
-          (habit) => {
-            if (
-              habit.id !==
-              id
-            ) {
-              return habit;
-            }
-
-            const completedToday =
-              !habit.completedToday;
-
-            return {
-              ...habit,
-
-              completedToday,
-
-              streak:
-                completedToday
-                  ? habit.streak +
-                    1
-                  : Math.max(
-                      habit.streak -
-                        1,
-                      0
-                    ),
-            };
-          }
-        )
-    );
-  }
-
-  function deleteHabit(
-    id: number
-  ) {
-    setHabits(
-      (prev) =>
-        prev.filter(
-          (habit) =>
-            habit.id !==
-            id
-        )
-    );
-  }
-
   // =========================
   // QUICK CAPTURE
   // =========================
@@ -188,7 +63,9 @@ export function AppProvider({
     captures,
     setCaptures,
   ] =
-    useState<Capture[]>(
+    useState<
+      Capture[]
+    >(
       () => {
         const saved =
           localStorage.getItem(
@@ -216,7 +93,9 @@ export function AppProvider({
         captures
       )
     );
-  }, [captures]);
+  }, [
+    captures,
+  ]);
 
   function addCapture(
     text: string
@@ -231,9 +110,11 @@ export function AppProvider({
     setCaptures(
       (prev) => [
         {
-          id: Date.now(),
+          id:
+            Date.now(),
 
-          text: trimmedText,
+          text:
+            trimmedText,
 
           createdAt:
             new Date().toISOString(),
@@ -265,7 +146,9 @@ export function AppProvider({
     profile,
     setProfile,
   ] =
-    useState<UserProfile>(
+    useState<
+      UserProfile
+    >(
       () => {
         const saved =
           localStorage.getItem(
@@ -284,21 +167,26 @@ export function AppProvider({
         }
 
         return {
-          name: "",
+          name:
+            "",
 
-          occupation: "",
+          occupation:
+            "",
 
           timezone:
             "Asia/Kolkata",
 
-          theme: "dark",
+          theme:
+            "dark",
 
           atlasPersonality:
             "Professional",
 
-          level: 1,
+          level:
+            1,
 
-          xp: 0,
+          xp:
+            0,
         };
       }
     );
@@ -310,10 +198,13 @@ export function AppProvider({
         profile
       )
     );
-  }, [profile]);
+  }, [
+    profile,
+  ]);
 
   function updateProfile(
-    data: Partial<UserProfile>
+    data:
+      Partial<UserProfile>
   ) {
     setProfile(
       (prev) => ({
@@ -326,15 +217,6 @@ export function AppProvider({
   return (
     <AppContext.Provider
       value={{
-        // =========================
-        // HABITS
-        // =========================
-
-        habits,
-        addHabit,
-        toggleHabit,
-        deleteHabit,
-
         // =========================
         // QUICK CAPTURE
         // =========================

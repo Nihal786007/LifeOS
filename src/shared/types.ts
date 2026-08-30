@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Shared Models
-// Version: 3.4
+// Version: 3.5
 // ==========================================
 
 /* =========================
@@ -101,20 +101,6 @@ export interface LifeGoal {
 
   // Metadata
   createdAt: string;
-}
-
-/* =========================
-HABITS
-========================= */
-
-export interface Habit {
-  id: number;
-
-  name: string;
-
-  streak: number;
-
-  completedToday: boolean;
 }
 
 /* =========================

@@ -1,17 +1,20 @@
 // ==========================================
 // LifeOS - ATLAS Type Definitions
-// Version: 2.2
+// Version: 2.3
 // ==========================================
 //
 // ATLAS-specific types.
 //
 // Shared application models such as Task
-// and Habit are imported from shared/types.
+// remain imported from shared/types.
+//
+// Habit intelligence is now represented by
+// a dedicated ATLAS read model instead of
+// depending on the legacy Habit model.
 //
 // ==========================================
 
 import type {
-  Habit,
   Task,
 } from "../shared/types";
 
@@ -19,9 +22,32 @@ import type {
 // Shared Models
 // ==========================================
 
-export type AtlasTask = Task;
+export type AtlasTask =
+  Task;
 
-export type AtlasHabit = Habit;
+// ==========================================
+// Habit Read Model
+// ==========================================
+//
+// This is NOT canonical habit state.
+//
+// Habits 2.0 owns:
+// - HabitDefinition
+// - HabitCompletion history
+//
+// HabitEngine derives streak information.
+//
+// ATLAS receives only the small derived
+// representation it currently needs.
+// ==========================================
+
+export interface AtlasHabit {
+  id: number;
+
+  name: string;
+
+  streak: number;
+}
 
 // ==========================================
 // Daily Briefing
@@ -174,27 +200,38 @@ export interface Recommendation {
 // ==========================================
 
 export interface AtlasResult {
-  analysis: ProductivityAnalysis;
+  analysis:
+    ProductivityAnalysis;
 
-  briefing: DailyBriefing;
+  briefing:
+    DailyBriefing;
 
-  prediction: ProductivityPrediction;
+  prediction:
+    ProductivityPrediction;
 
-  recommendations: Recommendation[];
+  recommendations:
+    Recommendation[];
 
-  missions: SmartMission[];
+  missions:
+    SmartMission[];
 
-  xp: XPData;
+  xp:
+    XPData;
 
-  achievements: Achievement[];
+  achievements:
+    Achievement[];
 
-  trend: string;
+  trend:
+    string;
 
-  averageCompletion: number;
+  averageCompletion:
+    number;
 
-  greeting: string;
+  greeting:
+    string;
 
-  motivation: string;
+  motivation:
+    string;
 }
 
 // ==========================================
@@ -207,20 +244,25 @@ export type AtlasDecisionType =
   | "habit";
 
 export interface IntentResult {
-  type: AtlasDecisionType;
+  type:
+    AtlasDecisionType;
 
-  confidence: number;
+  confidence:
+    number;
 
-  title: string;
+  title:
+    string;
 
   actionId:
     | "create-task"
     | "create-calendar-event"
     | "create-habit";
 
-  actionLabel: string;
+  actionLabel:
+    string;
 
-  reason: string;
+  reason:
+    string;
 }
 
 // ==========================================
@@ -230,7 +272,8 @@ export interface IntentResult {
 
 export interface IntentPackage {
   // Original user input
-  originalText: string;
+  originalText:
+    string;
 
   // Intent detected by IntentEngine
   intent:
@@ -240,14 +283,18 @@ export interface IntentPackage {
     | "unknown";
 
   // Confidence of the detected intent
-  confidence: number;
+  confidence:
+    number;
 
   // Parsed information
-  title?: string;
+  title?:
+    string;
 
-  dueDate?: string;
+  dueDate?:
+    string;
 
-  time?: string;
+  time?:
+    string;
 
   priority?:
     | "low"

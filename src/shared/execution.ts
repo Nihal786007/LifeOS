@@ -1,6 +1,6 @@
 // ==========================================
 // LifeOS Execution Models
-// Version: 2.0
+// Version: 2.1
 // ==========================================
 
 export type ExecutionType =
@@ -20,11 +20,12 @@ export type ExecutionType =
   | "life_goal_uncompleted"
   | "life_goal_deleted"
 
+  | "habit_completed"
+  | "habit_uncompleted"
+
   | "xp_earned"
 
   | "achievement_unlocked"
-
-  | "habit_completed"
 
   | "system";
 
@@ -47,5 +48,8 @@ export interface ExecutionRecord {
 
   color?: string;
 
-  metadata?: Record<string, unknown>;
+  metadata?: Record<
+    string,
+    unknown
+  >;
 }
