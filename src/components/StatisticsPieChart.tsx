@@ -7,66 +7,78 @@ import {
   Legend,
 } from "recharts";
 
-import { useTasks } from "../context/TaskContext";
+// ==========================================
+// Types
+// ==========================================
 
-export default function StatisticsPieChart() {
-  const {
-    tasks,
-  } = useTasks();
+interface StatisticsPieChartProps {
+  completedTasks: number;
 
-  const completedTasks =
-    tasks.filter(
-      (task) =>
-        task.completed
-    ).length;
+  pendingTasks: number;
+}
 
-  const remainingTasks =
-    tasks.length -
-    completedTasks;
+// ==========================================
+// Component
+// ==========================================
 
+export default function StatisticsPieChart({
+  completedTasks,
+
+  pendingTasks,
+}: StatisticsPieChartProps) {
   const data = [
     {
-      name: "Completed",
-      value: completedTasks,
+      name:
+        "Completed",
+
+      value:
+        completedTasks,
     },
     {
-      name: "Remaining",
-      value: remainingTasks,
+      name:
+        "Pending",
+
+      value:
+        pendingTasks,
     },
   ];
 
-  const COLORS = [
+  const colors = [
     "#22c55e",
-    "#f97316",
+    "#f59e0b",
   ];
 
   return (
-    <div className="h-[380px] rounded-2xl bg-slate-900 p-6 shadow-lg">
-      <h2 className="mb-6 text-xl font-bold">
-        📊 Task Distribution
-      </h2>
+    <div className="h-[320px]">
 
       <ResponsiveContainer
         width="100%"
-        height="90%"
+        height="100%"
       >
         <PieChart>
+
           <Pie
             data={data}
             cx="50%"
             cy="50%"
-            outerRadius={110}
+            innerRadius={72}
+            outerRadius={108}
+            paddingAngle={3}
             dataKey="value"
-            label
           >
             {data.map(
-              (_, index) => (
+              (
+                entry,
+                index
+              ) => (
                 <Cell
-                  key={index}
+                  key={
+                    entry.name
+                  }
                   fill={
-                    COLORS[
+                    colors[
                       index %
-                        COLORS.length
+                        colors.length
                     ]
                   }
                 />
@@ -74,10 +86,26 @@ export default function StatisticsPieChart() {
             )}
           </Pie>
 
-          <Tooltip />
+          <Tooltip
+            contentStyle={{
+              backgroundColor:
+                "#020617",
+              border:
+                "1px solid #334155",
+              borderRadius:
+                "12px",
+            }}
+            labelStyle={{
+              color:
+                "#cbd5e1",
+            }}
+          />
+
           <Legend />
+
         </PieChart>
       </ResponsiveContainer>
+
     </div>
   );
 }

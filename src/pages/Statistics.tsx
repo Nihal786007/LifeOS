@@ -1,13 +1,8 @@
 import {
   useEffect,
+  useMemo,
   useState,
 } from "react";
-
-import {
-  getTaskAnalytics,
-  getTodayAnalytics,
-  getWeeklyAnalytics,
-} from "../analytics/taskAnalytics";
 
 import WeeklyReview from "../components/statistics/WeeklyReview";
 import DailyReview from "../components/statistics/DailyReview";
@@ -31,6 +26,10 @@ import {
   ExecutionHistoryService,
 } from "../services/ExecutionHistoryService";
 
+import {
+  AnalyticsEngine,
+} from "../engines/AnalyticsEngine";
+
 import type {
   ExecutionRecord,
 } from "../shared/execution";
@@ -38,6 +37,10 @@ import type {
 import Card from "../components/ui/Card";
 import PageHero from "../components/ui/PageHero";
 import StatCard from "../components/ui/StatCard";
+
+// ==========================================
+// Page
+// ==========================================
 
 export default function Statistics() {
   // ==========================================
@@ -78,62 +81,78 @@ export default function Statistics() {
   }, []);
 
   // ==========================================
-  // Analytics
+  // Canonical Analytics
   // ==========================================
 
+  const analytics =
+    useMemo(
+      () =>
+        AnalyticsEngine.analyze({
+          tasks,
+
+          executionRecords,
+        }),
+      [
+        tasks,
+        executionRecords,
+      ]
+    );
+
   const {
-    totalTasks,
-    completedTasks,
-    pendingTasks,
-    completionRate,
-  } = getTaskAnalytics(
-    tasks,
-    executionRecords
-  );
+    overall,
+    today,
+    week,
+  } = analytics;
 
-  const today =
-    getTodayAnalytics(
-      tasks,
-      executionRecords
-    );
-
-  const week =
-    getWeeklyAnalytics(
-      tasks,
-      executionRecords
-    );
+  // ==========================================
+  // UI
+  // ==========================================
 
   return (
     <div className="space-y-10">
+
+      {/* ======================================
+          Hero
+      ====================================== */}
+
       <PageHero
         badge="Mission Analytics"
         title="Statistics"
         description="Monitor your productivity, analyze your performance, and let ATLAS reveal how your mission is progressing."
       >
         <Card className="border-cyan-500/20 bg-cyan-500/5">
+
           <p className="text-sm uppercase tracking-widest text-cyan-300">
             Completion Rate
           </p>
 
           <h2 className="mt-3 text-5xl font-black">
-            {completionRate}%
+            {
+              overall.completionRate
+            }%
           </h2>
 
           <p className="mt-3 text-slate-400">
             Overall Productivity
           </p>
+
         </Card>
       </PageHero>
 
-      {/* Statistics */}
+      {/* ======================================
+          Overall Statistics
+      ====================================== */}
 
       <div className="grid gap-6 md:grid-cols-3">
+
         <StatCard
           icon={
             <FaClipboardList />
           }
           title="Total Tasks"
-          value={totalTasks}
+          value={
+            overall.totalTasks
+          }
         />
 
         <StatCard
@@ -142,7 +161,7 @@ export default function Statistics() {
           }
           title="Completed"
           value={
-            completedTasks
+            overall.completedTasks
           }
           color="text-green-400"
         />
@@ -153,139 +172,199 @@ export default function Statistics() {
           }
           title="Pending"
           value={
-            pendingTasks
+            overall.pendingTasks
           }
           color="text-yellow-400"
         />
+
       </div>
 
-      {/* Progress */}
+      {/* ======================================
+          Overall Progress
+      ====================================== */}
 
       <div className="grid gap-6 xl:grid-cols-2">
+
         <Card>
+
           <h2 className="mb-6 text-2xl font-bold">
-            🚀 Productivity Progress
+            Productivity Progress
           </h2>
 
           <div className="h-5 overflow-hidden rounded-full bg-slate-800">
+
             <div
               className="h-full rounded-full bg-cyan-500 transition-all duration-700"
               style={{
-                width: `${completionRate}%`,
+                width:
+                  `${overall.completionRate}%`,
               }}
             />
+
           </div>
 
           <p className="mt-6 leading-7 text-slate-400">
+
             You've completed{" "}
+
             <strong>
-              {completedTasks}
+              {
+                overall.completedTasks
+              }
             </strong>{" "}
+
             out of{" "}
+
             <strong>
-              {totalTasks}
+              {
+                overall.totalTasks
+              }
             </strong>{" "}
+
             tasks.
 
-            {completionRate >=
+            {overall.completionRate >=
               80 && (
               <>
                 {" "}
-                Outstanding
-                productivity
-                today.
+                Outstanding productivity.
               </>
             )}
 
-            {completionRate >=
+            {overall.completionRate >=
               50 &&
-              completionRate <
+              overall.completionRate <
                 80 && (
                 <>
                   {" "}
-                  You're
-                  making solid
+                  You're making solid
                   progress.
                 </>
               )}
 
-            {completionRate <
+            {overall.completionRate <
               50 && (
               <>
                 {" "}
-                ATLAS
-                recommends
-                completing a
-                few more
-                missions.
+                Focus on completing your
+                highest-priority tasks.
               </>
             )}
+
           </p>
+
         </Card>
 
         <Card className="flex items-center justify-center">
+
           <ProgressRing
             value={
-              completionRate
+              overall.completionRate
             }
           />
+
         </Card>
+
       </div>
 
-      {/* Charts */}
+      {/* ======================================
+          Charts
+      ====================================== */}
 
       <div className="grid gap-6 xl:grid-cols-2">
+
         <Card>
+
           <h2 className="mb-6 text-2xl font-bold">
-            🥧 Task Distribution
+            Task Distribution
           </h2>
 
-          <StatisticsPieChart />
+          <StatisticsPieChart
+            completedTasks={
+              overall.completedTasks
+            }
+            pendingTasks={
+              overall.pendingTasks
+            }
+          />
+
         </Card>
 
         <Card>
-          <h2 className="mb-6 text-2xl font-bold">
-            📅 Weekly Productivity
-          </h2>
 
-          <WeeklyProductivityChart />
+          <div className="mb-6">
+
+            <h2 className="text-2xl font-bold">
+              Weekly Productivity
+            </h2>
+
+            <p className="mt-1 text-sm text-slate-500">
+              {
+                week.weekStartDate
+              }{" "}
+              →{" "}
+              {
+                week.weekEndDate
+              }
+            </p>
+
+          </div>
+
+          <WeeklyProductivityChart
+            data={
+              week.trend
+            }
+          />
+
         </Card>
+
       </div>
 
-      {/* ATLAS */}
+      {/* ======================================
+          ATLAS Summary
+      ====================================== */}
 
       <AtlasReport
         completionRate={
-          completionRate
+          overall.completionRate
         }
         pendingTasks={
-          pendingTasks
+          overall.pendingTasks
         }
       />
+
+      {/* ======================================
+          Daily Review
+      ====================================== */}
 
       <DailyReview
         completedTasks={
           today.completedTasks
         }
         pendingTasks={
-          pendingTasks
+          today.pendingTasks
         }
         xpEarned={
           today.xpEarned
         }
       />
 
+      {/* ======================================
+          Weekly Review
+      ====================================== */}
+
       <WeeklyReview
         completedTasks={
           week.completedTasks
         }
         completionRate={
-          completionRate
+          week.completionRate
         }
         xpEarned={
           week.xpEarned
         }
       />
+
     </div>
   );
 }
