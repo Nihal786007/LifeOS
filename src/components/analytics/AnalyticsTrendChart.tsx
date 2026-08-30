@@ -8,27 +8,41 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-import type {
-  DailyCompletionTrendPoint,
-} from "../engines/AnalyticsEngine";
+interface AnalyticsTrendPoint {
+  label: string;
 
-// ==========================================
-// Types
-// ==========================================
+  completedTasks: number;
 
-interface WeeklyProductivityChartProps {
-  data: DailyCompletionTrendPoint[];
+  xpEarned: number;
 }
 
-// ==========================================
-// Component
-// ==========================================
+interface AnalyticsTrendChartProps {
+  data: AnalyticsTrendPoint[];
 
-export default function WeeklyProductivityChart({
+  metric?: "tasks" | "xp";
+}
+
+export default function AnalyticsTrendChart({
   data,
-}: WeeklyProductivityChartProps) {
+
+  metric = "tasks",
+}: AnalyticsTrendChartProps) {
+  const isXP =
+    metric === "xp";
+
+  const dataKey =
+    isXP
+      ? "xpEarned"
+      : "completedTasks";
+
+  const tooltipLabel =
+    isXP
+      ? "XP Earned"
+      : "Completed Tasks";
+
   return (
-    <div className="h-[320px]">
+    <div className="h-[340px] w-full">
+
       <ResponsiveContainer
         width="100%"
         height="100%"
@@ -36,21 +50,21 @@ export default function WeeklyProductivityChart({
         <LineChart
           data={data}
           margin={{
-            top: 8,
-            right: 12,
+            top: 12,
+            right: 16,
             bottom: 0,
-            left: -12,
+            left: -10,
           }}
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="#334155"
+            stroke="#1e293b"
             vertical={false}
           />
 
           <XAxis
             dataKey="label"
-            stroke="#94a3b8"
+            stroke="#64748b"
             tickLine={false}
             axisLine={false}
             fontSize={12}
@@ -58,7 +72,7 @@ export default function WeeklyProductivityChart({
 
           <YAxis
             allowDecimals={false}
-            stroke="#94a3b8"
+            stroke="#64748b"
             tickLine={false}
             axisLine={false}
             fontSize={12}
@@ -68,32 +82,52 @@ export default function WeeklyProductivityChart({
             contentStyle={{
               backgroundColor:
                 "#020617",
+
               border:
                 "1px solid #334155",
+
               borderRadius:
                 "12px",
+
+              boxShadow:
+                "0 10px 30px rgba(0,0,0,0.35)",
             }}
             labelStyle={{
               color:
                 "#cbd5e1",
+
+              marginBottom:
+                "4px",
+            }}
+            itemStyle={{
+              color:
+                "#e2e8f0",
             }}
             formatter={(
               value
             ) => [
               value,
-              "Completed",
+
+              tooltipLabel,
             ]}
           />
 
           <Line
             type="monotone"
-            dataKey="completedTasks"
-            stroke="#22d3ee"
+            dataKey={dataKey}
+            stroke={
+              isXP
+                ? "#facc15"
+                : "#22d3ee"
+            }
             strokeWidth={3}
             dot={{
               r: 4,
+
               fill:
-                "#22d3ee",
+                isXP
+                  ? "#facc15"
+                  : "#22d3ee",
             }}
             activeDot={{
               r: 6,
@@ -101,6 +135,7 @@ export default function WeeklyProductivityChart({
           />
         </LineChart>
       </ResponsiveContainer>
+
     </div>
   );
 }
