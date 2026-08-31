@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test:atlas": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/atlas/atlasIntelligenceCoordinator.test.ts tests/atlas/dailyBriefEngine.test.ts tests/atlas/recommendationEngine.test.ts",
+    "test:atlas": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/atlas/atlasIntelligenceCoordinator.test.ts tests/atlas/dailyBriefEngine.test.ts tests/atlas/recommendationEngine.test.ts tests/atlas/memoryPatternEngine.test.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },
