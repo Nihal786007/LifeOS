@@ -13,7 +13,7 @@ import type {
 
 import {
   HabitEngine,
-} from "../../engines/HabitEngine";
+} from "../../engines/HabitEngine.ts";
 
 import type {
   HabitState,
