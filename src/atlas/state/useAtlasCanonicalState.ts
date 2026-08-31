@@ -22,6 +22,10 @@ import {
 } from "../../context/LifeGoalsContext";
 
 import {
+  useHabits,
+} from "../../context/HabitContext";
+
+import {
   useMonthlyPlanning,
 } from "../../context/MonthlyPlanningContext";
 
@@ -47,10 +51,14 @@ import {
 
 export function useAtlasCanonicalState() {
   const {
-    habits,
     captures,
     profile,
   } = useApp();
+
+  const {
+    habits: habitDefinitions,
+    completions: habitCompletions,
+  } = useHabits();
 
   const {
     tasks,
@@ -89,7 +97,8 @@ export function useAtlasCanonicalState() {
     () =>
       buildAtlasState({
         tasks,
-        habits,
+        habitDefinitions,
+        habitCompletions,
         lifeGoals,
         monthlyTargets: monthlyPlans,
         weeklyTargets,
@@ -99,7 +108,8 @@ export function useAtlasCanonicalState() {
       }),
     [
       tasks,
-      habits,
+      habitDefinitions,
+      habitCompletions,
       lifeGoals,
       monthlyPlans,
       weeklyTargets,

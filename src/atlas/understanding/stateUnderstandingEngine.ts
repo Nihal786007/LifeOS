@@ -11,6 +11,14 @@ import type {
   AtlasCanonicalState,
 } from "../state/types";
 
+import {
+  HabitEngine,
+} from "../../engines/HabitEngine";
+
+import type {
+  HabitState,
+} from "../../shared/habits";
+
 import type {
   AtlasStateUnderstanding,
 } from "./types";
@@ -68,6 +76,20 @@ export class StateUnderstandingEngine {
     const weeklyTargetIds = new Set(
       state.weeklyTargets.map((target) => target.id)
     );
+
+    const habitState: HabitState = {
+      habits: [...state.habitDefinitions],
+      completions: [...state.habitCompletions],
+    };
+
+    const habitReferenceDate = new Date(
+      state.capturedAt
+    );
+
+    const activeHabits =
+      state.habitDefinitions.filter(
+        (habit) => !habit.archived
+      );
 
     return {
       date: today,
@@ -144,12 +166,30 @@ export class StateUnderstandingEngine {
       },
 
       habits: {
-        total: state.habits.length,
-        completedToday: state.habits.filter(
-          (habit) => habit.completedToday
+        total: state.habitDefinitions.length,
+        active: activeHabits.length,
+        scheduledToday: activeHabits.filter(
+          (habit) =>
+            HabitEngine.isScheduledForDate(
+              habit,
+              habitReferenceDate
+            )
         ).length,
-        activeStreaks: state.habits.filter(
-          (habit) => habit.streak > 0
+        completedToday: activeHabits.filter(
+          (habit) =>
+            HabitEngine.isCompletedOnDate(
+              habitState,
+              habit.id,
+              habitReferenceDate
+            )
+        ).length,
+        activeStreaks: activeHabits.filter(
+          (habit) =>
+            HabitEngine.getCurrentStreak(
+              habitState,
+              habit.id,
+              habitReferenceDate
+            ) > 0
         ).length,
       },
 

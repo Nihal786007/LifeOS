@@ -20,7 +20,12 @@ export function buildAtlasState(
   return {
     capturedAt: capturedAt.toISOString(),
     tasks: [...input.tasks],
-    habits: [...input.habits],
+    habitDefinitions: [
+      ...input.habitDefinitions,
+    ],
+    habitCompletions: [
+      ...input.habitCompletions,
+    ],
     lifeGoals: [...input.lifeGoals],
     monthlyTargets: [...input.monthlyTargets],
     weeklyTargets: [...input.weeklyTargets],

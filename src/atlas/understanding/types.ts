@@ -31,6 +31,8 @@ export interface AtlasPlanningFacts {
 
 export interface AtlasHabitFacts {
   total: number;
+  active: number;
+  scheduledToday: number;
   completedToday: number;
   activeStreaks: number;
 }

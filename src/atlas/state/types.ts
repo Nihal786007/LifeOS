@@ -10,7 +10,6 @@
 
 import type {
   Capture,
-  Habit,
   LifeGoal,
   MonthlyTarget,
   Task,
@@ -19,12 +18,18 @@ import type {
 } from "../../shared/types";
 
 import type {
+  HabitCompletion,
+  HabitDefinition,
+} from "../../shared/habits";
+
+import type {
   ExecutionRecord,
 } from "../../shared/execution";
 
 export interface AtlasStateInput {
   tasks: Task[];
-  habits: Habit[];
+  habitDefinitions: HabitDefinition[];
+  habitCompletions: HabitCompletion[];
   lifeGoals: LifeGoal[];
   monthlyTargets: MonthlyTarget[];
   weeklyTargets: WeeklyTarget[];
@@ -36,7 +41,8 @@ export interface AtlasStateInput {
 export interface AtlasCanonicalState {
   capturedAt: string;
   tasks: readonly Task[];
-  habits: readonly Habit[];
+  habitDefinitions: readonly HabitDefinition[];
+  habitCompletions: readonly HabitCompletion[];
   lifeGoals: readonly LifeGoal[];
   monthlyTargets: readonly MonthlyTarget[];
   weeklyTargets: readonly WeeklyTarget[];
