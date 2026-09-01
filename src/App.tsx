@@ -15,6 +15,10 @@ import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 
+import {
+  AtlasLocalReasoningProbe,
+} from "./atlas/localReasoning/AtlasLocalReasoningProbe";
+
 function AppContent() {
   const [
     currentPage,
@@ -31,7 +35,12 @@ function AppContent() {
   } = useApp();
 
   return (
-    <div className="flex h-screen bg-slate-950 text-white">
+    <>
+      {import.meta.env.DEV && (
+        <AtlasLocalReasoningProbe />
+      )}
+
+      <div className="flex h-screen bg-slate-950 text-white">
 
       <Sidebar
         currentPage={
@@ -103,7 +112,8 @@ function AppContent() {
         }
       />
 
-    </div>
+      </div>
+    </>
   );
 }
 
