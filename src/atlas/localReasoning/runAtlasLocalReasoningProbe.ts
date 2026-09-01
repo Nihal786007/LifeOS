@@ -10,44 +10,25 @@
 // ==========================================
 
 import {
-  AtlasIntelligenceCoordinator,
-} from "../coordinator/atlasIntelligenceCoordinator.ts";
-
-import {
-  DailyBriefEngine,
-} from "../dailyBrief/dailyBriefEngine.ts";
-
-import {
-  MemoryPatternEngine,
-} from "../memoryPatterns/memoryPatternEngine.ts";
-
-import {
-  OllamaAtlasProvider,
-} from "../providers/ollama/ollamaAtlasProvider.ts";
-
-import {
-  runAtlasProviderConformance,
-} from "../providerConformance/harness.ts";
-
-import type {
-  AtlasProviderInvocationResult,
-} from "../providerConformance/types";
-
-import {
-  createAtlasAIRequest,
-} from "../reasoning/atlasAIProvider.ts";
+  AtlasAIOrchestrator,
+} from "../orchestration/AtlasAIOrchestrator.ts";
 
 import type {
   AtlasAIProvider,
 } from "../reasoning/atlasAIProvider";
 
 import {
-  buildAtlasReasoningContext,
-} from "../reasoning/buildAtlasReasoningContext.ts";
+  OllamaAtlasProvider,
+} from "../providers/ollama/ollamaAtlasProvider.ts";
 
-import {
-  RecommendationEngine,
-} from "../recommendations/recommendationEngine.ts";
+import type {
+  AtlasProviderInvocationStatus,
+  AtlasProviderValidationError,
+} from "../providerConformance/types";
+
+import type {
+  AtlasAICitation,
+} from "../reasoning/atlasAIProvider";
 
 import type {
   AtlasCanonicalState,
@@ -65,15 +46,11 @@ export interface AtlasLocalReasoningProbeResult {
   snapshotCapturedAt: string;
   prompt: typeof ATLAS_LOCAL_REASONING_PROMPT;
   requestId: string;
-  status:
-    AtlasProviderInvocationResult["status"];
+  status: AtlasProviderInvocationStatus;
   content?: string;
-  citations: NonNullable<
-    AtlasProviderInvocationResult["response"]
-  >["citations"];
+  citations: readonly AtlasAICitation[];
   limitations: readonly string[];
-  errors:
-    AtlasProviderInvocationResult["errors"];
+  errors: readonly AtlasProviderValidationError[];
 }
 
 export async function runAtlasLocalReasoningProbe(
@@ -81,63 +58,34 @@ export async function runAtlasLocalReasoningProbe(
   provider: AtlasAIProvider =
     new OllamaAtlasProvider()
 ): Promise<AtlasLocalReasoningProbeResult> {
-  const intelligenceReport =
-    new AtlasIntelligenceCoordinator().createReport(
-      state
-    );
-
-  const dailyBrief =
-    new DailyBriefEngine().create(
-      intelligenceReport
-    );
-
-  const recommendationReport =
-    new RecommendationEngine().create(
-      intelligenceReport
-    );
-
-  const patternReport =
-    new MemoryPatternEngine().analyze({
-      state,
-      report: intelligenceReport,
-    });
-
-  const reasoningContext =
-    buildAtlasReasoningContext({
-      intelligenceReport,
-      dailyBrief,
-      recommendationReport,
-      patternReport,
-      profile: state.profile,
-    });
-
   const requestId =
     `atlas-local-reasoning:${state.capturedAt}`;
 
-  const request = createAtlasAIRequest({
-    requestId,
-    purpose: "grounded-answer",
-    prompt: ATLAS_LOCAL_REASONING_PROMPT,
-    context: reasoningContext,
-  });
-
-  const invocation =
-    await runAtlasProviderConformance(
-      provider,
-      request
-    );
+  const orchestration =
+    await new AtlasAIOrchestrator(
+      provider
+    ).reason({
+      state,
+      requestId,
+      purpose: "grounded-answer",
+      prompt: ATLAS_LOCAL_REASONING_PROMPT,
+    });
 
   return {
     version:
       ATLAS_LOCAL_REASONING_PROBE_VERSION,
-    snapshotCapturedAt: state.capturedAt,
-    prompt: ATLAS_LOCAL_REASONING_PROMPT,
+    snapshotCapturedAt:
+      orchestration.deterministic
+        .snapshotCapturedAt,
     requestId,
-    status: invocation.status,
-    content: invocation.response?.content,
+    prompt: ATLAS_LOCAL_REASONING_PROMPT,
+    status:
+      orchestration.provider.invocationStatus,
+    content: orchestration.provider.content,
     citations:
-      invocation.response?.citations ?? [],
-    limitations: invocation.limitations,
-    errors: invocation.errors,
+      orchestration.provider.citations,
+    limitations:
+      orchestration.provider.limitations,
+    errors: orchestration.provider.errors,
   };
 }
