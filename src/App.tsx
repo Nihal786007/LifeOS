@@ -1,4 +1,7 @@
-import { useState } from "react";
+import {
+  useMemo,
+  useState,
+} from "react";
 
 import { useApp } from "./context/AppContext";
 
@@ -14,12 +17,22 @@ import Calendar from "./pages/Calendar";
 import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
+import Atlas from "./pages/Atlas";
+
+import {
+  createLocalAtlasAIOrchestrator,
+} from "./atlas/composition/createLocalAtlasAIOrchestrator";
 
 import {
   AtlasLocalReasoningProbe,
 } from "./atlas/localReasoning/AtlasLocalReasoningProbe";
 
 function AppContent() {
+  const atlasOrchestrator = useMemo(
+    () => createLocalAtlasAIOrchestrator(),
+    []
+  );
+
   const [
     currentPage,
     setCurrentPage,
@@ -56,6 +69,13 @@ function AppContent() {
         {currentPage ===
           "dashboard" && (
           <Dashboard />
+        )}
+
+        {currentPage ===
+          "atlas" && (
+          <Atlas
+            orchestrator={atlasOrchestrator}
+          />
         )}
 
         {currentPage ===

@@ -1,6 +1,7 @@
 import {
   FaHouse,
   FaListCheck,
+  FaRobot,
   FaCalendarDays,
   FaChartLine,
   FaFire,
@@ -22,6 +23,11 @@ export default function Sidebar({
       id: "dashboard",
       label: "Dashboard",
       icon: <FaHouse />,
+    },
+    {
+      id: "atlas",
+      label: "Ask ATLAS",
+      icon: <FaRobot />,
     },
     {
       id: "planning",
@@ -140,7 +146,11 @@ export default function Sidebar({
 
       {/* ATLAS */}
 
-      <div className="mx-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
+      <button
+        type="button"
+        onClick={() => setCurrentPage("atlas")}
+        className="mx-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5 text-left transition hover:border-cyan-400/40 hover:bg-cyan-500/10"
+      >
 
         <p className="text-xs uppercase tracking-[0.35em] text-cyan-400">
           ATLAS
@@ -151,10 +161,10 @@ export default function Sidebar({
         </h3>
 
         <p className="mt-1 text-sm text-slate-400">
-          Focused Session
+          Open Intelligence
         </p>
 
-      </div>
+      </button>
 
       {/* Profile */}
 
