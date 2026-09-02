@@ -25,10 +25,15 @@ import type {
 } from "./config";
 
 import {
-  OLLAMA_ATLAS_RESPONSE_SCHEMA,
   OLLAMA_ATLAS_SYSTEM_PROMPT,
+  createOllamaAtlasCitationTargets,
+  createOllamaAtlasResponseSchema,
   serializeAtlasReasoningGrounding,
 } from "./grounding.ts";
+
+import type {
+  OllamaAtlasCitationTarget,
+} from "./grounding";
 
 import {
   FetchOllamaTransport,
@@ -45,6 +50,9 @@ export const OLLAMA_ATLAS_PROVIDER_DESCRIPTOR:
     displayName: "Local Ollama",
     kind: "local",
   };
+
+export const OLLAMA_ATLAS_CONTEXT_WINDOW =
+  8_192 as const;
 
 interface OllamaAtlasModelResponse {
   status: AtlasAIResponseStatus;
@@ -112,17 +120,16 @@ function readAssistantContent(
 }
 
 function parseCitation(
-  value: unknown
+  value: unknown,
+  targets: readonly OllamaAtlasCitationTarget[]
 ): AtlasAICitation {
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
-      "source",
-      "path",
+      "reference",
       "explanation",
     ]) ||
-    typeof value.source !== "string" ||
-    typeof value.path !== "string" ||
+    typeof value.reference !== "string" ||
     typeof value.explanation !== "string"
   ) {
     throw new Error(
@@ -130,16 +137,26 @@ function parseCitation(
     );
   }
 
+  const target = targets.find(
+    (item) => item.reference === value.reference
+  );
+
+  if (!target) {
+    throw new Error(
+      "Local Ollama returned an unsupported citation reference."
+    );
+  }
+
   return {
-    source:
-      value.source as AtlasAICitation["source"],
-    path: value.path,
+    source: target.source,
+    path: target.path,
     explanation: value.explanation,
   };
 }
 
 function parseModelResponse(
-  content: string
+  content: string,
+  citationTargets: readonly OllamaAtlasCitationTarget[]
 ): OllamaAtlasModelResponse | undefined {
   if (content.trim().length === 0) {
     return undefined;
@@ -181,7 +198,10 @@ function parseModelResponse(
   return {
     status: value.status,
     content: value.content,
-    citations: value.citations.map(parseCitation),
+    citations: value.citations.map(
+      (citation) =>
+        parseCitation(citation, citationTargets)
+    ),
     limitations:
       value.limitations as string[],
   };
@@ -230,6 +250,16 @@ implements AtlasAIProvider {
   async reason(
     request: AtlasAIRequest
   ): Promise<AtlasAIResponse> {
+    const responseSchema =
+      createOllamaAtlasResponseSchema(request);
+    const citationTargets =
+      createOllamaAtlasCitationTargets(request);
+    const options = {
+      temperature: 0 as const,
+      seed: 0 as const,
+      num_ctx: OLLAMA_ATLAS_CONTEXT_WINDOW,
+    };
+
     const body: OllamaChatRequestBody = {
       model: this.config.model,
       messages: [
@@ -247,11 +277,8 @@ implements AtlasAIProvider {
       ],
       stream: false,
       think: false,
-      format: OLLAMA_ATLAS_RESPONSE_SCHEMA,
-      options: {
-        temperature: 0,
-        seed: 0,
-      },
+      format: responseSchema,
+      options,
     };
 
     const rawResponse = await this.transport.send({
@@ -261,7 +288,8 @@ implements AtlasAIProvider {
     });
 
     const parsed = parseModelResponse(
-      readAssistantContent(rawResponse)
+      readAssistantContent(rawResponse),
+      citationTargets
     );
 
     if (!parsed) {

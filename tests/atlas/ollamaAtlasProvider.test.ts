@@ -25,10 +25,16 @@ import {
 import {
   ATLAS_GROUNDING_BEGIN,
   ATLAS_GROUNDING_END,
-  OLLAMA_ATLAS_RESPONSE_SCHEMA,
+  createOllamaAtlasCitationTargets,
+  createOllamaAtlasResponseSchema,
 } from "../../src/atlas/providers/ollama/grounding.ts";
 
 import {
+  validateAtlasAICitation,
+} from "../../src/atlas/providerConformance/validation.ts";
+
+import {
+  OLLAMA_ATLAS_CONTEXT_WINDOW,
   OllamaAtlasProvider,
 } from "../../src/atlas/providers/ollama/ollamaAtlasProvider.ts";
 
@@ -200,8 +206,8 @@ function validModelOutput(): unknown {
       "Focus on building the local provider.",
     citations: [
       {
-        source: "dailyBrief",
-        path: "primaryFocus.title",
+        reference:
+          "dailyBrief::primaryFocus.title",
         explanation:
           "The deterministic brief names the current focus.",
       },
@@ -287,10 +293,11 @@ test(
     assert.deepEqual(sent?.body.options, {
       temperature: 0,
       seed: 0,
+      num_ctx: OLLAMA_ATLAS_CONTEXT_WINDOW,
     });
     assert.deepEqual(
       sent?.body.format,
-      OLLAMA_ATLAS_RESPONSE_SCHEMA
+      createOllamaAtlasResponseSchema(request)
     );
     assert.equal("tools" in (sent?.body ?? {}), false);
 
@@ -344,6 +351,17 @@ test(
       payload.constraints,
       request.constraints
     );
+    const targets =
+      createOllamaAtlasCitationTargets(request);
+    assert.deepEqual(
+      payload.allowedCitationPaths.dailyBrief,
+      targets
+        .filter(
+          (target) =>
+            target.source === "dailyBrief"
+        )
+        .map((target) => target.path)
+    );
     assert.deepEqual(result.limitations, [
       "Historical risk reports are not retained.",
     ]);
@@ -355,17 +373,131 @@ test(
 );
 
 test(
-  "surfaces invalid citations through provider conformance",
+  "derives only resolvable relative citation choices from each request context",
+  () => {
+    const firstRequest = createRequest();
+    const firstTargets =
+      createOllamaAtlasCitationTargets(
+        firstRequest
+      );
+
+    firstTargets.forEach((target, index) => {
+      const validation = validateAtlasAICitation(
+        {
+          source: target.source,
+          path: target.path,
+          explanation: "Generated from trusted context.",
+        },
+        firstRequest.context,
+        index
+      );
+
+      assert.equal(validation.valid, true);
+      assert.equal(
+        target.path.startsWith(`${target.source}.`),
+        false
+      );
+      assert.equal(target.path.includes("[ruleId="), false);
+    });
+
+    assert.ok(
+      firstTargets.some(
+        (target) =>
+          target.source === "dailyBrief" &&
+          target.path === "primaryFocus.title"
+      )
+    );
+    assert.equal(
+      firstTargets.some(
+        (target) =>
+          target.path.includes("Nihal") ||
+          target.path.includes("Build the local provider")
+      ),
+      false
+    );
+
+    const secondContext = structuredClone(CONTEXT);
+    secondContext.recommendations = [
+      {
+        id: "context-specific-recommendation",
+        category: "execute-now",
+        rank: 1,
+        title: "Use this context only",
+        suggestedAction: "Use fixture evidence.",
+        reason: "Fixture-specific evidence.",
+        evidence: [],
+      },
+    ];
+    const secondRequest = createAtlasAIRequest({
+      requestId: "ollama-002",
+      purpose: "grounded-answer",
+      prompt: "What changed?",
+      context: secondContext,
+    });
+    const secondTargets =
+      createOllamaAtlasCitationTargets(
+        secondRequest
+      );
+
+    assert.equal(
+      firstTargets.some(
+        (target) =>
+          target.source === "recommendations"
+      ),
+      false
+    );
+    assert.ok(
+      secondTargets.some(
+        (target) =>
+          target.source === "recommendations" &&
+          target.path === "[0].title"
+      )
+    );
+  }
+);
+
+test(
+  "structured schema cannot emit duplicated source prefixes or selector paths",
+  () => {
+    const schema = createOllamaAtlasResponseSchema(
+      createRequest()
+    ) as {
+      properties: {
+        citations: {
+          items: {
+            properties: {
+              reference: { enum: string[] };
+            };
+          };
+        };
+      };
+    };
+    const choices =
+      schema.properties.citations.items.properties
+        .reference.enum;
+
+    assert.ok(choices.length > 0);
+    choices.forEach((reference) => {
+      const [source, path] = reference.split("::");
+
+      assert.equal(path?.startsWith(`${source}.`), false);
+      assert.equal(path?.includes("[ruleId="), false);
+      assert.equal(path?.includes("[metric="), false);
+    });
+  }
+);
+
+test(
+  "rejects unsupported citation references before conformance",
   async () => {
     const invalid = validModelOutput() as {
       citations: Array<{
-        source: string;
-        path: string;
+        reference: string;
         explanation: string;
       }>;
     };
-    invalid.citations[0]!.path =
-      "primaryFocus.nonexistent";
+    invalid.citations[0]!.reference =
+      "dailyBrief::primaryFocus.nonexistent";
 
     const result = await runAtlasProviderConformance(
       new OllamaAtlasProvider({
@@ -376,10 +508,10 @@ test(
       createRequest()
     );
 
-    assert.equal(result.status, "validation-error");
+    assert.equal(result.status, "provider-error");
     assert.ok(
       result.errors.some(
-        (item) => item.code === "invalid-citation"
+        (item) => item.code === "provider-failure"
       )
     );
     assert.equal(result.response, undefined);
