@@ -163,6 +163,10 @@ test(
     assert.deepEqual(STATE, before);
     assert.equal(provider.requests.length, 1);
     assert.deepEqual(
+      provider.requests[0]?.conversation,
+      []
+    );
+    assert.deepEqual(
       provider.requests[0]?.context,
       result.deterministic.reasoningContext
     );
@@ -193,6 +197,46 @@ test(
             "The deterministic brief supplies the focus.",
         },
       ]
+    );
+  }
+);
+
+test(
+  "passes bounded provider-neutral conversation without changing factual context",
+  async () => {
+    const provider = new CapturingProvider();
+    const orchestrator =
+      new AtlasAIOrchestrator(provider);
+    const conversation = [
+      {
+        role: "user" as const,
+        content: "What should I focus on?",
+      },
+      {
+        role: "assistant" as const,
+        content: "Maintain momentum.",
+      },
+    ];
+
+    const result = await orchestrator.reason({
+      ...INPUT,
+      prompt: "Why that one?",
+      conversation,
+    });
+
+    assert.deepEqual(
+      provider.requests[0]?.conversation,
+      conversation
+    );
+    assert.deepEqual(
+      provider.requests[0]?.context,
+      result.deterministic.reasoningContext
+    );
+    assert.equal(
+      JSON.stringify(
+        provider.requests[0]?.context
+      ).includes("Maintain momentum."),
+      false
     );
   }
 );

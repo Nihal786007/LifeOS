@@ -97,6 +97,7 @@ export function useAtlasInteraction(
         requestId,
         purpose: "grounded-answer",
         prompt,
+        conversation: state.conversation,
       });
 
       if (
@@ -108,10 +109,19 @@ export function useAtlasInteraction(
       activeRequestId.current = undefined;
 
       if (isSuccessfulOrchestration(result)) {
+        const assistantContent =
+          result.provider.content;
+
+        if (!assistantContent) {
+          return;
+        }
+
         dispatch({
           type: "request-succeeded",
           requestId,
           result,
+          userContent: prompt,
+          assistantContent,
         });
         return;
       }
@@ -123,7 +133,7 @@ export function useAtlasInteraction(
         error: getAtlasInteractionError(result),
       });
     },
-    [canonicalState, orchestrator]
+    [canonicalState, orchestrator, state.conversation]
   );
 
   const cancel = useCallback(() => {

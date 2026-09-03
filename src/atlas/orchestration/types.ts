@@ -24,6 +24,7 @@ import type {
   AtlasAIProviderDescriptor,
   AtlasAIRequestPurpose,
   AtlasAIResponseStatus,
+  AtlasConversationTurn,
 } from "../reasoning/atlasAIProvider";
 
 import type {
@@ -62,6 +63,8 @@ export interface AtlasAIOrchestrationInput {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  conversation?:
+    readonly AtlasConversationTurn[];
 }
 
 export interface AtlasAIOrchestrationRequestSummary {

@@ -5,6 +5,7 @@
 import {
   ATLAS_AI_REQUEST_VERSION,
   ATLAS_AI_RESPONSE_VERSION,
+  ATLAS_CONVERSATION_MAX_TURNS,
 } from "../reasoning/atlasAIProvider.ts";
 
 import type {
@@ -33,8 +34,14 @@ const REQUEST_KEYS = [
   "requestId",
   "purpose",
   "prompt",
+  "conversation",
   "context",
   "constraints",
+] as const;
+
+const CONVERSATION_TURN_KEYS = [
+  "role",
+  "content",
 ] as const;
 
 const CONTEXT_KEYS = [
@@ -382,6 +389,86 @@ export function validateAtlasAIRequest(
         "Prompt must not be empty."
       )
     );
+  }
+
+  if (!Array.isArray(request.conversation)) {
+    errors.push(
+      error(
+        "invalid-request",
+        "request.conversation",
+        "Conversation context must be an array."
+      )
+    );
+  } else {
+    if (
+      request.conversation.length >
+      ATLAS_CONVERSATION_MAX_TURNS
+    ) {
+      errors.push(
+        error(
+          "invalid-request",
+          "request.conversation",
+          `Conversation context cannot exceed ${ATLAS_CONVERSATION_MAX_TURNS} turns.`
+        )
+      );
+    }
+
+    request.conversation.forEach((turn, index) => {
+      const turnPath =
+        `request.conversation[${index}]`;
+
+      if (!isRecord(turn)) {
+        errors.push(
+          error(
+            "invalid-request",
+            turnPath,
+            "Conversation turn must be an object."
+          )
+        );
+        return;
+      }
+
+      if (
+        !hasExactKeys(
+          turn,
+          CONVERSATION_TURN_KEYS
+        )
+      ) {
+        errors.push(
+          error(
+            "authority-widening",
+            turnPath,
+            "Conversation turn contains missing or unsupported fields."
+          )
+        );
+      }
+
+      if (
+        turn.role !== "user" &&
+        turn.role !== "assistant"
+      ) {
+        errors.push(
+          error(
+            "invalid-request",
+            `${turnPath}.role`,
+            "Conversation role must be user or assistant."
+          )
+        );
+      }
+
+      if (
+        typeof turn.content !== "string" ||
+        turn.content.trim().length === 0
+      ) {
+        errors.push(
+          error(
+            "invalid-request",
+            `${turnPath}.content`,
+            "Conversation content must not be empty."
+          )
+        );
+      }
+    });
   }
 
   if (!isRecord(request.context)) {

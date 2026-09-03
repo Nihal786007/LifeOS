@@ -12,7 +12,7 @@ import type {
 } from "./types";
 
 export const ATLAS_AI_REQUEST_VERSION =
-  "1.0.0" as const;
+  "1.1.0" as const;
 
 export const ATLAS_AI_RESPONSE_VERSION =
   "1.0.0" as const;
@@ -23,6 +23,18 @@ export type AtlasAIRequestPurpose =
   | "explain-risk"
   | "explain-pattern"
   | "narrate-daily-brief";
+
+export const ATLAS_CONVERSATION_MAX_TURNS =
+  6 as const;
+
+export type AtlasConversationRole =
+  | "user"
+  | "assistant";
+
+export interface AtlasConversationTurn {
+  role: AtlasConversationRole;
+  content: string;
+}
 
 export interface AtlasAIRequestConstraints {
   groundedInContextOnly: true;
@@ -40,6 +52,8 @@ export interface AtlasAIRequest {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  conversation:
+    readonly AtlasConversationTurn[];
   context: AtlasReasoningContext;
   constraints: AtlasAIRequestConstraints;
 }
@@ -48,6 +62,8 @@ export interface AtlasAIRequestInput {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  conversation?:
+    readonly AtlasConversationTurn[];
   context: AtlasReasoningContext;
 }
 
@@ -117,11 +133,17 @@ const REQUEST_CONSTRAINTS:
 export function createAtlasAIRequest(
   input: AtlasAIRequestInput
 ): AtlasAIRequest {
+  const conversation = (
+    input.conversation ?? []
+  ).slice(-ATLAS_CONVERSATION_MAX_TURNS);
+
   return {
     version: ATLAS_AI_REQUEST_VERSION,
     requestId: input.requestId,
     purpose: input.purpose,
     prompt: input.prompt,
+    conversation:
+      structuredClone(conversation),
     context: structuredClone(input.context),
     constraints: {
       ...REQUEST_CONSTRAINTS,

@@ -326,9 +326,11 @@ test(
       "requestId",
       "purpose",
       "prompt",
+      "conversation",
       "context",
       "constraints",
     ]);
+    assert.deepEqual(first.conversation, []);
     assert.notStrictEqual(first.context, context);
     assert.deepEqual(first.constraints, {
       groundedInContextOnly: true,

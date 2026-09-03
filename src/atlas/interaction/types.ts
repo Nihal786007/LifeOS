@@ -6,6 +6,10 @@ import type {
   AtlasAIOrchestrationResult,
 } from "../orchestration/types";
 
+import type {
+  AtlasConversationTurn,
+} from "../reasoning/atlasAIProvider";
+
 export type AtlasInteractionStatus =
   | "idle"
   | "loading"
@@ -29,6 +33,8 @@ export interface AtlasInteractionState {
   activeRequestId?: string;
   result?: AtlasAIOrchestrationResult;
   error?: AtlasInteractionError;
+  conversation:
+    readonly AtlasConversationTurn[];
 }
 
 export type AtlasInteractionEvent =
@@ -40,6 +46,8 @@ export type AtlasInteractionEvent =
       type: "request-succeeded";
       requestId: string;
       result: AtlasAIOrchestrationResult;
+      userContent: string;
+      assistantContent: string;
     }
   | {
       type: "request-failed";

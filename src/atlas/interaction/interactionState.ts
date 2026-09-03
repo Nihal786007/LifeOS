@@ -6,6 +6,14 @@ import type {
   AtlasAIOrchestrationResult,
 } from "../orchestration/types";
 
+import {
+  ATLAS_CONVERSATION_MAX_TURNS,
+} from "../reasoning/atlasAIProvider.ts";
+
+import type {
+  AtlasConversationTurn,
+} from "../reasoning/atlasAIProvider";
+
 import type {
   AtlasInteractionError,
   AtlasInteractionEvent,
@@ -15,7 +23,23 @@ import type {
 export const INITIAL_ATLAS_INTERACTION_STATE:
   AtlasInteractionState = {
     status: "idle",
+    conversation: [],
   };
+
+function appendSuccessfulExchange(
+  conversation: readonly AtlasConversationTurn[],
+  userContent: string,
+  assistantContent: string
+): readonly AtlasConversationTurn[] {
+  return [
+    ...conversation,
+    { role: "user" as const, content: userContent },
+    {
+      role: "assistant" as const,
+      content: assistantContent,
+    },
+  ].slice(-ATLAS_CONVERSATION_MAX_TURNS);
+}
 
 function matchesActiveRequest(
   state: AtlasInteractionState,
@@ -35,6 +59,8 @@ export function atlasInteractionReducer(
     return {
       status: "loading",
       activeRequestId: event.requestId,
+      result: state.result,
+      conversation: state.conversation,
     };
   }
 
@@ -49,7 +75,13 @@ export function atlasInteractionReducer(
       state,
       event.requestId
     )
-      ? INITIAL_ATLAS_INTERACTION_STATE
+      ? {
+          status: "idle",
+          ...(state.result
+            ? { result: state.result }
+            : {}),
+          conversation: state.conversation,
+        }
       : state;
   }
 
@@ -63,6 +95,11 @@ export function atlasInteractionReducer(
       ? {
           status: "success",
           result: event.result,
+          conversation: appendSuccessfulExchange(
+            state.conversation,
+            event.userContent,
+            event.assistantContent
+          ),
         }
       : state;
   }
@@ -73,8 +110,9 @@ export function atlasInteractionReducer(
   )
     ? {
         status: "error",
-        result: event.result,
+        result: state.result,
         error: event.error,
+        conversation: state.conversation,
       }
     : state;
 }

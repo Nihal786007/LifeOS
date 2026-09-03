@@ -23,6 +23,8 @@ import {
 } from "../../src/atlas/providers/ollama/config.ts";
 
 import {
+  ATLAS_CONVERSATION_BEGIN,
+  ATLAS_CONVERSATION_END,
   ATLAS_GROUNDING_BEGIN,
   ATLAS_GROUNDING_END,
   createOllamaAtlasCitationTargets,
@@ -150,6 +152,17 @@ function createRequest(): AtlasAIRequest {
     requestId: "ollama-001",
     purpose: "grounded-answer",
     prompt: "What should I focus on?",
+    conversation: [
+      {
+        role: "user",
+        content: "Which task matters most?",
+      },
+      {
+        role: "assistant",
+        content:
+          "A previous generated answer, not evidence.",
+      },
+    ],
     context: CONTEXT,
   });
 }
@@ -309,7 +322,11 @@ test(
     );
     assert.match(
       systemPrompt,
-      /userPrompt field is the question/
+      /untrusted conversation block/
+    );
+    assert.match(
+      systemPrompt,
+      /never cite conversation text/i
     );
     assert.match(
       systemPrompt,
@@ -330,31 +347,67 @@ test(
       grounding.startsWith(ATLAS_GROUNDING_BEGIN)
     );
     assert.ok(
-      grounding.endsWith(ATLAS_GROUNDING_END)
+      grounding.endsWith(ATLAS_CONVERSATION_END)
     );
 
-    const serialized = grounding
-      .slice(
-        ATLAS_GROUNDING_BEGIN.length,
-        -ATLAS_GROUNDING_END.length
-      )
-      .trim();
-    const payload = JSON.parse(serialized);
+    const trustedEnd = grounding.indexOf(
+      ATLAS_GROUNDING_END
+    );
+    const conversationStart = grounding.indexOf(
+      ATLAS_CONVERSATION_BEGIN
+    );
+    const trustedPayload = JSON.parse(
+      grounding
+        .slice(
+          ATLAS_GROUNDING_BEGIN.length,
+          trustedEnd
+        )
+        .trim()
+    );
+    const conversationPayload = JSON.parse(
+      grounding
+        .slice(
+          conversationStart +
+            ATLAS_CONVERSATION_BEGIN.length,
+          -ATLAS_CONVERSATION_END.length
+        )
+        .trim()
+    );
 
-    assert.equal(payload.requestId, request.requestId);
-    assert.equal(payload.userPrompt, request.prompt);
+    assert.equal(
+      trustedPayload.requestId,
+      request.requestId
+    );
     assert.deepEqual(
-      payload.reasoningContext,
+      trustedPayload.reasoningContext,
       request.context
     );
     assert.deepEqual(
-      payload.constraints,
+      trustedPayload.constraints,
       request.constraints
+    );
+    assert.equal(
+      JSON.stringify(trustedPayload).includes(
+        "A previous generated answer, not evidence."
+      ),
+      false
+    );
+    assert.deepEqual(
+      conversationPayload.recentTurns,
+      request.conversation
+    );
+    assert.equal(
+      conversationPayload.currentUserPrompt,
+      request.prompt
+    );
+    assert.equal(
+      conversationPayload.authority,
+      "linguistic-context-only"
     );
     const targets =
       createOllamaAtlasCitationTargets(request);
     assert.deepEqual(
-      payload.allowedCitationPaths.dailyBrief,
+      trustedPayload.allowedCitationPaths.dailyBrief,
       targets
         .filter(
           (target) =>

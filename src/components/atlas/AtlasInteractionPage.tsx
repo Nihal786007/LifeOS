@@ -363,7 +363,7 @@ export default function AtlasInteractionPage({
               </div>
             )}
 
-            {state.status === "success" && response && (
+            {response?.content && (
               <div className="space-y-5">
                 <div className="rounded-2xl border border-emerald-400/15 bg-emerald-400/[0.04] p-6">
                   <div className="flex items-center justify-between gap-4">

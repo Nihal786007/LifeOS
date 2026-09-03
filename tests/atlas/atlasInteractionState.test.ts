@@ -64,12 +64,24 @@ test(
         type: "request-succeeded",
         requestId: "request-1",
         result: RESULT,
+        userContent: "What should I focus on?",
+        assistantContent: "Maintain momentum.",
       }
     );
 
     assert.equal(loading.status, "loading");
     assert.equal(success.status, "success");
     assert.deepEqual(success.result, RESULT);
+    assert.deepEqual(success.conversation, [
+      {
+        role: "user",
+        content: "What should I focus on?",
+      },
+      {
+        role: "assistant",
+        content: "Maintain momentum.",
+      },
+    ]);
   }
 );
 
@@ -99,6 +111,8 @@ test(
           type: "request-succeeded",
           requestId: "request-1",
           result: RESULT,
+          userContent: "Stale question",
+          assistantContent: "Stale answer",
         }
       );
 
@@ -135,9 +149,11 @@ test(
     const stale = atlasInteractionReducer(
       second,
       {
-        type: "request-succeeded",
-        requestId: "request-1",
-        result: RESULT,
+          type: "request-succeeded",
+          requestId: "request-1",
+          result: RESULT,
+          userContent: "Older question",
+          assistantContent: "Older answer",
       }
     );
 
@@ -146,6 +162,100 @@ test(
       stale.activeRequestId,
       "request-2"
     );
+    assert.deepEqual(stale.conversation, []);
+  }
+);
+
+test(
+  "keeps only the latest six successful in-memory conversation turns",
+  () => {
+    let state = INITIAL_ATLAS_INTERACTION_STATE;
+
+    for (let exchange = 1; exchange <= 4; exchange += 1) {
+      const requestId = `request-${exchange}`;
+      state = atlasInteractionReducer(state, {
+        type: "request-started",
+        requestId,
+      });
+      state = atlasInteractionReducer(state, {
+        type: "request-succeeded",
+        requestId,
+        result: RESULT,
+        userContent: `Question ${exchange}`,
+        assistantContent: `Answer ${exchange}`,
+      });
+    }
+
+    assert.equal(state.conversation.length, 6);
+    assert.deepEqual(state.conversation, [
+      { role: "user", content: "Question 2" },
+      { role: "assistant", content: "Answer 2" },
+      { role: "user", content: "Question 3" },
+      { role: "assistant", content: "Answer 3" },
+      { role: "user", content: "Question 4" },
+      { role: "assistant", content: "Answer 4" },
+    ]);
+
+    const reset = atlasInteractionReducer(state, {
+      type: "source-changed",
+    });
+    assert.deepEqual(
+      reset,
+      INITIAL_ATLAS_INTERACTION_STATE
+    );
+  }
+);
+
+test(
+  "failed and validation-rejected requests preserve successful conversation history",
+  () => {
+    const successfulHistory = {
+      status: "success" as const,
+      result: RESULT,
+      conversation: [
+        {
+          role: "user" as const,
+          content: "What should I focus on?",
+        },
+        {
+          role: "assistant" as const,
+          content: "Maintain momentum.",
+        },
+      ],
+    };
+
+    for (const requestId of [
+      "timeout-request",
+      "validation-rejected-request",
+    ]) {
+      const loading = atlasInteractionReducer(
+        successfulHistory,
+        {
+          type: "request-started",
+          requestId,
+        }
+      );
+
+      const failed = atlasInteractionReducer(
+        loading,
+        {
+          type: "request-failed",
+          requestId,
+          result: RESULT,
+          error: {
+            kind: "provider-failure",
+            title: "Request rejected",
+            message: "No unvalidated answer was accepted.",
+          },
+        }
+      );
+
+      assert.equal(failed.status, "error");
+      assert.deepEqual(
+        failed.conversation,
+        successfulHistory.conversation
+      );
+    }
   }
 );
 
