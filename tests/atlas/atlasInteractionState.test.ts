@@ -11,6 +11,19 @@ import type {
   AtlasAIOrchestrationResult,
 } from "../../src/atlas/orchestration/types.ts";
 
+import {
+  presentAtlasEvidence,
+  resolveAtlasEvidenceValue,
+} from "../../src/atlas/interaction/evidencePresentation.ts";
+
+import type {
+  AtlasAICitation,
+} from "../../src/atlas/reasoning/atlasAIProvider.ts";
+
+import type {
+  AtlasReasoningContext,
+} from "../../src/atlas/reasoning/types.ts";
+
 const RESULT = {
   version: "1.0.0",
   request: {
@@ -191,5 +204,105 @@ test(
       ).kind,
       "validation-failure"
     );
+  }
+);
+
+test(
+  "presents validated evidence readably while preserving its exact source, path, and value",
+  () => {
+    const context = {
+      factualState: {
+        tasks: { completedToday: 6 },
+        habits: { completedToday: 5 },
+        execution: { xpToday: 200 },
+      },
+      risks: { overallRisk: "none" },
+      dailyBrief: {
+        primaryFocus: {
+          title: "Maintain momentum",
+          reasons: [
+            "No ranked active task is available.",
+          ],
+        },
+      },
+    } as unknown as AtlasReasoningContext;
+    const cases: Array<{
+      citation: AtlasAICitation;
+      summary: string;
+      value: unknown;
+    }> = [
+      {
+        citation: {
+          source: "factualState",
+          path: "tasks.completedToday",
+          explanation: "Task completion evidence.",
+        },
+        summary: "6 tasks completed today",
+        value: 6,
+      },
+      {
+        citation: {
+          source: "factualState",
+          path: "habits.completedToday",
+          explanation: "Habit completion evidence.",
+        },
+        summary: "5 habits completed today",
+        value: 5,
+      },
+      {
+        citation: {
+          source: "factualState",
+          path: "execution.xpToday",
+          explanation: "XP evidence.",
+        },
+        summary: "200 XP recorded today",
+        value: 200,
+      },
+      {
+        citation: {
+          source: "risks",
+          path: "overallRisk",
+          explanation: "Risk evidence.",
+        },
+        summary: "No active risk detected",
+        value: "none",
+      },
+      {
+        citation: {
+          source: "dailyBrief",
+          path: "primaryFocus.title",
+          explanation: "Current focus evidence.",
+        },
+        summary: "Maintain momentum",
+        value: "Maintain momentum",
+      },
+      {
+        citation: {
+          source: "dailyBrief",
+          path: "primaryFocus.reasons[0]",
+          explanation: "Primary focus evidence.",
+        },
+        summary: "No ranked active task is available.",
+        value: "No ranked active task is available.",
+      },
+    ];
+
+    cases.forEach(({ citation, summary, value }) => {
+      const before = structuredClone(citation);
+      const presented = presentAtlasEvidence(
+        context,
+        citation
+      );
+
+      assert.equal(presented.summary, summary);
+      assert.equal(presented.source, citation.source);
+      assert.equal(presented.path, citation.path);
+      assert.equal(presented.value, value);
+      assert.equal(
+        resolveAtlasEvidenceValue(context, citation),
+        value
+      );
+      assert.deepEqual(citation, before);
+    });
   }
 );

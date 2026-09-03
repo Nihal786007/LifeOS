@@ -21,9 +21,18 @@ import type {
   AtlasAIOrchestrator,
 } from "../../atlas/orchestration/AtlasAIOrchestrator";
 
+import type {
+  AtlasRankedTask,
+} from "../../atlas/priority/types";
+
 import {
   useAtlasInteraction,
 } from "../../atlas/interaction/useAtlasInteraction";
+
+import {
+  formatAtlasEvidenceValue,
+  presentAtlasEvidence,
+} from "../../atlas/interaction/evidencePresentation";
 
 const DEFAULT_PROMPT =
   "What should I focus on today and why?";
@@ -42,6 +51,23 @@ function SectionLabel({
       {children}
     </p>
   );
+}
+
+function getManualPriorityLabel(
+  priority: AtlasRankedTask
+): string {
+  const reason = priority.contributions.find(
+    (item) => item.ruleId === "task-priority"
+  )?.reason;
+  const value = reason?.match(
+    /^Marked as (low|medium|high) priority\.$/i
+  )?.[1];
+
+  if (!value) {
+    return "Not explicitly set";
+  }
+
+  return `${value[0]?.toUpperCase()}${value.slice(1)}`;
 }
 
 export default function AtlasInteractionPage({
@@ -156,11 +182,13 @@ export default function AtlasInteractionPage({
                         {priority.title}
                       </p>
                       <p className="mt-1 text-xs leading-5 text-slate-500">
-                        {priority.reasons[0]}
+                        Manual priority: {getManualPriorityLabel(
+                          priority
+                        )} · ATLAS score: {priority.score}
                       </p>
                     </div>
                     <span className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      {priority.tier}
+                      ATLAS urgency: {priority.tier}
                     </span>
                   </div>
                 ))
@@ -365,19 +393,49 @@ export default function AtlasInteractionPage({
                     </summary>
                     <div className="mt-4 space-y-3 border-t border-slate-800 pt-4">
                       {response.citations.map(
-                        (citation, index) => (
-                          <div
-                            key={`${citation.source}:${citation.path}:${index}`}
-                            className="rounded-xl bg-slate-900 p-4"
-                          >
-                            <p className="font-mono text-[11px] text-cyan-300">
-                              {citation.source}.{citation.path}
-                            </p>
-                            <p className="mt-2 text-xs leading-5 text-slate-500">
-                              {citation.explanation}
-                            </p>
-                          </div>
-                        )
+                        (citation, index) => {
+                          const evidence =
+                            presentAtlasEvidence(
+                              state.result!.deterministic
+                                .reasoningContext,
+                              citation
+                            );
+
+                          return (
+                            <div
+                              key={`${citation.source}:${citation.path}:${index}`}
+                              className="rounded-xl border border-slate-800 bg-slate-900 p-4"
+                            >
+                              <p className="text-sm font-semibold text-slate-100">
+                                {evidence.summary}
+                              </p>
+                              <p className="mt-2 text-xs leading-5 text-slate-500">
+                                {citation.explanation}
+                              </p>
+                              <details className="mt-3 border-t border-slate-800 pt-3">
+                                <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-300/70">
+                                  Technical evidence
+                                </summary>
+                                <dl className="mt-3 grid gap-2 text-[11px] text-slate-500 sm:grid-cols-[4rem_1fr]">
+                                  <dt>Source</dt>
+                                  <dd className="font-mono text-slate-400">
+                                    {evidence.source}
+                                  </dd>
+                                  <dt>Path</dt>
+                                  <dd className="break-all font-mono text-slate-400">
+                                    {evidence.path}
+                                  </dd>
+                                  <dt>Value</dt>
+                                  <dd className="break-all font-mono text-slate-400">
+                                    {formatAtlasEvidenceValue(
+                                      evidence.value
+                                    )}
+                                  </dd>
+                                </dl>
+                              </details>
+                            </div>
+                          );
+                        }
                       )}
                     </div>
                   </details>
