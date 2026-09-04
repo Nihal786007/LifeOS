@@ -119,6 +119,7 @@ export class AtlasAIOrchestrator {
       requestId: input.requestId,
       purpose: input.purpose,
       prompt: input.prompt,
+      memory: input.memory,
       conversation: input.conversation,
       context: deterministic.reasoningContext,
     });

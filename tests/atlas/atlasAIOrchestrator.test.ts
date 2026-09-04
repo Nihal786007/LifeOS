@@ -242,6 +242,43 @@ test(
 );
 
 test(
+  "passes active user-confirmed memory without reinterpreting it or merging it into factual context",
+  async () => {
+    const provider = new CapturingProvider();
+    const orchestrator = new AtlasAIOrchestrator(provider);
+    const memory = [{
+      id: "memory-1",
+      type: "preference" as const,
+      topic: "SAT study time",
+      content: "I prefer studying SAT in the morning.",
+      source: "explicit_user_statement" as const,
+      createdAt: "2026-09-04T12:00:00.000Z",
+      updatedAt: "2026-09-04T12:00:00.000Z",
+      status: "active" as const,
+    }];
+    const before = structuredClone(memory);
+
+    const result = await orchestrator.reason({
+      ...INPUT,
+      memory,
+    });
+
+    assert.deepEqual(memory, before);
+    assert.deepEqual(provider.requests[0]?.memory, memory);
+    assert.deepEqual(
+      provider.requests[0]?.context,
+      result.deterministic.reasoningContext
+    );
+    assert.equal(
+      JSON.stringify(result.deterministic.reasoningContext).includes(
+        memory[0].content
+      ),
+      false
+    );
+  }
+);
+
+test(
   "preserves empty, provider-error, and validation-error conformance outcomes",
   async (context) => {
     const cases = [

@@ -18,6 +18,12 @@ import type {
   AtlasReasoningContext,
 } from "../reasoning/types";
 
+import {
+  ATLAS_MEMORY_MAX_ITEMS,
+  isAtlasMemoryItem,
+  normalizeAtlasMemoryTopic,
+} from "../memory/types.ts";
+
 import type {
   AtlasProviderValidationError,
   AtlasProviderValidationResult,
@@ -34,6 +40,7 @@ const REQUEST_KEYS = [
   "requestId",
   "purpose",
   "prompt",
+  "memory",
   "conversation",
   "context",
   "constraints",
@@ -389,6 +396,79 @@ export function validateAtlasAIRequest(
         "Prompt must not be empty."
       )
     );
+  }
+
+  if (!Array.isArray(request.memory)) {
+    errors.push(
+      error(
+        "invalid-request",
+        "request.memory",
+        "User-confirmed memory must be an array."
+      )
+    );
+  } else {
+    if (request.memory.length > ATLAS_MEMORY_MAX_ITEMS) {
+      errors.push(
+        error(
+          "invalid-request",
+          "request.memory",
+          `User-confirmed memory cannot exceed ${ATLAS_MEMORY_MAX_ITEMS} items.`
+        )
+      );
+    }
+
+    const ids = new Set<string>();
+    const conflictKeys = new Set<string>();
+
+    request.memory.forEach((item, index) => {
+      const itemPath = `request.memory[${index}]`;
+
+      if (!isAtlasMemoryItem(item)) {
+        errors.push(
+          error(
+            "invalid-request",
+            itemPath,
+            "Memory item has an invalid shape, type, source, timestamp, status, or bounded text value."
+          )
+        );
+        return;
+      }
+
+      if (item.status !== "active") {
+        errors.push(
+          error(
+            "invalid-request",
+            `${itemPath}.status`,
+            "Only active user-confirmed memory may enter a provider request."
+          )
+        );
+      }
+
+      if (ids.has(item.id)) {
+        errors.push(
+          error(
+            "invalid-request",
+            `${itemPath}.id`,
+            "Memory IDs must be unique within a request."
+          )
+        );
+      }
+      ids.add(item.id);
+
+      const conflictKey = `${item.type}:${normalizeAtlasMemoryTopic(
+        item.topic
+      )}`;
+      if (conflictKeys.has(conflictKey)) {
+        errors.push(
+          error(
+            "invalid-request",
+            itemPath,
+            "A request cannot contain conflicting active memories for the same type and topic."
+          )
+        );
+      }
+      conflictKeys.add(conflictKey);
+    });
   }
 
   if (!Array.isArray(request.conversation)) {

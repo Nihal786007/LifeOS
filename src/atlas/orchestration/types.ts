@@ -39,6 +39,10 @@ import type {
   AtlasCanonicalState,
 } from "../state/types";
 
+import type {
+  AtlasMemoryItem,
+} from "../memory/types";
+
 export const ATLAS_DETERMINISTIC_REASONING_PACKAGE_VERSION =
   "1.0.0" as const;
 
@@ -63,6 +67,7 @@ export interface AtlasAIOrchestrationInput {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  memory?: readonly AtlasMemoryItem[];
   conversation?:
     readonly AtlasConversationTurn[];
 }

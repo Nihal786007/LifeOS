@@ -34,6 +34,8 @@ import {
   presentAtlasEvidence,
 } from "../../atlas/interaction/evidencePresentation";
 
+import AtlasMemoryPanel from "./AtlasMemoryPanel";
+
 const DEFAULT_PROMPT =
   "What should I focus on today and why?";
 
@@ -76,6 +78,7 @@ export default function AtlasInteractionPage({
   const {
     state,
     deterministic,
+    memory,
     ask,
     cancel,
   } = useAtlasInteraction(orchestrator);
@@ -231,6 +234,8 @@ export default function AtlasInteractionPage({
               </div>
             </div>
           )}
+
+          <AtlasMemoryPanel memory={memory} />
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6 shadow-2xl shadow-black/15 lg:p-7">

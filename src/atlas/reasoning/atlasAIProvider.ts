@@ -11,8 +11,12 @@ import type {
   AtlasReasoningContext,
 } from "./types";
 
+import type {
+  AtlasMemoryItem,
+} from "../memory/types";
+
 export const ATLAS_AI_REQUEST_VERSION =
-  "1.1.0" as const;
+  "1.2.0" as const;
 
 export const ATLAS_AI_RESPONSE_VERSION =
   "1.0.0" as const;
@@ -52,6 +56,7 @@ export interface AtlasAIRequest {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  memory: readonly AtlasMemoryItem[];
   conversation:
     readonly AtlasConversationTurn[];
   context: AtlasReasoningContext;
@@ -62,6 +67,7 @@ export interface AtlasAIRequestInput {
   requestId: string;
   purpose: AtlasAIRequestPurpose;
   prompt: string;
+  memory?: readonly AtlasMemoryItem[];
   conversation?:
     readonly AtlasConversationTurn[];
   context: AtlasReasoningContext;
@@ -133,6 +139,7 @@ const REQUEST_CONSTRAINTS:
 export function createAtlasAIRequest(
   input: AtlasAIRequestInput
 ): AtlasAIRequest {
+  const memory = input.memory ?? [];
   const conversation = (
     input.conversation ?? []
   ).slice(-ATLAS_CONVERSATION_MAX_TURNS);
@@ -142,6 +149,7 @@ export function createAtlasAIRequest(
     requestId: input.requestId,
     purpose: input.purpose,
     prompt: input.prompt,
+    memory: structuredClone(memory),
     conversation:
       structuredClone(conversation),
     context: structuredClone(input.context),

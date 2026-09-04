@@ -312,6 +312,22 @@ test(
       requestId: "request-001",
       purpose: "grounded-answer" as const,
       prompt: "What should I focus on and why?",
+      memory: [
+        {
+          id: "memory-1",
+          type: "preference" as const,
+          topic: "SAT study time",
+          content:
+            "I prefer studying SAT in the morning.",
+          source:
+            "explicit_user_statement" as const,
+          createdAt:
+            "2026-09-04T12:00:00.000Z",
+          updatedAt:
+            "2026-09-04T12:00:00.000Z",
+          status: "active" as const,
+        },
+      ],
       context,
     };
     const before = structuredClone(requestInput);
@@ -326,12 +342,29 @@ test(
       "requestId",
       "purpose",
       "prompt",
+      "memory",
       "conversation",
       "context",
       "constraints",
     ]);
+    assert.deepEqual(first.memory, requestInput.memory);
+    assert.notStrictEqual(first.memory, requestInput.memory);
     assert.deepEqual(first.conversation, []);
     assert.notStrictEqual(first.context, context);
+    assert.equal(
+      "memory" in first.context,
+      false
+    );
+    assert.equal(
+      JSON.stringify(first.context).includes(
+        requestInput.memory[0].content
+      ),
+      false
+    );
+    assert.equal(
+      "memory" in first.constraints,
+      false
+    );
     assert.deepEqual(first.constraints, {
       groundedInContextOnly: true,
       requireEvidenceReferences: true,

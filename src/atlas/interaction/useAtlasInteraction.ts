@@ -24,6 +24,10 @@ import {
 } from "../state/useAtlasCanonicalState";
 
 import {
+  useAtlasMemory,
+} from "../memory/useAtlasMemory";
+
+import {
   atlasInteractionReducer,
   getAtlasInteractionError,
   INITIAL_ATLAS_INTERACTION_STATE,
@@ -35,6 +39,7 @@ export function useAtlasInteraction(
 ) {
   const canonicalState =
     useAtlasCanonicalState();
+  const memory = useAtlasMemory();
 
   const deterministic = useMemo(
     () =>
@@ -97,6 +102,7 @@ export function useAtlasInteraction(
         requestId,
         purpose: "grounded-answer",
         prompt,
+        memory: memory.activeMemories,
         conversation: state.conversation,
       });
 
@@ -133,7 +139,12 @@ export function useAtlasInteraction(
         error: getAtlasInteractionError(result),
       });
     },
-    [canonicalState, orchestrator, state.conversation]
+    [
+      canonicalState,
+      memory.activeMemories,
+      orchestrator,
+      state.conversation,
+    ]
   );
 
   const cancel = useCallback(() => {
@@ -154,6 +165,7 @@ export function useAtlasInteraction(
   return {
     state,
     deterministic,
+    memory,
     ask,
     cancel,
   };
