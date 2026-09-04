@@ -14,6 +14,10 @@ import type {
 } from "../../src/atlas/reasoning/types.ts";
 
 import {
+  classifyAtlasQuestionDomain,
+} from "../../src/atlas/reasoning/questionDomain.ts";
+
+import {
   runAtlasProviderConformance,
 } from "../../src/atlas/providerConformance/harness.ts";
 
@@ -28,8 +32,12 @@ import {
   ATLAS_CONVERSATION_END,
   ATLAS_GROUNDING_BEGIN,
   ATLAS_GROUNDING_END,
+  ATLAS_RELEVANCE_BEGIN,
+  ATLAS_RELEVANCE_END,
   createOllamaAtlasCitationTargets,
+  createOllamaAtlasQuestionRelevance,
   createOllamaAtlasResponseSchema,
+  serializeAtlasReasoningGrounding,
 } from "../../src/atlas/providers/ollama/grounding.ts";
 
 import {
@@ -168,6 +176,19 @@ function createRequest(): AtlasAIRequest {
   });
 }
 
+function createQuestionRequest(
+  prompt: string,
+  conversation: AtlasAIRequest["conversation"] = []
+): AtlasAIRequest {
+  return createAtlasAIRequest({
+    requestId: `question-${prompt}`,
+    purpose: "grounded-answer",
+    prompt,
+    conversation,
+    context: CONTEXT,
+  });
+}
+
 class MockOllamaTransport
 implements OllamaTransport {
   requests: OllamaTransportRequest[] = [];
@@ -239,6 +260,378 @@ function validModelOutput(): unknown {
     l: [],
   };
 }
+
+test(
+  "classifies supported question domains deterministically with a safe fallback",
+  () => {
+    const examples = [
+      ["How are my habits today?", "habits"],
+      ["Which task should I do first?", "tasks-priorities"],
+      ["Am I behind on any goal?", "goals-planning"],
+      ["What risks do I have right now?", "risks"],
+      ["What did I accomplish today?", "execution-progress"],
+      ["How am I doing this week?", "weekly-status"],
+      ["How much XP did I earn?", "xp"],
+      ["What should I do next?", "recommendations-next-action"],
+      ["Give me an update.", "general"],
+    ] as const;
+
+    examples.forEach(([question, domain]) => {
+      assert.equal(
+        classifyAtlasQuestionDomain(question).domain,
+        domain
+      );
+    });
+
+    assert.equal(
+      classifyAtlasQuestionDomain(
+        "Give me an update."
+      ).resolution,
+      "fallback"
+    );
+  }
+);
+
+test(
+  "resolves explanation follow-ups from prior user intent without trusting assistant text",
+  () => {
+    const classification =
+      classifyAtlasQuestionDomain(
+        "Why that one?",
+        [
+          {
+            role: "user",
+            content:
+              "Which task should I do first?",
+          },
+          {
+            role: "assistant",
+            content:
+              "Your habit is the factual priority.",
+          },
+        ]
+      );
+
+    assert.equal(
+      classification.domain,
+      "tasks-priorities"
+    );
+    assert.equal(
+      classification.mode,
+      "explanation-follow-up"
+    );
+    assert.equal(
+      classification.resolution,
+      "conversation"
+    );
+  }
+);
+
+test(
+  "requires trusted per-habit evidence for an item-specific habit question",
+  () => {
+    const request = createQuestionRequest(
+      "Which habit am I struggling with?"
+    );
+    const classification =
+      classifyAtlasQuestionDomain(request.prompt);
+    const relevance =
+      createOllamaAtlasQuestionRelevance(request);
+
+    assert.equal(classification.domain, "habits");
+    assert.equal(
+      classification.detail,
+      "item-specific"
+    );
+    assert.match(
+      relevance.answerGuidance,
+      /insufficient-evidence/
+    );
+    assert.match(
+      relevance.answerGuidance,
+      /per-habit evidence is unavailable/
+    );
+  }
+);
+
+test(
+  "derives zero-goal wording only from trusted aggregate goal facts",
+  () => {
+    const zeroGoalContext = structuredClone(CONTEXT);
+    zeroGoalContext.factualState.planning.activeGoals = 0;
+    const request = createAtlasAIRequest({
+      requestId: "zero-goal-question",
+      purpose: "grounded-answer",
+      prompt: "Am I behind on any goal?",
+      context: zeroGoalContext,
+    });
+    const relevance =
+      createOllamaAtlasQuestionRelevance(request);
+    const schema = createOllamaAtlasResponseSchema(
+      request
+    ) as {
+      properties: {
+        a: { description: string };
+      };
+    };
+
+    assert.equal(
+      relevance.requiredOpening,
+      "No active or overdue goals are recorded, so current evidence does not show that you are behind on a goal."
+    );
+    assert.match(
+      schema.properties.a.description,
+      /must begin exactly/
+    );
+
+    const activeContext = structuredClone(zeroGoalContext);
+    activeContext.factualState.planning.activeGoals = 1;
+    const activeRequest = createAtlasAIRequest({
+      requestId: "active-goal-question",
+      purpose: "grounded-answer",
+      prompt: "Am I behind on any goal?",
+      context: activeContext,
+    });
+
+    assert.equal(
+      createOllamaAtlasQuestionRelevance(
+        activeRequest
+      ).requiredOpening,
+      undefined
+    );
+  }
+);
+
+test(
+  "question relevance only prefers existing trusted citation targets",
+  () => {
+    const request = createQuestionRequest(
+      "How are my habits today?"
+    );
+    const targets =
+      createOllamaAtlasCitationTargets(request);
+    const relevance =
+      createOllamaAtlasQuestionRelevance(
+        request,
+        targets
+      );
+    const validTokens = new Set(
+      targets.map((target) => target.token)
+    );
+
+    assert.equal(relevance.domain, "habits");
+    assert.equal(
+      relevance.authority,
+      "relevance-only-not-evidence"
+    );
+    assert.ok(
+      relevance.preferredCitationTokens.length > 0
+    );
+    relevance.preferredCitationTokens.forEach(
+      (token) => assert.ok(validTokens.has(token))
+    );
+    assert.deepEqual(
+      relevance.preferredCitationTargets,
+      targets
+        .filter((target) =>
+          relevance.preferredCitationTokens.includes(
+            target.token
+          )
+        )
+        .map(({ token, source, path }) => ({
+          token,
+          source,
+          path,
+        }))
+    );
+
+    const preferredTargets = targets.filter(
+      (target) =>
+        relevance.preferredCitationTokens.includes(
+          target.token
+        )
+    );
+
+    assert.ok(
+      preferredTargets.every(
+        (target) =>
+          target.source === "factualState" &&
+          target.path.startsWith("habits.")
+      )
+    );
+    assert.match(
+      relevance.answerGuidance,
+      /aggregate habit-status/i
+    );
+
+    const serialized =
+      serializeAtlasReasoningGrounding(request);
+    const trustedEnd = serialized.indexOf(
+      ATLAS_GROUNDING_END
+    );
+    const payload = JSON.parse(
+      serialized
+        .slice(
+          ATLAS_GROUNDING_BEGIN.length,
+          trustedEnd
+        )
+        .trim()
+    );
+
+    assert.deepEqual(
+      payload.relevantTrustedEvidence.map(
+        (item: {
+          path: string;
+          value: unknown;
+          statement: string;
+        }) => ({
+          path: item.path,
+          value: item.value,
+          statement: item.statement,
+        })
+      ),
+      [
+        [
+          "habits.scheduledToday",
+          CONTEXT.factualState.habits.scheduledToday,
+        ],
+        [
+          "habits.completedToday",
+          CONTEXT.factualState.habits.completedToday,
+        ],
+        [
+          "habits.activeStreaks",
+          CONTEXT.factualState.habits.activeStreaks,
+        ],
+      ].map(([path, value]) => ({
+        path,
+        value,
+        statement: `factualState.${path} = ${JSON.stringify(
+          value
+        )}`,
+      }))
+    );
+  }
+);
+
+test(
+  "classification metadata is non-citable and contains no hardcoded domain IDs",
+  () => {
+    const request = createQuestionRequest(
+      "Which task should I do first?"
+    );
+    const serialized =
+      serializeAtlasReasoningGrounding(request);
+    const trustedEnd = serialized.indexOf(
+      ATLAS_GROUNDING_END
+    );
+    const payload = JSON.parse(
+      serialized
+        .slice(
+          ATLAS_GROUNDING_BEGIN.length,
+          trustedEnd
+        )
+        .trim()
+    );
+    const citationSources = Object.keys(
+      payload.allowedCitationPaths
+    );
+    const relevanceText = JSON.stringify(
+      payload.questionRelevance
+    );
+
+    assert.equal(
+      citationSources.includes("questionRelevance"),
+      false
+    );
+    assert.equal(
+      citationSources.includes("conversation"),
+      false
+    );
+    assert.equal(
+      payload.citationTokens.some(
+        (target: { source: string }) =>
+          target.source === "questionRelevance" ||
+          target.source === "conversation"
+      ),
+      false
+    );
+    assert.equal(
+      relevanceText.includes('"taskId":1'),
+      false
+    );
+    assert.equal(
+      relevanceText.includes('"habitId":'),
+      false
+    );
+    assert.equal(
+      relevanceText.includes('"goalId":'),
+      false
+    );
+    assert.ok(
+      payload.relevantTrustedEvidence.every(
+        (item: { token: string }) =>
+          payload.citationTokens.some(
+            (target: { token: string }) =>
+              target.token === item.token
+          )
+      )
+    );
+    assert.equal(
+      relevanceText.includes(
+        "A previous generated answer, not evidence."
+      ),
+      false
+    );
+  }
+);
+
+test(
+  "general fallback keeps full trusted context without inventing preferred evidence",
+  () => {
+    const request = createQuestionRequest(
+      "Give me an update."
+    );
+    const relevance =
+      createOllamaAtlasQuestionRelevance(request);
+    const serialized =
+      serializeAtlasReasoningGrounding(request);
+    const trustedEnd = serialized.indexOf(
+      ATLAS_GROUNDING_END
+    );
+    const payload = JSON.parse(
+      serialized
+        .slice(
+          ATLAS_GROUNDING_BEGIN.length,
+          trustedEnd
+        )
+        .trim()
+    );
+
+    assert.equal(relevance.domain, "general");
+    assert.equal(relevance.resolution, "fallback");
+    assert.deepEqual(
+      relevance.preferredCitationTokens,
+      []
+    );
+    assert.deepEqual(
+      relevance.preferredCitationTargets,
+      []
+    );
+    assert.deepEqual(
+      payload.relevantTrustedEvidence,
+      []
+    );
+    assert.deepEqual(
+      payload.reasoningContext,
+      request.context
+    );
+    assert.ok(
+      serialized.indexOf('"questionRelevance"') >
+        serialized.indexOf('"reasoningContext"')
+    );
+  }
+);
 
 test(
   "uses safe local defaults and rejects remote or cloud configuration",
@@ -343,7 +736,7 @@ test(
       sent?.body.messages[0]?.content ?? "";
     assert.match(
       systemPrompt,
-      /Use only the evidence/
+      /Use only evidence/
     );
     assert.match(
       systemPrompt,
@@ -371,15 +764,16 @@ test(
     assert.ok(
       grounding.startsWith(ATLAS_GROUNDING_BEGIN)
     );
-    assert.ok(
-      grounding.endsWith(ATLAS_CONVERSATION_END)
-    );
+    assert.ok(grounding.endsWith(ATLAS_RELEVANCE_END));
 
     const trustedEnd = grounding.indexOf(
       ATLAS_GROUNDING_END
     );
     const conversationStart = grounding.indexOf(
       ATLAS_CONVERSATION_BEGIN
+    );
+    const relevanceStart = grounding.indexOf(
+      ATLAS_RELEVANCE_BEGIN
     );
     const trustedPayload = JSON.parse(
       grounding
@@ -394,7 +788,16 @@ test(
         .slice(
           conversationStart +
             ATLAS_CONVERSATION_BEGIN.length,
-          -ATLAS_CONVERSATION_END.length
+          grounding.indexOf(ATLAS_CONVERSATION_END)
+        )
+        .trim()
+    );
+    const relevancePayload = JSON.parse(
+      grounding
+        .slice(
+          relevanceStart +
+            ATLAS_RELEVANCE_BEGIN.length,
+          grounding.indexOf(ATLAS_RELEVANCE_END)
         )
         .trim()
     );
@@ -428,6 +831,14 @@ test(
     assert.equal(
       conversationPayload.authority,
       "linguistic-context-only"
+    );
+    assert.deepEqual(
+      relevancePayload.questionRelevance,
+      trustedPayload.questionRelevance
+    );
+    assert.deepEqual(
+      relevancePayload.relevantTrustedEvidence,
+      trustedPayload.relevantTrustedEvidence
     );
     const targets =
       createOllamaAtlasCitationTargets(request);
