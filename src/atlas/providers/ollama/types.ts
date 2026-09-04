@@ -16,6 +16,8 @@ export interface OllamaChatRequestBody {
   options: {
     temperature: 0;
     seed: 0;
+    num_ctx: number;
+    num_predict: number;
   };
 }
 

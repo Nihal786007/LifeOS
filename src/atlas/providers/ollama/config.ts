@@ -11,10 +11,14 @@ export const DEFAULT_OLLAMA_MODEL =
 export const DEFAULT_OLLAMA_TIMEOUT_MS =
   30_000 as const;
 
+export const DEFAULT_OLLAMA_NUM_PREDICT =
+  384 as const;
+
 export interface OllamaAtlasProviderConfig {
   baseUrl: string;
   model: string;
   timeoutMs: number;
+  numPredict: number;
 }
 
 export type OllamaAtlasProviderConfigInput =
@@ -82,6 +86,8 @@ export function resolveOllamaAtlasProviderConfig(
 ): OllamaAtlasProviderConfig {
   const timeoutMs =
     input.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS;
+  const numPredict =
+    input.numPredict ?? DEFAULT_OLLAMA_NUM_PREDICT;
 
   if (
     !Number.isInteger(timeoutMs) ||
@@ -89,6 +95,15 @@ export function resolveOllamaAtlasProviderConfig(
   ) {
     throw new Error(
       "Ollama timeout must be a positive integer in milliseconds."
+    );
+  }
+
+  if (
+    !Number.isInteger(numPredict) ||
+    numPredict <= 0
+  ) {
+    throw new Error(
+      "Ollama output-token limit must be a positive integer."
     );
   }
 
@@ -100,5 +115,6 @@ export function resolveOllamaAtlasProviderConfig(
       input.model ?? DEFAULT_OLLAMA_MODEL
     ),
     timeoutMs,
+    numPredict,
   };
 }

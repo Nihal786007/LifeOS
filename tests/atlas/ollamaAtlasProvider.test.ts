@@ -20,6 +20,7 @@ import {
 import {
   DEFAULT_OLLAMA_BASE_URL,
   DEFAULT_OLLAMA_MODEL,
+  DEFAULT_OLLAMA_NUM_PREDICT,
 } from "../../src/atlas/providers/ollama/config.ts";
 
 import {
@@ -213,19 +214,29 @@ function chatResponse(
 }
 
 function validModelOutput(): unknown {
+  const citationToken =
+    createOllamaAtlasCitationTargets(
+      createRequest()
+    ).find(
+      (target) =>
+        target.source === "dailyBrief" &&
+        target.path === "primaryFocus.title"
+    )?.token;
+
+  assert.ok(citationToken);
+
   return {
-    status: "completed",
-    content:
+    s: "completed",
+    a:
       "Focus on building the local provider.",
-    citations: [
+    c: [
       {
-        reference:
-          "dailyBrief::primaryFocus.title",
-        explanation:
+        r: citationToken,
+        e:
           "The deterministic brief names the current focus.",
       },
     ],
-    limitations: [],
+    l: [],
   };
 }
 
@@ -245,6 +256,10 @@ test(
     assert.equal(
       provider.config.model,
       DEFAULT_OLLAMA_MODEL
+    );
+    assert.equal(
+      provider.config.numPredict,
+      DEFAULT_OLLAMA_NUM_PREDICT
     );
 
     assert.throws(
@@ -266,6 +281,14 @@ test(
         }),
       /Cloud-tagged/
     );
+
+    assert.throws(
+      () =>
+        new OllamaAtlasProvider({
+          config: { numPredict: 0 },
+        }),
+      /output-token limit/
+    );
   }
 );
 
@@ -279,6 +302,7 @@ test(
       config: {
         model: "llama3.2:1b",
         timeoutMs: 12_345,
+        numPredict: 300,
       },
       transport,
     });
@@ -307,6 +331,7 @@ test(
       temperature: 0,
       seed: 0,
       num_ctx: OLLAMA_ATLAS_CONTEXT_WINDOW,
+      num_predict: 300,
     });
     assert.deepEqual(
       sent?.body.format,
@@ -415,6 +440,21 @@ test(
         )
         .map((target) => target.path)
     );
+    assert.deepEqual(
+      trustedPayload.citationTokens,
+      targets.map(({ token, source, path }) => ({
+        token,
+        source,
+        path,
+      }))
+    );
+    assert.equal(
+      trustedPayload.citationTokens.some(
+        (target: { source: string }) =>
+          target.source === "conversation"
+      ),
+      false
+    );
     assert.deepEqual(result.limitations, [
       "Historical risk reports are not retained.",
     ]);
@@ -506,36 +546,76 @@ test(
           target.path === "[0].title"
       )
     );
+    assert.notDeepEqual(
+      secondTargets.map(
+        ({ token, source, path }) => ({
+          token,
+          source,
+          path,
+        })
+      ),
+      firstTargets.map(
+        ({ token, source, path }) => ({
+          token,
+          source,
+          path,
+        })
+      )
+    );
+    assert.equal(
+      secondTargets.some(
+        (target) =>
+          target.source === "conversation"
+      ),
+      false
+    );
   }
 );
 
 test(
-  "structured schema cannot emit duplicated source prefixes or selector paths",
+  "compact schema exposes only request-local citation tokens mapped to safe paths",
   () => {
     const schema = createOllamaAtlasResponseSchema(
       createRequest()
     ) as {
       properties: {
-        citations: {
+        c: {
           items: {
             properties: {
-              reference: { enum: string[] };
+              r: { enum: string[] };
             };
           };
         };
       };
     };
     const choices =
-      schema.properties.citations.items.properties
-        .reference.enum;
+      schema.properties.c.items.properties.r.enum;
+    const targets =
+      createOllamaAtlasCitationTargets(
+        createRequest()
+      );
 
     assert.ok(choices.length > 0);
-    choices.forEach((reference) => {
-      const [source, path] = reference.split("::");
-
-      assert.equal(path?.startsWith(`${source}.`), false);
-      assert.equal(path?.includes("[ruleId="), false);
-      assert.equal(path?.includes("[metric="), false);
+    assert.deepEqual(
+      choices,
+      targets.map((target) => target.token)
+    );
+    assert.equal(
+      JSON.stringify(schema).includes("taskId"),
+      false
+    );
+    assert.equal(
+      JSON.stringify(schema).includes("riskId"),
+      false
+    );
+    targets.forEach((target) => {
+      assert.match(target.token, /^c[1-9][0-9]*$/);
+      assert.equal(
+        target.path.startsWith(`${target.source}.`),
+        false
+      );
+      assert.equal(target.path.includes("[ruleId="), false);
+      assert.equal(target.path.includes("[metric="), false);
     });
   }
 );
@@ -544,13 +624,12 @@ test(
   "rejects unsupported citation references before conformance",
   async () => {
     const invalid = validModelOutput() as {
-      citations: Array<{
-        reference: string;
-        explanation: string;
+      c: Array<{
+        r: string;
+        e: string;
       }>;
     };
-    invalid.citations[0]!.reference =
-      "dailyBrief::primaryFocus.nonexistent";
+    invalid.c[0]!.r = "c999999";
 
     const result = await runAtlasProviderConformance(
       new OllamaAtlasProvider({
@@ -653,6 +732,34 @@ test(
         );
 
         assert.equal(result.status, "provider-error");
+      }
+    );
+
+    await context.test(
+      "missing required compact field",
+      async () => {
+        const incomplete =
+          validModelOutput() as Record<
+            string,
+            unknown
+          >;
+        delete incomplete.c;
+
+        const result =
+          await runAtlasProviderConformance(
+            new OllamaAtlasProvider({
+              transport: new MockOllamaTransport(
+                chatResponse(incomplete)
+              ),
+            }),
+            createRequest()
+          );
+
+        assert.equal(
+          result.status,
+          "provider-error"
+        );
+        assert.equal(result.response, undefined);
       }
     );
 

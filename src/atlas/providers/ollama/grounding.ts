@@ -32,6 +32,7 @@ const CITATION_SOURCES: readonly AtlasAICitationSource[] = [
 ] as const;
 
 export interface OllamaAtlasCitationTarget {
+  token: string;
   reference: string;
   source: AtlasAICitationSource;
   path: string;
@@ -75,7 +76,7 @@ function collectResolvablePaths(
 export function createOllamaAtlasCitationTargets(
   request: AtlasAIRequest
 ): readonly OllamaAtlasCitationTarget[] {
-  return CITATION_SOURCES.flatMap((source) => {
+  const targets = CITATION_SOURCES.flatMap((source) => {
     const paths: string[] = [];
 
     collectResolvablePaths(
@@ -90,13 +91,18 @@ export function createOllamaAtlasCitationTargets(
       path,
     }));
   });
+
+  return targets.map((target, index) => ({
+    ...target,
+    token: `c${index + 1}`,
+  }));
 }
 
 export const OLLAMA_ATLAS_RESPONSE_SCHEMA = {
   type: "object",
   additionalProperties: false,
   properties: {
-    status: {
+    s: {
       type: "string",
       enum: [
         "completed",
@@ -104,32 +110,43 @@ export const OLLAMA_ATLAS_RESPONSE_SCHEMA = {
         "refused",
       ],
     },
-    content: { type: "string" },
-    citations: {
+    a: {
+      type: "string",
+      maxLength: 480,
+    },
+    c: {
       type: "array",
+      maxItems: 3,
       items: {
         type: "object",
         additionalProperties: false,
         properties: {
-          reference: { type: "string" },
-          explanation: { type: "string" },
+          r: { type: "string" },
+          e: {
+            type: "string",
+            maxLength: 96,
+          },
         },
         required: [
-          "reference",
-          "explanation",
+          "r",
+          "e",
         ],
       },
     },
-    limitations: {
+    l: {
       type: "array",
-      items: { type: "string" },
+      maxItems: 2,
+      items: {
+        type: "string",
+        maxLength: 160,
+      },
     },
   },
   required: [
-    "status",
-    "content",
-    "citations",
-    "limitations",
+    "s",
+    "a",
+    "c",
+    "l",
   ],
 } as const;
 
@@ -143,21 +160,25 @@ export function createOllamaAtlasResponseSchema(
     ...OLLAMA_ATLAS_RESPONSE_SCHEMA,
     properties: {
       ...OLLAMA_ATLAS_RESPONSE_SCHEMA.properties,
-      citations: {
+      c: {
         type: "array",
+        maxItems: 3,
         items: {
           type: "object",
           additionalProperties: false,
           properties: {
-            reference: {
+            r: {
               type: "string",
               enum: citationTargets.map(
-                (target) => target.reference
+                (target) => target.token
               ),
             },
-            explanation: { type: "string" },
+            e: {
+              type: "string",
+              maxLength: 96,
+            },
           },
-          required: ["reference", "explanation"],
+          required: ["r", "e"],
         },
       },
     },
@@ -174,7 +195,9 @@ export const OLLAMA_ATLAS_SYSTEM_PROMPT = [
   "For current-focus questions, use dailyBrief.primaryFocus, dailyBrief.suggestedNextAction, priorities.rankedTasks, and current risks when they are available. Missing historical evidence does not make supported current-state guidance insufficient; preserve that missing history as a limitation while answering from current evidence.",
   "Treat the deterministic daily brief, ranked priorities, risks, recommendations, and patterns as authoritative ATLAS conclusions. When dailyBrief.primaryFocus and dailyBrief.suggestedNextAction are populated, a question asking what to focus on today has sufficient evidence: answer it with status completed and cite those supplied conclusions. Do not demand raw records that the reasoning context has already summarized.",
   "Every factual claim in a completed answer must be supported by at least one citation. Citation source must be one allowed top-level reasoning-context source, and citation path must resolve relative to that source using dotted properties or numeric array indexes.",
-  'For each citation, use one exact reference represented by an allowed source and relative path from allowedCitationPaths, joined as "source::path". Never create, alter, combine, or guess references.',
+  "Return compact JSON using only the schema keys: s=status, a=concise answer, c=citations, l=provider limitations. Each citation uses r=evidence token and e=brief explanation.",
+  "Keep the answer concise. Do not repeat recommendations or invent unavailable metadata. Use only an exact token from citationTokens for each citation. Never create, alter, combine, or guess evidence tokens.",
+  "Do not repeat limitations already supplied in the trusted context. Use l only for a new concise provider limitation; otherwise return an empty l array.",
   "Do not request or perform LifeOS mutations, actions, tools, filesystem reads, external retrieval, web search, prediction, simulation, or voice operations.",
   "Return only JSON matching the supplied response schema. Do not add request IDs, provider IDs, authority fields, tool calls, or prose outside the JSON.",
 ].join("\n");
@@ -199,6 +222,13 @@ export function serializeAtlasReasoningGrounding(
     purpose: request.purpose,
     constraints: request.constraints,
     allowedCitationPaths,
+    citationTokens: citationTargets.map(
+      ({ token, source, path }) => ({
+        token,
+        source,
+        path,
+      })
+    ),
     reasoningContext: request.context,
   };
 

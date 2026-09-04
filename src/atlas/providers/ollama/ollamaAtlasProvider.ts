@@ -126,11 +126,11 @@ function parseCitation(
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
-      "reference",
-      "explanation",
+      "r",
+      "e",
     ]) ||
-    typeof value.reference !== "string" ||
-    typeof value.explanation !== "string"
+    typeof value.r !== "string" ||
+    typeof value.e !== "string"
   ) {
     throw new Error(
       "Local Ollama returned a malformed citation."
@@ -138,7 +138,7 @@ function parseCitation(
   }
 
   const target = targets.find(
-    (item) => item.reference === value.reference
+    (item) => item.token === value.r
   );
 
   if (!target) {
@@ -150,7 +150,7 @@ function parseCitation(
   return {
     source: target.source,
     path: target.path,
-    explanation: value.explanation,
+    explanation: value.e,
   };
 }
 
@@ -175,18 +175,18 @@ function parseModelResponse(
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
-      "status",
-      "content",
-      "citations",
-      "limitations",
+      "s",
+      "a",
+      "c",
+      "l",
     ]) ||
-    (value.status !== "completed" &&
-      value.status !== "insufficient-evidence" &&
-      value.status !== "refused") ||
-    typeof value.content !== "string" ||
-    !Array.isArray(value.citations) ||
-    !Array.isArray(value.limitations) ||
-    value.limitations.some(
+    (value.s !== "completed" &&
+      value.s !== "insufficient-evidence" &&
+      value.s !== "refused") ||
+    typeof value.a !== "string" ||
+    !Array.isArray(value.c) ||
+    !Array.isArray(value.l) ||
+    value.l.some(
       (item) => typeof item !== "string"
     )
   ) {
@@ -196,14 +196,14 @@ function parseModelResponse(
   }
 
   return {
-    status: value.status,
-    content: value.content,
-    citations: value.citations.map(
+    status: value.s,
+    content: value.a,
+    citations: value.c.map(
       (citation) =>
         parseCitation(citation, citationTargets)
     ),
     limitations:
-      value.limitations as string[],
+      value.l as string[],
   };
 }
 
@@ -258,6 +258,7 @@ implements AtlasAIProvider {
       temperature: 0 as const,
       seed: 0 as const,
       num_ctx: OLLAMA_ATLAS_CONTEXT_WINDOW,
+      num_predict: this.config.numPredict,
     };
 
     const body: OllamaChatRequestBody = {
