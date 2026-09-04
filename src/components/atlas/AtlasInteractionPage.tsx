@@ -35,6 +35,7 @@ import {
 } from "../../atlas/interaction/evidencePresentation";
 
 import AtlasMemoryPanel from "./AtlasMemoryPanel";
+import AtlasProactiveInsights from "./AtlasProactiveInsights";
 
 const DEFAULT_PROMPT =
   "What should I focus on today and why?";
@@ -78,6 +79,7 @@ export default function AtlasInteractionPage({
   const {
     state,
     deterministic,
+    proactive,
     memory,
     ask,
     cancel,
@@ -88,7 +90,6 @@ export default function AtlasInteractionPage({
 
   const brief = deterministic.dailyBrief;
   const priorities = brief.topPriorities;
-  const risks = brief.keyRisks;
   const response = state.result?.provider;
   const isLoading = state.status === "loading";
 
@@ -204,36 +205,10 @@ export default function AtlasInteractionPage({
             </div>
           </div>
 
-          {risks.length > 0 && (
-            <div className="rounded-[1.75rem] border border-amber-400/15 bg-amber-400/[0.04] p-6">
-              <div className="flex items-center gap-3 text-amber-300">
-                <FaTriangleExclamation />
-                <h2 className="font-bold">
-                  Important risks
-                </h2>
-              </div>
-              <div className="mt-4 space-y-3">
-                {risks.map((risk) => (
-                  <div
-                    key={risk.ruleId}
-                    className="rounded-2xl border border-amber-300/10 bg-slate-950/50 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-semibold text-slate-100">
-                        {risk.title}
-                      </p>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-amber-300">
-                        {risk.severity}
-                      </span>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500">
-                      {risk.reasons[0]}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <AtlasProactiveInsights
+            report={proactive}
+            context={deterministic.reasoningContext}
+          />
 
           <AtlasMemoryPanel memory={memory} />
         </section>

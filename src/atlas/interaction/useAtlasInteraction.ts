@@ -28,6 +28,10 @@ import {
 } from "../memory/useAtlasMemory";
 
 import {
+  ProactiveInsightEngine,
+} from "../proactive/proactiveInsightEngine.ts";
+
+import {
   atlasInteractionReducer,
   getAtlasInteractionError,
   INITIAL_ATLAS_INTERACTION_STATE,
@@ -47,6 +51,14 @@ export function useAtlasInteraction(
         canonicalState
       ),
     [orchestrator, canonicalState]
+  );
+
+  const proactive = useMemo(
+    () =>
+      new ProactiveInsightEngine().create(
+        deterministic.reasoningContext
+      ),
+    [deterministic.reasoningContext]
   );
 
   const [state, dispatch] = useReducer(
@@ -165,6 +177,7 @@ export function useAtlasInteraction(
   return {
     state,
     deterministic,
+    proactive,
     memory,
     ask,
     cancel,
