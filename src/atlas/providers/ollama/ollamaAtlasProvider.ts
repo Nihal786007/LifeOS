@@ -7,12 +7,10 @@ import {
 } from "../../reasoning/atlasAIProvider.ts";
 
 import type {
-  AtlasAICitation,
   AtlasAIProvider,
   AtlasAIProviderDescriptor,
   AtlasAIRequest,
   AtlasAIResponse,
-  AtlasAIResponseStatus,
 } from "../../reasoning/atlasAIProvider";
 
 import {
@@ -26,14 +24,14 @@ import type {
 
 import {
   OLLAMA_ATLAS_SYSTEM_PROMPT,
-  createOllamaAtlasCitationTargets,
+  assertOllamaAtlasPromptBudget,
   createOllamaAtlasResponseSchema,
   serializeAtlasReasoningGrounding,
 } from "./grounding.ts";
 
-import type {
-  OllamaAtlasCitationTarget,
-} from "./grounding";
+import {
+  buildOllamaAtlasFactCore,
+} from "./factCore.ts";
 
 import {
   FetchOllamaTransport,
@@ -55,9 +53,8 @@ export const OLLAMA_ATLAS_CONTEXT_WINDOW =
   8_192 as const;
 
 interface OllamaAtlasModelResponse {
-  status: AtlasAIResponseStatus;
-  content: string;
-  citations: readonly AtlasAICitation[];
+  commentary: string;
+  factReferences: readonly string[];
   limitations: readonly string[];
 }
 
@@ -119,44 +116,9 @@ function readAssistantContent(
   return response.message.content;
 }
 
-function parseCitation(
-  value: unknown,
-  targets: readonly OllamaAtlasCitationTarget[]
-): AtlasAICitation {
-  if (
-    !isRecord(value) ||
-    !hasExactKeys(value, [
-      "r",
-      "e",
-    ]) ||
-    typeof value.r !== "string" ||
-    typeof value.e !== "string"
-  ) {
-    throw new Error(
-      "Local Ollama returned a malformed citation."
-    );
-  }
-
-  const target = targets.find(
-    (item) => item.token === value.r
-  );
-
-  if (!target) {
-    throw new Error(
-      "Local Ollama returned an unsupported citation reference."
-    );
-  }
-
-  return {
-    source: target.source,
-    path: target.path,
-    explanation: value.e,
-  };
-}
-
 function parseModelResponse(
   content: string,
-  citationTargets: readonly OllamaAtlasCitationTarget[]
+  allowedFactReferences: ReadonlySet<string>
 ): OllamaAtlasModelResponse | undefined {
   if (content.trim().length === 0) {
     return undefined;
@@ -175,16 +137,13 @@ function parseModelResponse(
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
-      "s",
-      "a",
-      "c",
+      "x",
+      "r",
       "l",
     ]) ||
-    (value.s !== "completed" &&
-      value.s !== "insufficient-evidence" &&
-      value.s !== "refused") ||
-    typeof value.a !== "string" ||
-    !Array.isArray(value.c) ||
+    typeof value.x !== "string" ||
+    !Array.isArray(value.r) ||
+    value.r.some((item) => typeof item !== "string") ||
     !Array.isArray(value.l) ||
     value.l.some(
       (item) => typeof item !== "string"
@@ -195,15 +154,31 @@ function parseModelResponse(
     );
   }
 
+  const unknownReference = value.r.find(
+    (item) => !allowedFactReferences.has(item as string)
+  );
+  if (unknownReference) {
+    throw new Error(
+      "Local Ollama returned an unsupported fact reference."
+    );
+  }
+
+  const commentary = value.x.trim();
+  if (
+    commentary.length > 0 &&
+    (!/[A-Za-z0-9]/.test(commentary) ||
+      /^(?:c|f)\d+$/i.test(commentary) ||
+      /(?:answer trusted|aggregate task counts|relevant trusted evidence|question relevance|citation tokens|return (?:compact )?json|add only brief non-factual commentary)/i.test(commentary))
+  ) {
+    throw new Error(
+      "Local Ollama returned meaningless or copied commentary."
+    );
+  }
+
   return {
-    status: value.s,
-    content: value.a,
-    citations: value.c.map(
-      (citation) =>
-        parseCitation(citation, citationTargets)
-    ),
-    limitations:
-      value.l as string[],
+    commentary,
+    factReferences: value.r as string[],
+    limitations: value.l as string[],
   };
 }
 
@@ -250,10 +225,17 @@ implements AtlasAIProvider {
   async reason(
     request: AtlasAIRequest
   ): Promise<AtlasAIResponse> {
+    const factCore = buildOllamaAtlasFactCore(request);
     const responseSchema =
-      createOllamaAtlasResponseSchema(request);
-    const citationTargets =
-      createOllamaAtlasCitationTargets(request);
+      createOllamaAtlasResponseSchema(request, factCore);
+    const grounding = serializeAtlasReasoningGrounding(
+      request,
+      factCore
+    );
+    assertOllamaAtlasPromptBudget(
+      OLLAMA_ATLAS_SYSTEM_PROMPT,
+      grounding
+    );
     const options = {
       temperature: 0 as const,
       seed: 0 as const,
@@ -270,10 +252,7 @@ implements AtlasAIProvider {
         },
         {
           role: "user",
-          content:
-            serializeAtlasReasoningGrounding(
-              request
-            ),
+          content: grounding,
         },
       ],
       stream: false,
@@ -290,7 +269,7 @@ implements AtlasAIProvider {
 
     const parsed = parseModelResponse(
       readAssistantContent(rawResponse),
-      citationTargets
+      new Set(factCore.facts.map((fact) => fact.ref))
     );
 
     if (!parsed) {
@@ -312,9 +291,12 @@ implements AtlasAIProvider {
       version: ATLAS_AI_RESPONSE_VERSION,
       requestId: request.requestId,
       providerId: this.descriptor.id,
-      status: parsed.status,
-      content: parsed.content,
-      citations: parsed.citations,
+      status: factCore.status,
+      content: [
+        factCore.factualAnswer,
+        parsed.commentary,
+      ].filter(Boolean).join(" "),
+      citations: factCore.citations,
       limitations: mergeLimitations(
         request,
         parsed.limitations
