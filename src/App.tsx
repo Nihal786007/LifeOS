@@ -68,7 +68,10 @@ function AppContent() {
 
         {currentPage ===
           "dashboard" && (
-          <Dashboard />
+          <Dashboard
+            orchestrator={atlasOrchestrator}
+            onNavigate={setCurrentPage}
+          />
         )}
 
         {currentPage ===
