@@ -113,7 +113,7 @@ export default function PlanningSummary() {
   const metrics = [
     {
       label:
-        "Active Goals",
+        "Life Goals",
 
       value:
         activeGoals,
@@ -122,11 +122,11 @@ export default function PlanningSummary() {
         <FaBullseye />,
 
       detail:
-        "long-term outcomes",
+        "active",
     },
     {
       label:
-        "This Month",
+        "Monthly Outcomes",
 
       value:
         thisMonthTargets,
@@ -135,11 +135,11 @@ export default function PlanningSummary() {
         <FaCalendarDays />,
 
       detail:
-        "active targets",
+        "this month",
     },
     {
       label:
-        "Active Weeks",
+        "Weekly Focus",
 
       value:
         activeWeeks,
@@ -148,11 +148,11 @@ export default function PlanningSummary() {
         <FaListCheck />,
 
       detail:
-        "weekly targets",
+        "active",
     },
     {
       label:
-        "Due Today",
+        "Tasks Today",
 
       value:
         dueToday,
@@ -161,7 +161,7 @@ export default function PlanningSummary() {
         <FaClock />,
 
       detail:
-        "tasks to execute",
+        "due",
     },
   ];
 

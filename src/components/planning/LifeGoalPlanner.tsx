@@ -524,36 +524,9 @@ export default function LifeGoalPlanner() {
                 text-slate-600
               "
             >
-              Create a long-term outcome and LifeOS will organize it into months, real calendar weeks, and Universal Tasks.
+              Create a long-term outcome and LifeOS will organize it into Monthly Outcomes, real calendar weeks, and Tasks.
             </p>
 
-            <button
-              type="button"
-              onClick={() =>
-                setGoalModalOpen(
-                  true
-                )
-              }
-              className="
-                mt-5
-                inline-flex
-                items-center
-                gap-2
-                rounded-lg
-                bg-cyan-500
-                px-4
-                py-2.5
-                text-xs
-                font-bold
-                text-slate-950
-                transition
-                hover:bg-cyan-400
-              "
-            >
-              <FaPlus />
-
-              Create Life Goal
-            </button>
           </div>
         ) : (
           <div className="space-y-2">
@@ -970,7 +943,7 @@ export default function LifeGoalPlanner() {
                         >
                           <SectionHeading
                             title="Execution Plan"
-                            description="Monthly Outcomes become real calendar weeks and Universal Tasks."
+                            description="Monthly Outcomes become real calendar weeks, Weekly Focus, and Tasks."
                             trailing={
                               `${goalMonths.length} ${
                                 goalMonths.length ===

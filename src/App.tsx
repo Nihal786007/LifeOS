@@ -83,7 +83,9 @@ function AppContent() {
 
         {currentPage ===
           "planning" && (
-          <Planning />
+          <Planning
+            onNavigate={setCurrentPage}
+          />
         )}
 
         {currentPage ===
@@ -93,7 +95,9 @@ function AppContent() {
 
         {currentPage ===
           "calendar" && (
-          <Calendar />
+          <Calendar
+            onNavigate={setCurrentPage}
+          />
         )}
 
         {currentPage ===
