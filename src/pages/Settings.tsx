@@ -1,486 +1,399 @@
 import {
+  useEffect,
+  useState,
+} from "react";
+import {
   FaBrain,
+  FaBriefcase,
+  FaCheckCircle,
+  FaClock,
   FaDatabase,
-  FaInfoCircle,
-  FaPalette,
+  FaExclamationCircle,
   FaTrophy,
   FaUser,
 } from "react-icons/fa";
 
+import { STORAGE_KEYS } from "../constants/storage";
 import { useApp } from "../context/AppContext";
 import { useXP } from "../context/XPContext";
-
-import { STORAGE_KEYS } from "../constants/storage";
+import type { UserProfile } from "../shared/types";
 
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Input from "../components/ui/Input";
 import PageHero from "../components/ui/PageHero";
-import StatCard from "../components/ui/StatCard";
+
+type ProfileDraft = Pick<
+  UserProfile,
+  "name" | "occupation" | "timezone" | "atlasPersonality"
+>;
+
+type SaveFeedback =
+  | { kind: "idle" }
+  | { kind: "error"; message: string }
+  | { kind: "success"; message: string };
+
+const ATLAS_PERSONALITIES: readonly UserProfile["atlasPersonality"][] = [
+  "Professional",
+  "Friendly",
+  "Motivational",
+];
+
+function createDraft(profile: UserProfile): ProfileDraft {
+  return {
+    name: profile.name,
+    occupation: profile.occupation,
+    timezone: profile.timezone,
+    atlasPersonality: profile.atlasPersonality,
+  };
+}
+
+function isSupportedTimeZone(timezone: string): boolean {
+  try {
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+    }).format(new Date());
+
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function Settings() {
-  const {
-    profile,
-    updateProfile,
-  } = useApp();
-
+  const { profile, updateProfile } = useApp();
   const {
     totalXP,
     level,
+    progress,
+    xpNeededForNextLevel,
   } = useXP();
 
-  function saveProfile() {
-    alert(
-      "Profile updated successfully!"
-    );
+  const [draft, setDraft] = useState<ProfileDraft>(() =>
+    createDraft(profile)
+  );
+  const [feedback, setFeedback] = useState<SaveFeedback>({ kind: "idle" });
+
+  useEffect(() => {
+    setDraft(createDraft(profile));
+  }, [profile]);
+
+  function updateDraft<K extends keyof ProfileDraft>(
+    field: K,
+    value: ProfileDraft[K]
+  ) {
+    setDraft((current) => ({
+      ...current,
+      [field]: value,
+    }));
+    setFeedback({ kind: "idle" });
   }
 
-  // ==========================================
-  // DEVELOPMENT DATA RESET
-  // ==========================================
-  //
-  // Removes only the domains we are currently
-  // rebuilding/testing.
-  //
-  // DOES NOT delete:
-  // - Profile
-  // - Habits
-  // - Captures
-  // - Goals
-  // - Monthly planning
-  // - Weekly planning
-  //
-  // ==========================================
+  function saveProfile() {
+    const name = draft.name.trim();
+    const occupation = draft.occupation.trim();
+    const timezone = draft.timezone.trim();
+
+    if (!name) {
+      setFeedback({
+        kind: "error",
+        message: "Enter a display name before saving.",
+      });
+      return;
+    }
+
+    if (!timezone || !isSupportedTimeZone(timezone)) {
+      setFeedback({
+        kind: "error",
+        message:
+          "Enter a valid IANA timezone, such as Asia/Kolkata or America/New_York.",
+      });
+      return;
+    }
+
+    updateProfile({
+      name,
+      occupation,
+      timezone,
+      atlasPersonality: draft.atlasPersonality,
+    });
+
+    setFeedback({
+      kind: "success",
+      message: "Profile saved to this LifeOS workspace.",
+    });
+  }
 
   function resetTestActivity() {
-    const confirmed =
-      confirm(
-        "Reset task, XP, and execution-history test data?\n\nYour profile, goals, habits, captures, and planning data will be preserved."
-      );
+    const confirmed = confirm(
+      "Reset task, XP, and execution-history test data?\n\nYour profile, goals, habits, captures, and planning data will be preserved."
+    );
 
     if (!confirmed) {
       return;
     }
 
-    localStorage.removeItem(
-      STORAGE_KEYS.TASKS
-    );
-
-    localStorage.removeItem(
-      STORAGE_KEYS.EXECUTION_HISTORY
-    );
-
-    
-
+    localStorage.removeItem(STORAGE_KEYS.TASKS);
+    localStorage.removeItem(STORAGE_KEYS.EXECUTION_HISTORY);
     location.reload();
   }
 
   return (
-    <div className="space-y-10">
-
+    <div className="mx-auto max-w-[1400px] space-y-7 pb-10">
       <PageHero
-        badge="System Control"
-        title="Settings"
-        description="Configure your LifeOS experience, identity, and local system data."
+        badge="Personal Workspace"
+        title="Profile & Settings"
+        description="Keep your identity and ATLAS preferences accurate while your progress remains grounded in real execution history."
       >
         <Card className="border-cyan-500/20 bg-cyan-500/5">
-
-          <p className="text-sm uppercase tracking-widest text-cyan-300">
-            LifeOS
+          <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">
+            LifeOS profile
           </p>
-
-          <h2 className="mt-3 text-5xl font-black">
-            v1.0
-          </h2>
-
-          <p className="mt-3 text-slate-400">
-            System Control
+          <p className="mt-4 text-3xl font-black text-white">
+            {profile.name.trim() || "Profile not named yet"}
           </p>
-
+          <p className="mt-2 text-sm text-slate-400">
+            {profile.occupation.trim() || "Add what you are working toward"}
+          </p>
         </Card>
       </PageHero>
 
-      {/* ====================================== */}
-      {/* System Overview */}
-      {/* ====================================== */}
+      <div className="grid gap-7 xl:grid-cols-[1.2fr_0.8fr]">
+        <div className="space-y-7">
+          <Card className="border-slate-800 bg-slate-900/70">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-300">
+                <FaUser size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+                  Identity
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  How LifeOS addresses you
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  These details are part of your existing local profile.
+                </p>
+              </div>
+            </div>
 
-      <div className="grid gap-6 md:grid-cols-4">
+            <div className="mt-7 grid gap-5 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300">
+                  <FaUser className="text-slate-500" />
+                  Display name
+                </span>
+                <Input
+                  value={draft.name}
+                  onChange={(event) => updateDraft("name", event.target.value)}
+                  placeholder="Enter your name"
+                  autoComplete="name"
+                />
+                <span className="mt-2 block text-xs text-slate-600">
+                  Required. Whitespace-only names are not accepted.
+                </span>
+              </label>
 
-        <StatCard
-          icon={
-            <FaUser />
-          }
-          title="Profile"
-          value={
-            profile.name ||
-            "Unknown"
-          }
-        />
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300">
+                  <FaBriefcase className="text-slate-500" />
+                  Occupation or focus
+                </span>
+                <Input
+                  value={draft.occupation}
+                  onChange={(event) =>
+                    updateDraft("occupation", event.target.value)
+                  }
+                  placeholder="Student, engineer, designer..."
+                  autoComplete="organization-title"
+                />
+                <span className="mt-2 block text-xs text-slate-600">
+                  Optional context for your LifeOS profile.
+                </span>
+              </label>
+            </div>
+          </Card>
 
-        <StatCard
-          icon={
-            <FaBrain />
-          }
-          title="ATLAS"
-          value={
-            profile.atlasPersonality
-          }
-          color="text-cyan-400"
-        />
+          <Card className="border-slate-800 bg-slate-900/70">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-violet-500/10 p-3 text-violet-300">
+                <FaBrain size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">
+                  Preferences
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  Time and ATLAS style
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Only preferences that are currently supported are shown.
+                </p>
+              </div>
+            </div>
 
-        <StatCard
-          icon={
-            <FaTrophy />
-          }
-          title="Level"
-          value={
-            level.toString()
-          }
-          color="text-yellow-400"
-        />
+            <div className="mt-7 grid gap-5 md:grid-cols-2">
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300">
+                  <FaClock className="text-slate-500" />
+                  Timezone
+                </span>
+                <Input
+                  value={draft.timezone}
+                  onChange={(event) =>
+                    updateDraft("timezone", event.target.value)
+                  }
+                  placeholder="Asia/Kolkata"
+                  spellCheck={false}
+                />
+                <span className="mt-2 block text-xs text-slate-600">
+                  Use an IANA timezone such as Europe/London.
+                </span>
+              </label>
 
-        <StatCard
-          icon={
-            <FaDatabase />
-          }
-          title="XP"
-          value={
-            totalXP.toString()
-          }
-          color="text-green-400"
-        />
+              <label className="block">
+                <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300">
+                  <FaBrain className="text-slate-500" />
+                  ATLAS personality
+                </span>
+                <select
+                  className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+                  value={draft.atlasPersonality}
+                  onChange={(event) =>
+                    updateDraft(
+                      "atlasPersonality",
+                      event.target.value as UserProfile["atlasPersonality"]
+                    )
+                  }
+                >
+                  {ATLAS_PERSONALITIES.map((personality) => (
+                    <option key={personality} value={personality}>
+                      {personality}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-2 block text-xs text-slate-600">
+                  Controls the supported communication preference in your profile.
+                </span>
+              </label>
+            </div>
 
+            <div className="mt-7 flex flex-col gap-4 border-t border-slate-800 pt-6 sm:flex-row sm:items-center sm:justify-between">
+              <div aria-live="polite" className="min-h-5">
+                {feedback.kind !== "idle" && (
+                  <p
+                    className={`flex items-center gap-2 text-sm ${
+                      feedback.kind === "success"
+                        ? "text-emerald-300"
+                        : "text-red-300"
+                    }`}
+                  >
+                    {feedback.kind === "success" ? (
+                      <FaCheckCircle />
+                    ) : (
+                      <FaExclamationCircle />
+                    )}
+                    {feedback.message}
+                  </p>
+                )}
+              </div>
+              <Button type="button" onClick={saveProfile}>
+                Save profile
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        <div className="space-y-7">
+          <Card className="border-amber-400/15 bg-gradient-to-br from-slate-900 to-amber-950/20">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-amber-400/10 p-3 text-amber-300">
+                <FaTrophy size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
+                  Progress
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  Level {level}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Read-only progress from execution history.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-7 grid grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/55 p-5">
+                <p className="text-3xl font-black text-white">
+                  {totalXP.toLocaleString()}
+                </p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                  Total XP
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/55 p-5">
+                <p className="text-3xl font-black text-amber-300">{progress}%</p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-slate-600">
+                  Level progress
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-cyan-400 transition-all"
+                  style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+                />
+              </div>
+              <p className="mt-3 text-xs text-slate-500">
+                {totalXP === 0
+                  ? "Complete trusted work to begin earning XP."
+                  : `${xpNeededForNextLevel} XP needed for level ${level + 1}.`}
+              </p>
+            </div>
+          </Card>
+
+          <Card className="border-slate-800 bg-slate-900/70">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-red-500/10 p-3 text-red-300">
+                <FaDatabase size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-300">
+                  Data / System
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  Local activity data
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  LifeOS stores this workspace locally in your browser.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-red-500/15 bg-red-500/[0.04] p-5">
+              <h3 className="font-semibold text-white">
+                Reset task and XP test activity
+              </h3>
+              <p className="mt-2 text-xs leading-5 text-slate-500">
+                Removes tasks and execution history after confirmation. Your profile,
+                goals, plans, habits, and captures remain intact.
+              </p>
+              <Button
+                type="button"
+                variant="danger"
+                onClick={resetTestActivity}
+                className="mt-5"
+              >
+                Reset local activity
+              </Button>
+            </div>
+          </Card>
+        </div>
       </div>
-
-      {/* ====================================== */}
-      {/* Profile */}
-      {/* ====================================== */}
-
-      <Card>
-
-        <div className="mb-8 flex items-center gap-3">
-
-          <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
-            <FaUser
-              size={22}
-            />
-          </div>
-
-          <div>
-
-            <h2 className="text-2xl font-bold">
-              Profile Settings
-            </h2>
-
-            <p className="text-sm text-slate-400">
-              Personalize your LifeOS experience.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="space-y-6">
-
-          <div>
-
-            <p className="mb-2 text-sm font-medium">
-              Your Name
-            </p>
-
-            <Input
-              value={
-                profile.name
-              }
-              onChange={(
-                event
-              ) =>
-                updateProfile({
-                  name:
-                    event.target
-                      .value,
-                })
-              }
-              placeholder="Enter your name"
-            />
-
-          </div>
-
-          <div>
-
-            <p className="mb-2 text-sm font-medium">
-              Occupation
-            </p>
-
-            <Input
-              value={
-                profile.occupation
-              }
-              onChange={(
-                event
-              ) =>
-                updateProfile({
-                  occupation:
-                    event.target
-                      .value,
-                })
-              }
-              placeholder="Student, Engineer, Designer..."
-            />
-
-          </div>
-
-          <div>
-
-            <p className="mb-2 text-sm font-medium">
-              Time Zone
-            </p>
-
-            <Input
-              value={
-                profile.timezone
-              }
-              onChange={(
-                event
-              ) =>
-                updateProfile({
-                  timezone:
-                    event.target
-                      .value,
-                })
-              }
-              placeholder="Asia/Kolkata"
-            />
-
-          </div>
-
-          <div>
-
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <FaBrain />
-              ATLAS Personality
-            </p>
-
-            <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
-              value={
-                profile.atlasPersonality
-              }
-              onChange={(
-                event
-              ) =>
-                updateProfile({
-                  atlasPersonality:
-                    event.target
-                      .value as
-                      | "Professional"
-                      | "Friendly"
-                      | "Motivational",
-                })
-              }
-            >
-              <option value="Professional">
-                Professional
-              </option>
-
-              <option value="Friendly">
-                Friendly
-              </option>
-
-              <option value="Motivational">
-                Motivational
-              </option>
-            </select>
-
-          </div>
-
-          <div>
-
-            <p className="mb-2 flex items-center gap-2 text-sm font-medium">
-              <FaPalette />
-              Theme
-            </p>
-
-            <select
-              className="w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-white outline-none transition focus:border-cyan-500"
-              value={
-                profile.theme
-              }
-              onChange={(
-                event
-              ) =>
-                updateProfile({
-                  theme:
-                    event.target
-                      .value as
-                      | "dark"
-                      | "light",
-                })
-              }
-            >
-              <option value="dark">
-                Dark
-              </option>
-
-              <option value="light">
-                Light
-              </option>
-            </select>
-
-          </div>
-
-          {/* Real XP */}
-
-          <div className="grid gap-4 md:grid-cols-2">
-
-            <Card>
-
-              <p className="text-sm text-slate-400">
-                Current Level
-              </p>
-
-              <h2 className="mt-2 text-4xl font-black text-yellow-400">
-                {level}
-              </h2>
-
-            </Card>
-
-            <Card>
-
-              <p className="text-sm text-slate-400">
-                Total XP
-              </p>
-
-              <h2 className="mt-2 text-4xl font-black text-green-400">
-                {totalXP}
-              </h2>
-
-            </Card>
-
-          </div>
-
-          <Button
-            onClick={
-              saveProfile
-            }
-          >
-            Save Profile
-          </Button>
-
-        </div>
-
-      </Card>
-
-      {/* ====================================== */}
-      {/* Data Management */}
-      {/* ====================================== */}
-
-      <Card>
-
-        <div className="mb-6 flex items-center gap-3">
-
-          <div className="rounded-xl bg-red-500/10 p-3 text-red-400">
-            <FaDatabase
-              size={22}
-            />
-          </div>
-
-          <div>
-
-            <h2 className="text-2xl font-bold">
-              Development Data
-            </h2>
-
-            <p className="text-sm text-slate-400">
-              Clean temporary task and progression test data without deleting your LifeOS identity or planning system.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="rounded-2xl border border-red-500/15 bg-red-500/5 p-6">
-
-          <h3 className="font-semibold text-white">
-            Reset Task Test Data
-          </h3>
-
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-            Removes current tasks, execution history, and XP so we can test the new unified task architecture from a clean state. Your profile, goals, monthly plans, weekly plans, habits, and captures are preserved.
-          </p>
-
-          <Button
-            variant="danger"
-            onClick={
-              resetTestActivity
-            }
-            className="mt-5"
-          >
-            Reset Task Test Data
-          </Button>
-
-        </div>
-
-      </Card>
-
-      {/* ====================================== */}
-      {/* About */}
-      {/* ====================================== */}
-
-      <Card>
-
-        <div className="mb-6 flex items-center gap-3">
-
-          <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-400">
-            <FaInfoCircle
-              size={22}
-            />
-          </div>
-
-          <div>
-
-            <h2 className="text-2xl font-bold">
-              About LifeOS
-            </h2>
-
-            <p className="text-sm text-slate-400">
-              Current system information.
-            </p>
-
-          </div>
-
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-
-          <Card>
-
-            <p className="text-sm text-slate-400">
-              Version
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold">
-              v1.0
-            </h2>
-
-          </Card>
-
-          <Card>
-
-            <p className="text-sm text-slate-400">
-              Storage
-            </p>
-
-            <h2 className="mt-2 text-3xl font-bold text-green-400">
-              Local Storage
-            </h2>
-
-          </Card>
-
-        </div>
-
-      </Card>
-
     </div>
   );
 }
