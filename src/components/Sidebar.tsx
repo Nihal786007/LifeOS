@@ -1,4 +1,8 @@
 import {
+  useEffect,
+} from "react";
+
+import {
   FaHouse,
   FaListCheck,
   FaRobot,
@@ -7,17 +11,54 @@ import {
   FaFire,
   FaGear,
   FaTableList,
+  FaXmark,
 } from "react-icons/fa6";
 
 type SidebarProps = {
   currentPage: string;
   setCurrentPage: (page: string) => void;
+  mobileOpen: boolean;
+  onClose: () => void;
 };
 
 export default function Sidebar({
   currentPage,
   setCurrentPage,
+  mobileOpen,
+  onClose,
 }: SidebarProps) {
+  useEffect(() => {
+    if (!mobileOpen) {
+      return;
+    }
+
+    function handleKeyDown(
+      event: KeyboardEvent
+    ) {
+      if (
+        event.key ===
+        "Escape"
+      ) {
+        onClose();
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      handleKeyDown
+    );
+
+    return () => {
+      document.removeEventListener(
+        "keydown",
+        handleKeyDown
+      );
+    };
+  }, [
+    mobileOpen,
+    onClose,
+  ]);
+
   const menuItems = [
     {
       id: "dashboard",
@@ -61,12 +102,44 @@ export default function Sidebar({
     },
   ];
 
+  function navigateTo(
+    page: string
+  ) {
+    setCurrentPage(
+      page
+    );
+
+    onClose();
+  }
+
   return (
-    <aside className="flex h-screen w-72 flex-col border-r border-slate-800 bg-slate-950">
+    <>
+      <button
+        type="button"
+        aria-label="Close navigation menu"
+        onClick={onClose}
+        className={`fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          mobileOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
+        }`}
+      />
+
+    <aside
+      id="lifeos-primary-navigation"
+      aria-label="Primary navigation"
+      className={`fixed inset-y-0 left-0 z-[70] flex h-dvh w-[min(18rem,calc(100vw-2rem))] shrink-0 flex-col border-r border-slate-800 bg-slate-950 shadow-2xl shadow-black/40 transition-transform duration-300 ease-out lg:static lg:z-auto lg:h-full lg:w-72 lg:translate-x-0 lg:shadow-none ${
+        mobileOpen
+          ? "translate-x-0"
+          : "-translate-x-full"
+      }`}
+    >
 
       {/* Logo */}
 
-      <div className="border-b border-slate-800 px-8 py-8">
+      <div className="flex items-start justify-between gap-4 border-b border-slate-800 px-6 py-6 lg:px-8 lg:py-8">
+
+        <div>
 
         <h1 className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-4xl font-black tracking-tight text-transparent">
           LifeOS
@@ -76,11 +149,22 @@ export default function Sidebar({
           Personal Operating System
         </p>
 
+        </div>
+
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          onClick={onClose}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
+        >
+          <FaXmark />
+        </button>
+
       </div>
 
       {/* Navigation */}
 
-      <nav className="flex-1 px-5 py-8">
+      <nav className="flex-1 overflow-y-auto px-5 py-6 lg:py-8">
 
         <p className="mb-5 px-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
           Navigation
@@ -96,7 +180,9 @@ export default function Sidebar({
               <button
                 key={item.id}
                 onClick={() =>
-                  setCurrentPage(item.id)
+                  navigateTo(
+                    item.id
+                  )
                 }
                 className={`
                   group
@@ -148,7 +234,11 @@ export default function Sidebar({
 
       <button
         type="button"
-        onClick={() => setCurrentPage("atlas")}
+        onClick={() =>
+          navigateTo(
+            "atlas"
+          )
+        }
         className="mx-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5 text-left transition hover:border-cyan-400/40 hover:bg-cyan-500/10"
       >
 
@@ -193,5 +283,6 @@ export default function Sidebar({
       </div>
 
     </aside>
+    </>
   );
 }
