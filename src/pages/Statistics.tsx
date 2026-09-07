@@ -4,8 +4,6 @@ import {
   useState,
 } from "react";
 
-import DailyReview from "../components/statistics/DailyReview";
-import WeeklyReview from "../components/statistics/WeeklyReview";
 import AtlasReport from "../components/statistics/AtlasReport";
 
 import StatisticsPieChart from "../components/StatisticsPieChart";
@@ -1506,36 +1504,6 @@ export default function Statistics() {
           />
 
         </Card>
-
-        {period ===
-          "today" && (
-          <DailyReview
-            completedTasks={
-              today.completedTasks
-            }
-            pendingTasks={
-              today.pendingTasks
-            }
-            xpEarned={
-              today.xpEarned
-            }
-          />
-        )}
-
-        {period ===
-          "week" && (
-          <WeeklyReview
-            completedTasks={
-              week.completedTasks
-            }
-            completionRate={
-              week.completionRate
-            }
-            xpEarned={
-              week.xpEarned
-            }
-          />
-        )}
 
       </section>
 

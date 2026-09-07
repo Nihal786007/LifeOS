@@ -22,6 +22,7 @@ import Statistics from "./pages/Statistics";
 import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 import Atlas from "./pages/Atlas";
+import Reviews from "./pages/Reviews";
 
 import {
   createLocalAtlasAIOrchestrator,
@@ -39,6 +40,7 @@ const PAGE_TITLES: Record<string, string> = {
   calendar: "Calendar",
   statistics: "Analytics",
   habits: "Habits",
+  reviews: "Reviews",
   settings: "Settings",
 };
 
@@ -190,6 +192,11 @@ function AppContent() {
         {currentPage ===
           "habits" && (
           <Habits />
+        )}
+
+        {currentPage ===
+          "reviews" && (
+          <Reviews />
         )}
 
         {currentPage ===

@@ -11,6 +11,7 @@ import {
   FaFire,
   FaGear,
   FaTableList,
+  FaClipboardCheck,
   FaXmark,
 } from "react-icons/fa6";
 
@@ -94,6 +95,11 @@ export default function Sidebar({
       id: "habits",
       label: "Habits",
       icon: <FaFire />,
+    },
+    {
+      id: "reviews",
+      label: "Reviews",
+      icon: <FaClipboardCheck />,
     },
     {
       id: "settings",
