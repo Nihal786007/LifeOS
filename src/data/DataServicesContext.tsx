@@ -12,12 +12,27 @@ import {
   LocalStorageTaskRepository,
 } from "./tasks/localStorageTaskRepository";
 
+import {
+  LocalStorageLifeGoalRepository,
+  LocalStorageMonthlyOutcomeRepository,
+  LocalStorageWeeklyFocusRepository,
+} from "./planning/localStoragePlanningRepositories";
+
+import type {
+  LifeGoalRepository,
+  MonthlyOutcomeRepository,
+  WeeklyFocusRepository,
+} from "./planning/planningRepositories";
+
 import type {
   TaskRepository,
 } from "./tasks/taskRepository";
 
 export interface DataServices {
   taskRepository: TaskRepository;
+  lifeGoalRepository: LifeGoalRepository;
+  monthlyOutcomeRepository: MonthlyOutcomeRepository;
+  weeklyFocusRepository: WeeklyFocusRepository;
 }
 
 interface DataServicesProviderProps {
@@ -30,6 +45,18 @@ const DataServicesContext = createContext<DataServices | null>(null);
 function createBrowserDataServices(): DataServices {
   return {
     taskRepository: new LocalStorageTaskRepository(
+      window.localStorage,
+      window
+    ),
+    lifeGoalRepository: new LocalStorageLifeGoalRepository(
+      window.localStorage,
+      window
+    ),
+    monthlyOutcomeRepository: new LocalStorageMonthlyOutcomeRepository(
+      window.localStorage,
+      window
+    ),
+    weeklyFocusRepository: new LocalStorageWeeklyFocusRepository(
       window.localStorage,
       window
     ),

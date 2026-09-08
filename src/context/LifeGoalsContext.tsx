@@ -15,8 +15,8 @@ import type {
 } from "react";
 
 import {
-  STORAGE_KEYS,
-} from "../constants/storage";
+  useDataServices,
+} from "../data/DataServicesContext";
 
 import type {
   LifeGoal,
@@ -59,40 +59,26 @@ export function LifeGoalsProvider({
 }: {
   children: ReactNode;
 }) {
+  const {
+    lifeGoalRepository,
+  } = useDataServices();
+
   const [
     lifeGoals,
     setLifeGoals,
-  ] = useState<LifeGoal[]>(() => {
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEYS.LIFE_GOALS
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(
-        saved
-      ) as LifeGoal[];
-    } catch {
-      return [];
-    }
-  });
+  ] = useState<LifeGoal[]>(() =>
+    lifeGoalRepository.load()
+  );
 
   // ==========================================
   // Persistence
   // ==========================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.LIFE_GOALS,
-      JSON.stringify(
-        lifeGoals
-      )
-    );
-  }, [lifeGoals]);
+    return lifeGoalRepository.subscribe(() => {
+      setLifeGoals(lifeGoalRepository.load());
+    });
+  }, [lifeGoalRepository]);
 
   // ==========================================
   // Planning / Execution State Application
@@ -102,6 +88,9 @@ export function LifeGoalsProvider({
     nextLifeGoals: LifeGoal[]
   ) {
     setLifeGoals(
+      nextLifeGoals
+    );
+    lifeGoalRepository.save(
       nextLifeGoals
     );
   }
@@ -126,6 +115,7 @@ export function LifeGoalsProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useLifeGoals() {
   const context =
     useContext(

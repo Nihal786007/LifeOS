@@ -15,8 +15,8 @@ import type {
 } from "react";
 
 import {
-  STORAGE_KEYS,
-} from "../constants/storage";
+  useDataServices,
+} from "../data/DataServicesContext";
 
 import type {
   WeeklyTarget,
@@ -206,44 +206,26 @@ export function WeeklyPlanningProvider({
 }: {
   children: ReactNode;
 }) {
+  const {
+    weeklyFocusRepository,
+  } = useDataServices();
+
   const [
     weeklyTargets,
     setWeeklyTargets,
   ] = useState<
     WeeklyTarget[]
-  >(() => {
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEYS.WEEKLY_TARGETS
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(
-        saved
-      ) as WeeklyTarget[];
-    } catch {
-      return [];
-    }
-  });
+  >(() => weeklyFocusRepository.load());
 
   // ==========================================
   // Persistence
   // ==========================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.WEEKLY_TARGETS,
-      JSON.stringify(
-        weeklyTargets
-      )
-    );
-  }, [
-    weeklyTargets,
-  ]);
+    return weeklyFocusRepository.subscribe(() => {
+      setWeeklyTargets(weeklyFocusRepository.load());
+    });
+  }, [weeklyFocusRepository]);
 
   // ==========================================
   // Real Calendar Weekly Target Creation
@@ -324,11 +306,16 @@ export function WeeklyPlanningProvider({
           new Date().toISOString(),
       };
 
+    const nextWeeklyTargets = [
+      ...weeklyTargets,
+      target,
+    ];
+
     setWeeklyTargets(
-      (previous) => [
-        ...previous,
-        target,
-      ]
+      nextWeeklyTargets
+    );
+    weeklyFocusRepository.save(
+      nextWeeklyTargets
     );
   }
 
@@ -340,6 +327,9 @@ export function WeeklyPlanningProvider({
     nextWeeklyTargets: WeeklyTarget[]
   ) {
     setWeeklyTargets(
+      nextWeeklyTargets
+    );
+    weeklyFocusRepository.save(
       nextWeeklyTargets
     );
   }
@@ -367,6 +357,7 @@ export function WeeklyPlanningProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useWeeklyPlanning() {
   const context =
     useContext(

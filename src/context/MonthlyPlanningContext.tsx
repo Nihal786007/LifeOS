@@ -15,8 +15,8 @@ import type {
 } from "react";
 
 import {
-  STORAGE_KEYS,
-} from "../constants/storage";
+  useDataServices,
+} from "../data/DataServicesContext";
 
 import type {
   MonthlyTarget,
@@ -60,44 +60,26 @@ export function MonthlyPlanningProvider({
 }: {
   children: ReactNode;
 }) {
+  const {
+    monthlyOutcomeRepository,
+  } = useDataServices();
+
   const [
     monthlyPlans,
     setMonthlyPlans,
   ] = useState<
     MonthlyTarget[]
-  >(() => {
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEYS.MONTHLY_TARGETS
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(
-        saved
-      ) as MonthlyTarget[];
-    } catch {
-      return [];
-    }
-  });
+  >(() => monthlyOutcomeRepository.load());
 
   // ==========================================
   // Persistence
   // ==========================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.MONTHLY_TARGETS,
-      JSON.stringify(
-        monthlyPlans
-      )
-    );
-  }, [
-    monthlyPlans,
-  ]);
+    return monthlyOutcomeRepository.subscribe(() => {
+      setMonthlyPlans(monthlyOutcomeRepository.load());
+    });
+  }, [monthlyOutcomeRepository]);
 
   // ==========================================
   // State Application
@@ -107,6 +89,9 @@ export function MonthlyPlanningProvider({
     nextMonthlyPlans: MonthlyTarget[]
   ) {
     setMonthlyPlans(
+      nextMonthlyPlans
+    );
+    monthlyOutcomeRepository.save(
       nextMonthlyPlans
     );
   }
@@ -131,6 +116,7 @@ export function MonthlyPlanningProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useMonthlyPlanning() {
   const context =
     useContext(
