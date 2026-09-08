@@ -13,6 +13,7 @@ import Sidebar from "./components/Sidebar";
 
 import CaptureFab from "./components/capture/CaptureFab";
 import CaptureModal from "./components/capture/CaptureModal";
+import NotificationCenter from "./components/notifications/NotificationCenter";
 
 import Dashboard from "./pages/Dashboard";
 import Planning from "./pages/Planning";
@@ -141,12 +142,16 @@ function AppContent() {
               false
             );
           }}
-          className="rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300 transition hover:border-cyan-400/40 hover:bg-cyan-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          className="mr-12 rounded-xl border border-cyan-500/20 bg-cyan-500/10 px-3 py-2 text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300 transition hover:border-cyan-400/40 hover:bg-cyan-500/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
         >
           ATLAS
         </button>
 
       </header>
+
+      <NotificationCenter
+        orchestrator={atlasOrchestrator}
+      />
 
       <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:p-8">
 
