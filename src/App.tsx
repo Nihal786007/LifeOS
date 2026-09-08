@@ -1,5 +1,7 @@
 import {
+  useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -46,6 +48,8 @@ const PAGE_TITLES: Record<string, string> = {
 };
 
 function AppContent() {
+  const mainContentRef = useRef<HTMLElement>(null);
+
   const atlasOrchestrator = useMemo(
     () => createLocalAtlasAIOrchestrator(),
     []
@@ -69,6 +73,14 @@ function AppContent() {
   const {
     addCapture,
   } = useApp();
+
+  useEffect(() => {
+    mainContentRef.current?.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
+  }, [currentPage]);
 
   return (
     <>
@@ -153,7 +165,10 @@ function AppContent() {
         orchestrator={atlasOrchestrator}
       />
 
-      <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:p-8">
+      <main
+        ref={mainContentRef}
+        className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] sm:p-6 sm:pb-[calc(6rem+env(safe-area-inset-bottom,0px))] lg:p-8"
+      >
 
         {currentPage ===
           "dashboard" && (

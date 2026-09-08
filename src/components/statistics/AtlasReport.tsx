@@ -182,7 +182,7 @@ export default function AtlasReport({
           <div>
 
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-400/70">
-              ATLAS Intelligence
+              Analytics Insight
             </p>
 
             <h2 className="mt-1 text-2xl font-black text-white">
@@ -200,7 +200,7 @@ export default function AtlasReport({
         <div className="rounded-xl border border-cyan-400/15 bg-slate-950/50 px-4 py-3">
 
           <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-            ATLAS Status
+            Current Status
           </p>
 
           <p className="mt-1 text-sm font-bold text-cyan-200">
@@ -381,7 +381,7 @@ export default function AtlasReport({
         <div className="mt-6 rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-8 text-center">
 
           <p className="text-sm font-semibold text-slate-300">
-            ATLAS is still building signal
+            More activity is needed to build a signal
           </p>
 
           <p className="mt-2 text-xs leading-5 text-slate-500">

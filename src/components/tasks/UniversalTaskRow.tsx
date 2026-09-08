@@ -209,29 +209,28 @@ export default function UniversalTaskRow({
       }
       className={`
         flex
-        h-5
-        w-5
+        h-11
+        w-11
         shrink-0
         items-center
         justify-center
-        rounded
-        border
-        text-xs
-        font-bold
+        rounded-lg
         transition
-
-        ${
-          task.completed
-            ? "border-cyan-400 bg-cyan-400 text-slate-950"
-            : "border-slate-600 hover:border-cyan-400"
-        }
+        hover:bg-slate-800
+        md:h-8
+        md:w-8
       `}
     >
-      {
-        task.completed
-          ? "✓"
-          : ""
-      }
+      <span
+        aria-hidden="true"
+        className={`flex h-5 w-5 items-center justify-center rounded border text-xs font-bold ${
+          task.completed
+            ? "border-cyan-400 bg-cyan-400 text-slate-950"
+            : "border-slate-600"
+        }`}
+      >
+        {task.completed ? "✓" : ""}
+      </span>
     </button>
   );
 
@@ -247,12 +246,18 @@ export default function UniversalTaskRow({
           handleEdit
         }
         className="
-          rounded-md
-          p-2
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-lg
           text-slate-600
           transition
           hover:bg-cyan-500/10
           hover:text-cyan-300
+          md:h-8
+          md:w-8
         "
         aria-label={
           `Edit ${task.title}`
@@ -275,12 +280,18 @@ export default function UniversalTaskRow({
           handleDelete
         }
         className="
-          rounded-md
-          p-2
+          flex
+          h-11
+          w-11
+          items-center
+          justify-center
+          rounded-lg
           text-slate-600
           transition
           hover:bg-red-500/10
           hover:text-red-400
+          md:h-8
+          md:w-8
         "
         aria-label={
           `Delete ${task.title}`

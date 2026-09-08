@@ -764,7 +764,7 @@ export default function Statistics() {
     );
 
   // ========================================
-  // ATLAS Intelligence
+  // Analytics Interpretation
   // ========================================
 
   const atlasIntelligence =
@@ -1508,7 +1508,7 @@ export default function Statistics() {
       </section>
 
       {/* ======================================
-          ATLAS Intelligence
+          Analytics Interpretation
       ====================================== */}
 
       <section className="space-y-5">
@@ -1520,11 +1520,11 @@ export default function Statistics() {
           </p>
 
           <h2 className="mt-2 text-2xl font-bold text-white">
-            ATLAS
+            Performance Insights
           </h2>
 
           <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
-            The final layer: interpretation of the signals above, grounded only in your actual execution data.
+            Deterministic interpretation of the signals above, grounded only in your actual execution data.
           </p>
 
         </div>

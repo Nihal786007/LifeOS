@@ -89,7 +89,7 @@ const NAVIGATION_ITEMS: readonly {
   {
     destination: "planning",
     label: "Planning",
-    description: "Review goals and targets",
+    description: "Review goals and outcomes",
     icon: FaFlagCheckered,
   },
   {
@@ -262,8 +262,8 @@ export default function Dashboard({
             value={`${activePlanningCount}`}
             detail={
               activePlanningCount > 0
-                ? "Active goals and planning targets"
-                : "No active goal or planning target"
+                ? "Active goals and planning commitments"
+                : "No active goal or planning commitment"
             }
             tone="amber"
           />
@@ -350,7 +350,7 @@ export default function Dashboard({
                 {facts.planning.activeMonthlyTargets}
               </p>
               <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-600">
-                Monthly
+                Monthly Outcomes
               </p>
             </div>
             <div className="rounded-xl bg-slate-950/60 p-4">
@@ -358,7 +358,7 @@ export default function Dashboard({
                 {facts.planning.activeWeeklyTargets}
               </p>
               <p className="mt-1 text-[10px] uppercase tracking-wider text-slate-600">
-                Weekly
+                Weekly Focus
               </p>
             </div>
           </div>
@@ -366,7 +366,7 @@ export default function Dashboard({
           <p className="mt-4 text-xs leading-5 text-slate-500">
             {activePlanningCount > 0
               ? `${activePlanningCount} active planning commitments are represented in your current LifeOS state.`
-              : "No active planning commitments yet. Define the next meaningful target when you are ready."}
+              : "No active planning commitments yet. Define the next meaningful outcome when you are ready."}
           </p>
         </article>
       </section>

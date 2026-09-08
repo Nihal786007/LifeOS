@@ -384,7 +384,7 @@ test("persists read and dismissed IDs across store instances", () => {
   const first = new NotificationStore(storage);
   let state = first.load();
   state = first.markRead(state, "task:one");
-  state = first.dismiss(state, "habit:one");
+  first.dismiss(state, "habit:one");
 
   const reloaded = new NotificationStore(storage).load();
   assert.deepEqual(reloaded.readIds, ["task:one"]);

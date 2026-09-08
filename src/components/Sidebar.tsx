@@ -253,7 +253,7 @@ export default function Sidebar({
         </p>
 
         <h3 className="mt-3 font-semibold text-white">
-          Mission Control
+          Intelligence
         </h3>
 
         <p className="mt-1 text-sm text-slate-400">

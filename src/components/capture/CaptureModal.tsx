@@ -1,21 +1,11 @@
 import {
-  useMemo,
+  useEffect,
   useState,
 } from "react";
 
 import {
   FaBolt,
 } from "react-icons/fa";
-
-import {
-  IntentEngine,
-} from "../../atlas/engines/intentEngine";
-
-import {
-  usePlanningExecution,
-} from "../../context/PlanningExecutionContext";
-
-import AtlasSuggestionCard from "./AtlasSuggestionCard";
 
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -35,36 +25,6 @@ interface CaptureModalProps {
 }
 
 // ==========================================
-// Date Helpers
-// ==========================================
-
-function getTodayLocalDate() {
-  const today =
-    new Date();
-
-  const year =
-    today.getFullYear();
-
-  const month =
-    String(
-      today.getMonth() + 1
-    ).padStart(
-      2,
-      "0"
-    );
-
-  const day =
-    String(
-      today.getDate()
-    ).padStart(
-      2,
-      "0"
-    );
-
-  return `${year}-${month}-${day}`;
-}
-
-// ==========================================
 // Component
 // ==========================================
 
@@ -78,24 +38,19 @@ export default function CaptureModal({
     setText,
   ] = useState("");
 
-  const {
-    createTask,
-  } = usePlanningExecution();
+  useEffect(() => {
+    if (!open) return;
 
-  const intentEngine =
-    useMemo(
-      () =>
-        new IntentEngine(),
-      []
-    );
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setText("");
+        onClose();
+      }
+    }
 
-  const suggestion =
-    text.trim().length >
-    0
-      ? intentEngine.analyze(
-          text
-        )
-      : null;
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
 
   if (!open) {
     return null;
@@ -131,60 +86,14 @@ export default function CaptureModal({
   }
 
   // ==========================================
-  // ATLAS Primary Action
-  // ==========================================
-
-  function handlePrimaryAction() {
-    const trimmedText =
-      text.trim();
-
-    if (
-      !suggestion ||
-      !trimmedText
-    ) {
-      return;
-    }
-
-    switch (
-      suggestion.actionId
-    ) {
-      case "create-task": {
-        createTask({
-          title:
-            trimmedText,
-
-          dueDate:
-            getTodayLocalDate(),
-
-          priority:
-            "medium",
-        });
-
-        onCapture(
-          trimmedText
-        );
-
-        break;
-      }
-
-      default: {
-        onCapture(
-          trimmedText
-        );
-
-        break;
-      }
-    }
-
-    resetAndClose();
-  }
-
-  // ==========================================
   // UI
   // ==========================================
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="quick-capture-title"
       className="
         fixed
         inset-0
@@ -242,6 +151,7 @@ export default function CaptureModal({
 
             <div>
               <h2
+                id="quick-capture-title"
                 className="
                   text-2xl
                   font-bold
@@ -257,7 +167,7 @@ export default function CaptureModal({
                   text-slate-400
                 "
               >
-                Capture anything. ATLAS can help turn it into action.
+                Save a thought, note, or idea to your LifeOS inbox.
               </p>
             </div>
           </div>
@@ -304,15 +214,6 @@ export default function CaptureModal({
               focus:border-cyan-500
             "
           />
-
-          <AtlasSuggestionCard
-            suggestion={
-              suggestion
-            }
-            onPrimaryAction={
-              handlePrimaryAction
-            }
-          />
         </div>
 
         {/* ======================================
@@ -342,6 +243,7 @@ export default function CaptureModal({
             onClick={
               handleCapture
             }
+            disabled={text.trim().length === 0}
           >
             Capture
           </Button>

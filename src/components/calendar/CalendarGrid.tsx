@@ -57,21 +57,21 @@ export default function CalendarGrid({
   const today = formatLocalDate(new Date());
 
   return (
-    <section className="overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-900/55 p-4 sm:p-5">
-      <div className="overflow-x-auto">
-        <div className="min-w-[560px]">
-          <div className="mb-2 grid grid-cols-7 gap-2">
+    <section className="overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-900/55 p-2.5 sm:p-5">
+      <div>
+        <div>
+          <div className="mb-1 grid grid-cols-7 gap-1 sm:mb-2 sm:gap-2">
             {WEEK_DAYS.map((day) => (
               <div
                 key={day}
-                className="py-2 text-center text-[10px] font-black uppercase tracking-[0.18em] text-slate-600"
+                className="py-1.5 text-center text-[9px] font-black uppercase tracking-normal text-slate-600 sm:py-2 sm:text-[10px] sm:tracking-[0.18em]"
               >
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
             {days.map((day) => {
               const dateKey = formatLocalDate(day.date);
               const dayTasks = tasks.filter((task) => task.dueDate === dateKey);

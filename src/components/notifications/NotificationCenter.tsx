@@ -83,7 +83,11 @@ export default function NotificationCenter({
   }, [open]);
 
   return (
-    <div className="fixed right-4 top-3 z-40 lg:right-8 lg:top-6">
+    <div
+      className={`fixed right-4 top-3 lg:right-8 lg:top-6 ${
+        open ? "z-[60]" : "z-40"
+      }`}
+    >
       <button
         type="button"
         aria-label={
