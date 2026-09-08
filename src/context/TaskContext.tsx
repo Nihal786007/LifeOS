@@ -10,8 +10,8 @@ import type {
 } from "react";
 
 import {
-  STORAGE_KEYS,
-} from "../constants/storage";
+  useDataServices,
+} from "../data/DataServicesContext";
 
 import type {
   Task,
@@ -55,41 +55,27 @@ export function TaskProvider({
 }: {
   children: ReactNode;
 }) {
+  const {
+    taskRepository,
+  } = useDataServices();
+
   const [
     tasks,
     setTasks,
-  ] = useState<Task[]>(() => {
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEYS.TASKS
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(
-        saved
-      ) as Task[];
-    } catch {
-      return [];
-    }
-  });
+  ] = useState<Task[]>(() =>
+    taskRepository.load()
+  );
 
   // ==========================================
   // Persistence
   // ==========================================
 
   useEffect(() => {
-    localStorage.setItem(
-      STORAGE_KEYS.TASKS,
-      JSON.stringify(
-        tasks
-      )
-    );
+    return taskRepository.subscribe(() => {
+      setTasks(taskRepository.load());
+    });
   }, [
-    tasks,
+    taskRepository,
   ]);
 
   // ==========================================
@@ -100,6 +86,9 @@ export function TaskProvider({
     nextTasks: Task[]
   ) {
     setTasks(
+      nextTasks
+    );
+    taskRepository.save(
       nextTasks
     );
   }
@@ -124,6 +113,7 @@ export function TaskProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTasks() {
   const context =
     useContext(

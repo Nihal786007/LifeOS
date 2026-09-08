@@ -43,6 +43,10 @@ import {
   HabitExecutionProvider,
 } from "../context/HabitExecutionContext";
 
+import {
+  DataServicesProvider,
+} from "../data/DataServicesContext";
+
 interface AppProvidersProps {
   children: ReactNode;
 }
@@ -51,24 +55,26 @@ export function AppProviders({
   children,
 }: AppProvidersProps) {
   return (
-    <AppProvider>
-      <LifeGoalsProvider>
-        <MonthlyPlanningProvider>
-          <TaskProvider>
-            <WeeklyPlanningProvider>
-              <XPProvider>
-                <HabitProvider>
-                  <HabitExecutionProvider>
-                    <PlanningExecutionProvider>
-                      {children}
-                    </PlanningExecutionProvider>
-                  </HabitExecutionProvider>
-                </HabitProvider>
-              </XPProvider>
-            </WeeklyPlanningProvider>
-          </TaskProvider>
-        </MonthlyPlanningProvider>
-      </LifeGoalsProvider>
-    </AppProvider>
+    <DataServicesProvider>
+      <AppProvider>
+        <LifeGoalsProvider>
+          <MonthlyPlanningProvider>
+            <TaskProvider>
+              <WeeklyPlanningProvider>
+                <XPProvider>
+                  <HabitProvider>
+                    <HabitExecutionProvider>
+                      <PlanningExecutionProvider>
+                        {children}
+                      </PlanningExecutionProvider>
+                    </HabitExecutionProvider>
+                  </HabitProvider>
+                </XPProvider>
+              </WeeklyPlanningProvider>
+            </TaskProvider>
+          </MonthlyPlanningProvider>
+        </LifeGoalsProvider>
+      </AppProvider>
+    </DataServicesProvider>
   );
 }
