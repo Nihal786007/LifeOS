@@ -36,12 +36,25 @@ import type {
   HabitRepository,
 } from "./habits/habitRepository";
 
+import {
+  LocalStorageExecutionHistoryRepository,
+} from "./execution/localStorageExecutionHistoryRepository";
+
+import type {
+  ExecutionHistoryRepository,
+} from "./execution/executionHistoryRepository";
+
+import {
+  ExecutionHistoryService,
+} from "../services/ExecutionHistoryService";
+
 export interface DataServices {
   taskRepository: TaskRepository;
   lifeGoalRepository: LifeGoalRepository;
   monthlyOutcomeRepository: MonthlyOutcomeRepository;
   weeklyFocusRepository: WeeklyFocusRepository;
   habitRepository: HabitRepository;
+  executionHistoryRepository: ExecutionHistoryRepository;
 }
 
 interface DataServicesProviderProps {
@@ -73,6 +86,10 @@ function createBrowserDataServices(): DataServices {
       window.localStorage,
       window
     ),
+    executionHistoryRepository: new LocalStorageExecutionHistoryRepository(
+      window.localStorage,
+      window
+    ),
   };
 }
 
@@ -80,9 +97,13 @@ export function DataServicesProvider({
   children,
   services,
 }: DataServicesProviderProps) {
-  const [resolvedServices] = useState<DataServices>(
-    () => services ?? createBrowserDataServices()
-  );
+  const [resolvedServices] = useState<DataServices>(() => {
+    const resolved = services ?? createBrowserDataServices();
+    ExecutionHistoryService.configureRepository(
+      resolved.executionHistoryRepository
+    );
+    return resolved;
+  });
 
   return (
     <DataServicesContext.Provider value={resolvedServices}>

@@ -16,6 +16,7 @@ import {
 import { STORAGE_KEYS } from "../constants/storage";
 import { useApp } from "../context/AppContext";
 import { useXP } from "../context/XPContext";
+import { ExecutionHistoryService } from "../services/ExecutionHistoryService";
 import type { UserProfile } from "../shared/types";
 
 import Button from "../components/ui/Button";
@@ -75,6 +76,7 @@ function Settings() {
   const [feedback, setFeedback] = useState<SaveFeedback>({ kind: "idle" });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDraft(createDraft(profile));
   }, [profile]);
 
@@ -134,7 +136,7 @@ function Settings() {
     }
 
     localStorage.removeItem(STORAGE_KEYS.TASKS);
-    localStorage.removeItem(STORAGE_KEYS.EXECUTION_HISTORY);
+    ExecutionHistoryService.clear();
     location.reload();
   }
 

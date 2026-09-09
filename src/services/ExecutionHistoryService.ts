@@ -19,48 +19,39 @@
 // for execution history.
 // ==========================================
 
-import {
-  STORAGE_KEYS,
-} from "../constants/storage";
-
 import type {
   ExecutionRecord,
 } from "../shared/execution";
 
-export class ExecutionHistoryService {
-  // ==========================================
-  // Event
-  // ==========================================
+import type {
+  ExecutionHistoryRepository,
+} from "../data/execution/executionHistoryRepository";
 
-  private static readonly HISTORY_CHANGED_EVENT =
-    "lifeos:execution-history-changed";
+export class ExecutionHistoryService {
+  private static repository: ExecutionHistoryRepository | null = null;
+
+  static configureRepository(
+    repository: ExecutionHistoryRepository
+  ): void {
+    this.repository = repository;
+  }
+
+  private static getRepository(): ExecutionHistoryRepository {
+    if (!this.repository) {
+      throw new Error(
+        "ExecutionHistoryService must be configured by DataServicesProvider"
+      );
+    }
+
+    return this.repository;
+  }
 
   // ==========================================
   // Load
   // ==========================================
 
   static getAll(): ExecutionRecord[] {
-    const saved =
-      localStorage.getItem(
-        STORAGE_KEYS.EXECUTION_HISTORY
-      );
-
-    if (!saved) {
-      return [];
-    }
-
-    try {
-      const parsed =
-        JSON.parse(saved);
-
-      if (!Array.isArray(parsed)) {
-        return [];
-      }
-
-      return parsed as ExecutionRecord[];
-    } catch {
-      return [];
-    }
+    return this.getRepository().load();
   }
 
   // ==========================================
@@ -70,12 +61,7 @@ export class ExecutionHistoryService {
   static save(
     records: ExecutionRecord[]
   ): void {
-    localStorage.setItem(
-      STORAGE_KEYS.EXECUTION_HISTORY,
-      JSON.stringify(records)
-    );
-
-    this.notifyHistoryChanged();
+    this.getRepository().save(records);
   }
 
   // ==========================================
@@ -85,25 +71,17 @@ export class ExecutionHistoryService {
   static append(
     records: ExecutionRecord[]
   ): ExecutionRecord[] {
-    if (
-      records.length === 0
-    ) {
-      return this.getAll();
-    }
+    return this.getRepository().append(records);
+  }
 
-    const history =
-      this.getAll();
+  // ==========================================
+  // Remove
+  // ==========================================
 
-    const updatedHistory = [
-      ...records,
-      ...history,
-    ];
-
-    this.save(
-      updatedHistory
-    );
-
-    return updatedHistory;
+  static remove(
+    id: number
+  ): ExecutionRecord[] {
+    return this.getRepository().remove(id);
   }
 
   // ==========================================
@@ -139,11 +117,7 @@ export class ExecutionHistoryService {
   // ==========================================
 
   static clear(): void {
-    localStorage.removeItem(
-      STORAGE_KEYS.EXECUTION_HISTORY
-    );
-
-    this.notifyHistoryChanged();
+    this.getRepository().clear();
   }
 
   // ==========================================
@@ -153,28 +127,6 @@ export class ExecutionHistoryService {
   static subscribe(
     listener: () => void
   ): () => void {
-    window.addEventListener(
-      this.HISTORY_CHANGED_EVENT,
-      listener
-    );
-
-    return () => {
-      window.removeEventListener(
-        this.HISTORY_CHANGED_EVENT,
-        listener
-      );
-    };
-  }
-
-  // ==========================================
-  // Notify
-  // ==========================================
-
-  private static notifyHistoryChanged(): void {
-    window.dispatchEvent(
-      new Event(
-        this.HISTORY_CHANGED_EVENT
-      )
-    );
+    return this.getRepository().subscribe(listener);
   }
 }
