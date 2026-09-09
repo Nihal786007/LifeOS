@@ -45,6 +45,16 @@ import type {
 } from "./execution/executionHistoryRepository";
 
 import {
+  LocalStorageCaptureRepository,
+  LocalStorageProfileRepository,
+} from "./profileCapture/localStorageProfileCaptureRepositories";
+
+import type {
+  CaptureRepository,
+  ProfileRepository,
+} from "./profileCapture/profileCaptureRepositories";
+
+import {
   ExecutionHistoryService,
 } from "../services/ExecutionHistoryService";
 
@@ -55,6 +65,8 @@ export interface DataServices {
   weeklyFocusRepository: WeeklyFocusRepository;
   habitRepository: HabitRepository;
   executionHistoryRepository: ExecutionHistoryRepository;
+  profileRepository: ProfileRepository;
+  captureRepository: CaptureRepository;
 }
 
 interface DataServicesProviderProps {
@@ -87,6 +99,14 @@ function createBrowserDataServices(): DataServices {
       window
     ),
     executionHistoryRepository: new LocalStorageExecutionHistoryRepository(
+      window.localStorage,
+      window
+    ),
+    profileRepository: new LocalStorageProfileRepository(
+      window.localStorage,
+      window
+    ),
+    captureRepository: new LocalStorageCaptureRepository(
       window.localStorage,
       window
     ),

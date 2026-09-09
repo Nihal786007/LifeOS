@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -13,6 +14,22 @@ import type {
   Capture,
   UserProfile,
 } from "../shared/types";
+
+import {
+  useDataServices,
+} from "../data/DataServicesContext";
+
+function createDefaultProfile(): UserProfile {
+  return {
+    name: "",
+    occupation: "",
+    timezone: "Asia/Kolkata",
+    theme: "dark",
+    atlasPersonality: "Professional",
+    level: 1,
+    xp: 0,
+  };
+}
 
 type AppContextType = {
   // =========================
@@ -55,6 +72,11 @@ export function AppProvider({
   children:
     ReactNode;
 }) {
+  const {
+    captureRepository,
+    profileRepository,
+  } = useDataServices();
+
   // =========================
   // QUICK CAPTURE
   // =========================
@@ -66,35 +88,19 @@ export function AppProvider({
     useState<
       Capture[]
     >(
-      () => {
-        const saved =
-          localStorage.getItem(
-            "lifeos-captures"
-          );
-
-        if (!saved) {
-          return [];
-        }
-
-        try {
-          return JSON.parse(
-            saved
-          );
-        } catch {
-          return [];
-        }
-      }
+      () => captureRepository.load()
     );
+
+  const capturesRef = useRef(captures);
 
   useEffect(() => {
-    localStorage.setItem(
-      "lifeos-captures",
-      JSON.stringify(
-        captures
-      )
-    );
+    return captureRepository.subscribe(() => {
+      const nextCaptures = captureRepository.load();
+      capturesRef.current = nextCaptures;
+      setCaptures(nextCaptures);
+    });
   }, [
-    captures,
+    captureRepository,
   ]);
 
   function addCapture(
@@ -107,35 +113,32 @@ export function AppProvider({
       return;
     }
 
-    setCaptures(
-      (prev) => [
-        {
-          id:
-            Date.now(),
+    const nextCaptures = [
+      {
+        id: Date.now(),
+        text: trimmedText,
+        createdAt: new Date().toISOString(),
+      },
+      ...capturesRef.current,
+    ];
 
-          text:
-            trimmedText,
-
-          createdAt:
-            new Date().toISOString(),
-        },
-
-        ...prev,
-      ]
-    );
+    capturesRef.current = nextCaptures;
+    setCaptures(nextCaptures);
+    captureRepository.save(nextCaptures);
   }
 
   function deleteCapture(
     id: number
   ) {
-    setCaptures(
-      (prev) =>
-        prev.filter(
-          (capture) =>
-            capture.id !==
-            id
-        )
+    const nextCaptures = capturesRef.current.filter(
+      (capture) => capture.id !== id
     );
+
+    if (nextCaptures.length === capturesRef.current.length) return;
+
+    capturesRef.current = nextCaptures;
+    setCaptures(nextCaptures);
+    captureRepository.save(nextCaptures);
   }
 
   // =========================
@@ -149,69 +152,40 @@ export function AppProvider({
     useState<
       UserProfile
     >(
-      () => {
-        const saved =
-          localStorage.getItem(
-            "lifeos-profile"
-          );
-
-        if (saved) {
-          try {
-            return JSON.parse(
-              saved
-            );
-          } catch {
-            // Ignore invalid
-            // stored profile data.
-          }
-        }
-
-        return {
-          name:
-            "",
-
-          occupation:
-            "",
-
-          timezone:
-            "Asia/Kolkata",
-
-          theme:
-            "dark",
-
-          atlasPersonality:
-            "Professional",
-
-          level:
-            1,
-
-          xp:
-            0,
-        };
-      }
+      () => profileRepository.load() ?? createDefaultProfile()
     );
+
+  const profileRef = useRef(profile);
 
   useEffect(() => {
-    localStorage.setItem(
-      "lifeos-profile",
-      JSON.stringify(
-        profile
-      )
-    );
+    return profileRepository.subscribe(() => {
+      const nextProfile = profileRepository.load() ?? createDefaultProfile();
+      profileRef.current = nextProfile;
+      setProfile(nextProfile);
+    });
   }, [
-    profile,
+    profileRepository,
   ]);
 
   function updateProfile(
     data:
       Partial<UserProfile>
   ) {
-    setProfile(
-      (prev) => ({
-        ...prev,
-        ...data,
-      })
-    );
+    const currentProfile = profileRef.current;
+    const changed = (
+      Object.keys(data) as (keyof UserProfile)[]
+    ).some((key) => currentProfile[key] !== data[key]);
+
+    if (!changed) return;
+
+    const nextProfile = {
+      ...currentProfile,
+      ...data,
+    };
+
+    profileRef.current = nextProfile;
+    setProfile(nextProfile);
+    profileRepository.save(nextProfile);
   }
 
   return (
@@ -238,6 +212,7 @@ export function AppProvider({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useApp() {
   const context =
     useContext(
