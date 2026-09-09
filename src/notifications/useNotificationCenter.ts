@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -25,9 +26,8 @@ import type {
   NotificationCategory,
 } from "./notificationEngine";
 
-import {
-  getBrowserNotificationStore,
-} from "./notificationStore.ts";
+import { NotificationStore } from "./notificationStore.ts";
+import { useDataServices } from "../data/DataServicesContext";
 
 export interface NotificationView extends LifeOSNotification {
   read: boolean;
@@ -47,8 +47,16 @@ export function useNotificationCenter(
   orchestrator: AtlasAIOrchestrator
 ) {
   const canonicalState = useAtlasCanonicalState();
-  const store = useMemo(() => getBrowserNotificationStore(), []);
+  const { notificationStateRepository } = useDataServices();
+  const store = useMemo(
+    () => new NotificationStore(notificationStateRepository),
+    [notificationStateRepository]
+  );
   const [uiState, setUIState] = useState(() => store.load());
+
+  useEffect(() =>
+    store.subscribe(() => setUIState(store.load())),
+  [store]);
 
   const deterministic = useMemo(
     () => orchestrator.buildDeterministicPackage(canonicalState),

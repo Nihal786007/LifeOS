@@ -12,6 +12,7 @@
     "test:execution-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageExecutionHistoryRepository.test.ts",
     "test:profile-capture-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageProfileCaptureRepositories.test.ts",
     "test:atlas-memory-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageAtlasMemoryRepository.test.ts",
+    "test:notification-state-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageNotificationStateRepository.test.ts",
     "test:atlas": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/atlas/atlasIntelligenceCoordinator.test.ts tests/atlas/dailyBriefEngine.test.ts tests/atlas/recommendationEngine.test.ts tests/atlas/memoryPatternEngine.test.ts tests/atlas/atlasMemory.test.ts tests/atlas/proactiveInsightEngine.test.ts tests/atlas/atlasReasoningBoundary.test.ts tests/atlas/providerConformance.test.ts tests/atlas/ollamaAtlasProvider.test.ts tests/atlas/atlasAIOrchestrator.test.ts tests/atlas/atlasInteractionState.test.ts tests/atlas/localReasoningProbe.test.ts",
     "test:notifications": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/notifications/notifications.test.ts",
     "test:reviews": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/reviewEngine.test.ts",

@@ -20,9 +20,14 @@ const {
 } = await import("../../src/notifications/notificationEngine.ts");
 const {
   NOTIFICATION_MAX_PERSISTED_IDS,
-  NOTIFICATION_STORAGE_KEY,
   NotificationStore,
 } = await import("../../src/notifications/notificationStore.ts");
+const {
+  LocalStorageNotificationStateRepository,
+  NOTIFICATION_STORAGE_KEY,
+} = await import(
+  "../../src/data/notifications/localStorageNotificationStateRepository.ts"
+);
 const {
   buildAtlasState,
 } = await import("../../src/atlas/state/buildAtlasState.ts");
@@ -33,7 +38,7 @@ const {
 import type { AtlasProactiveInsightReport } from "../../src/atlas/proactive/types.ts";
 import type { AtlasStateInput } from "../../src/atlas/state/types.ts";
 import type { NotificationPreferences } from "../../src/notifications/notificationEngine.ts";
-import type { NotificationStorage } from "../../src/notifications/notificationStore.ts";
+import type { NotificationStateStorage } from "../../src/data/notifications/localStorageNotificationStateRepository.ts";
 
 const TODAY = "2026-09-08";
 
@@ -363,7 +368,7 @@ test("empty canonical state produces a calm empty derived list", () => {
   assert.deepEqual(derive(sourceState()), []);
 });
 
-class MemoryStorage implements NotificationStorage {
+class MemoryStorage implements NotificationStateStorage {
   readonly values = new Map<string, string>();
 
   getItem(key: string) {
@@ -379,39 +384,45 @@ class MemoryStorage implements NotificationStorage {
   }
 }
 
+function createNotificationStore(storage: MemoryStorage): NotificationStore {
+  return new NotificationStore(
+    new LocalStorageNotificationStateRepository(storage)
+  );
+}
+
 test("persists read and dismissed IDs across store instances", () => {
   const storage = new MemoryStorage();
-  const first = new NotificationStore(storage);
+  const first = createNotificationStore(storage);
   let state = first.load();
   state = first.markRead(state, "task:one");
   first.dismiss(state, "habit:one");
 
-  const reloaded = new NotificationStore(storage).load();
+  const reloaded = createNotificationStore(storage).load();
   assert.deepEqual(reloaded.readIds, ["task:one"]);
   assert.deepEqual(reloaded.dismissedIds, ["habit:one"]);
 });
 
 test("mark all read persists every supplied current notification ID", () => {
   const storage = new MemoryStorage();
-  const store = new NotificationStore(storage);
+  const store = createNotificationStore(storage);
   const state = store.markAllRead(store.load(), ["one", "two", "three"]);
 
   assert.deepEqual(state.readIds, ["one", "two", "three"]);
-  assert.deepEqual(new NotificationStore(storage).load().readIds, state.readIds);
+  assert.deepEqual(createNotificationStore(storage).load().readIds, state.readIds);
 });
 
 test("category preferences persist and default to enabled", () => {
   const storage = new MemoryStorage();
-  const store = new NotificationStore(storage);
+  const store = createNotificationStore(storage);
   assert.deepEqual(store.load().preferences, DEFAULT_NOTIFICATION_PREFERENCES);
 
   store.setCategoryEnabled(store.load(), "atlas", false);
-  assert.equal(new NotificationStore(storage).load().preferences.atlas, false);
+  assert.equal(createNotificationStore(storage).load().preferences.atlas, false);
 });
 
 test("bounds persisted read and dismissed ID collections", () => {
   const storage = new MemoryStorage();
-  const store = new NotificationStore(storage);
+  const store = createNotificationStore(storage);
   const ids = Array.from(
     { length: NOTIFICATION_MAX_PERSISTED_IDS + 25 },
     (_, index) => `id-${index}`
@@ -427,7 +438,7 @@ test("bounds persisted read and dismissed ID collections", () => {
 
 test("storage contains UI state only and never notification facts", () => {
   const storage = new MemoryStorage();
-  const store = new NotificationStore(storage);
+  const store = createNotificationStore(storage);
   store.markRead(store.load(), "task:overdue:2026-09-08");
 
   const raw = storage.getItem(NOTIFICATION_STORAGE_KEY) ?? "";
