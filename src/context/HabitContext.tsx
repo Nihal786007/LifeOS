@@ -36,18 +36,15 @@ import type {
   ReactNode,
 } from "react";
 
+import {
+  useDataServices,
+} from "../data/DataServicesContext";
+
 import type {
   HabitCompletion,
   HabitDefinition,
   HabitState,
 } from "../shared/habits";
-
-// ==========================================
-// Storage
-// ==========================================
-
-const HABIT_STATE_STORAGE_KEY =
-  "lifeos-habit-state-v2";
 
 // ==========================================
 // Context Contract
@@ -77,96 +74,6 @@ const HabitContext =
   >(null);
 
 // ==========================================
-// Validation Helpers
-// ==========================================
-
-function isRecord(
-  value: unknown
-): value is Record<
-  string,
-  unknown
-> {
-  return (
-    typeof value ===
-      "object" &&
-    value !==
-      null &&
-    !Array.isArray(
-      value
-    )
-  );
-}
-
-function isValidHabitState(
-  value: unknown
-): value is HabitState {
-  if (
-    !isRecord(
-      value
-    )
-  ) {
-    return false;
-  }
-
-  return (
-    Array.isArray(
-      value.habits
-    ) &&
-    Array.isArray(
-      value.completions
-    )
-  );
-}
-
-// ==========================================
-// Persistence Helpers
-// ==========================================
-
-function loadHabitState():
-  HabitState {
-  const emptyState:
-    HabitState = {
-      habits: [],
-      completions: [],
-    };
-
-  const saved =
-    localStorage.getItem(
-      HABIT_STATE_STORAGE_KEY
-    );
-
-  if (!saved) {
-    return emptyState;
-  }
-
-  try {
-    const parsed:
-      unknown =
-        JSON.parse(
-          saved
-        );
-
-    if (
-      !isValidHabitState(
-        parsed
-      )
-    ) {
-      return emptyState;
-    }
-
-    return {
-      habits:
-        parsed.habits,
-
-      completions:
-        parsed.completions,
-    };
-  } catch {
-    return emptyState;
-  }
-}
-
-// ==========================================
 // Provider
 // ==========================================
 
@@ -175,27 +82,33 @@ export function HabitProvider({
 }: {
   children: ReactNode;
 }) {
+  const {
+    habitRepository,
+  } = useDataServices();
+
   const [
     habitState,
     setHabitState,
   ] =
     useState<HabitState>(
-      loadHabitState
+      () => habitRepository.load()
     );
 
   useEffect(() => {
-    localStorage.setItem(
-      HABIT_STATE_STORAGE_KEY,
-      JSON.stringify(
-        habitState
-      )
-    );
-  }, [habitState]);
+    return habitRepository.subscribe(() => {
+      setHabitState(
+        habitRepository.load()
+      );
+    });
+  }, [habitRepository]);
 
   function replaceHabitState(
     nextState: HabitState
   ) {
     setHabitState(
+      nextState
+    );
+    habitRepository.save(
       nextState
     );
   }
@@ -223,6 +136,7 @@ export function HabitProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHabits() {
   const context =
     useContext(

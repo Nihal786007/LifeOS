@@ -28,11 +28,20 @@ import type {
   TaskRepository,
 } from "./tasks/taskRepository";
 
+import {
+  LocalStorageHabitRepository,
+} from "./habits/localStorageHabitRepository";
+
+import type {
+  HabitRepository,
+} from "./habits/habitRepository";
+
 export interface DataServices {
   taskRepository: TaskRepository;
   lifeGoalRepository: LifeGoalRepository;
   monthlyOutcomeRepository: MonthlyOutcomeRepository;
   weeklyFocusRepository: WeeklyFocusRepository;
+  habitRepository: HabitRepository;
 }
 
 interface DataServicesProviderProps {
@@ -57,6 +66,10 @@ function createBrowserDataServices(): DataServices {
       window
     ),
     weeklyFocusRepository: new LocalStorageWeeklyFocusRepository(
+      window.localStorage,
+      window
+    ),
+    habitRepository: new LocalStorageHabitRepository(
       window.localStorage,
       window
     ),
