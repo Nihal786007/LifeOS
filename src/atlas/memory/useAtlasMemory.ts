@@ -2,10 +2,10 @@
 // LifeOS ATLAS Memory React Controller
 // ==========================================
 
-import { useCallback, useMemo, useState } from "react";
-import { getBrowserAtlasMemoryStore } from "./atlasMemoryStore.ts";
-import type { AtlasMemoryStore } from "./atlasMemoryStore";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AtlasMemoryStore } from "./atlasMemoryStore.ts";
 import type { AtlasMemoryInput, AtlasMemoryItem } from "./types";
+import { useDataServices } from "../../data/DataServicesContext";
 
 export interface AtlasMemoryController {
   items: readonly AtlasMemoryItem[];
@@ -17,11 +17,21 @@ export interface AtlasMemoryController {
 }
 
 export function useAtlasMemory(
-  store: AtlasMemoryStore = getBrowserAtlasMemoryStore()
+  injectedStore?: AtlasMemoryStore
 ): AtlasMemoryController {
+  const { atlasMemoryRepository } = useDataServices();
+  const store = useMemo(
+    () => injectedStore ?? new AtlasMemoryStore(atlasMemoryRepository),
+    [atlasMemoryRepository, injectedStore]
+  );
+
   const [items, setItems] = useState<readonly AtlasMemoryItem[]>(
     () => store.load()
   );
+
+  useEffect(() =>
+    store.subscribe(() => setItems(store.load())),
+  [store]);
 
   const saveMemory = useCallback(
     (input: AtlasMemoryInput) => setItems(store.saveMemory(input)),

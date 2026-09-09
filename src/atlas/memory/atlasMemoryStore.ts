@@ -6,18 +6,17 @@ import {
   ATLAS_MEMORY_MAX_CONTENT_LENGTH,
   ATLAS_MEMORY_MAX_ITEMS,
   ATLAS_MEMORY_MAX_TOPIC_LENGTH,
-  ATLAS_MEMORY_STORAGE_KEY,
-  ATLAS_MEMORY_VERSION,
-  isAtlasMemoryEnvelope,
   isAtlasMemoryType,
   normalizeAtlasMemoryTopic,
 } from "./types.ts";
 import type {
-  AtlasMemoryEnvelope,
   AtlasMemoryInput,
   AtlasMemoryItem,
-  AtlasMemoryStorage,
 } from "./types";
+
+import type {
+  AtlasMemoryRepository,
+} from "../../data/atlasMemory/atlasMemoryRepository";
 
 export class AtlasMemoryValidationError extends Error {
   constructor(message: string) {
@@ -50,26 +49,21 @@ function validateInput(input: AtlasMemoryInput): AtlasMemoryInput {
 }
 
 export class AtlasMemoryStore {
-  private readonly storage: AtlasMemoryStorage;
+  private readonly repository: AtlasMemoryRepository;
   private readonly now: () => string;
   private readonly createId: () => string;
 
-  constructor(storage: AtlasMemoryStorage, options: AtlasMemoryStoreOptions = {}) {
-    this.storage = storage;
+  constructor(
+    repository: AtlasMemoryRepository,
+    options: AtlasMemoryStoreOptions = {}
+  ) {
+    this.repository = repository;
     this.now = options.now ?? (() => new Date().toISOString());
     this.createId = options.createId ?? (() => crypto.randomUUID());
   }
 
   load(): readonly AtlasMemoryItem[] {
-    const saved = this.storage.getItem(ATLAS_MEMORY_STORAGE_KEY);
-    if (!saved) return [];
-
-    try {
-      const parsed: unknown = JSON.parse(saved);
-      return isAtlasMemoryEnvelope(parsed) ? structuredClone(parsed.items) : [];
-    } catch {
-      return [];
-    }
+    return structuredClone(this.repository.load());
   }
 
   saveMemory(untrustedInput: AtlasMemoryInput): readonly AtlasMemoryItem[] {
@@ -106,12 +100,17 @@ export class AtlasMemoryStore {
     };
 
     next.push(created);
-    this.persist(next);
+    this.repository.save(next);
     return structuredClone(next);
   }
 
   deleteMemory(id: string): readonly AtlasMemoryItem[] {
-    const next = this.load()
+    const current = [...this.load()];
+    if (!current.some((item) => item.id === id)) {
+      return structuredClone(current);
+    }
+
+    const next = current
       .filter((item) => item.id !== id)
       .map((item) => {
         if (item.supersedesMemoryId !== id) {
@@ -123,30 +122,19 @@ export class AtlasMemoryStore {
         return remaining;
       });
     if (next.length === 0) {
-      this.storage.removeItem(ATLAS_MEMORY_STORAGE_KEY);
+      this.repository.clear();
       return [];
     }
-    this.persist(next);
+    this.repository.save(next);
     return structuredClone(next);
   }
 
   clearAll(): readonly AtlasMemoryItem[] {
-    this.storage.removeItem(ATLAS_MEMORY_STORAGE_KEY);
+    this.repository.clear();
     return [];
   }
 
-  private persist(items: readonly AtlasMemoryItem[]): void {
-    const envelope: AtlasMemoryEnvelope = {
-      version: ATLAS_MEMORY_VERSION,
-      items,
-    };
-    this.storage.setItem(ATLAS_MEMORY_STORAGE_KEY, JSON.stringify(envelope));
+  subscribe(listener: () => void): () => void {
+    return this.repository.subscribe(listener);
   }
-}
-
-let browserStore: AtlasMemoryStore | undefined;
-
-export function getBrowserAtlasMemoryStore(): AtlasMemoryStore {
-  browserStore ??= new AtlasMemoryStore(window.localStorage);
-  return browserStore;
 }

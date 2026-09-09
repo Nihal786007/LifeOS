@@ -55,6 +55,14 @@ import type {
 } from "./profileCapture/profileCaptureRepositories";
 
 import {
+  LocalStorageAtlasMemoryRepository,
+} from "./atlasMemory/localStorageAtlasMemoryRepository";
+
+import type {
+  AtlasMemoryRepository,
+} from "./atlasMemory/atlasMemoryRepository";
+
+import {
   ExecutionHistoryService,
 } from "../services/ExecutionHistoryService";
 
@@ -67,6 +75,7 @@ export interface DataServices {
   executionHistoryRepository: ExecutionHistoryRepository;
   profileRepository: ProfileRepository;
   captureRepository: CaptureRepository;
+  atlasMemoryRepository: AtlasMemoryRepository;
 }
 
 interface DataServicesProviderProps {
@@ -107,6 +116,10 @@ function createBrowserDataServices(): DataServices {
       window
     ),
     captureRepository: new LocalStorageCaptureRepository(
+      window.localStorage,
+      window
+    ),
+    atlasMemoryRepository: new LocalStorageAtlasMemoryRepository(
       window.localStorage,
       window
     ),

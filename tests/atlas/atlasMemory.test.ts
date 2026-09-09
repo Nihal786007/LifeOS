@@ -6,6 +6,9 @@ import {
   AtlasMemoryValidationError,
 } from "../../src/atlas/memory/atlasMemoryStore.ts";
 import {
+  LocalStorageAtlasMemoryRepository,
+} from "../../src/data/atlasMemory/localStorageAtlasMemoryRepository.ts";
+import {
   ATLAS_MEMORY_MAX_CONTENT_LENGTH,
   ATLAS_MEMORY_MAX_ITEMS,
   ATLAS_MEMORY_MAX_TOPIC_LENGTH,
@@ -35,7 +38,7 @@ function createStore(storage = new MemoryStorage()) {
   let id = 0;
   return {
     storage,
-    store: new AtlasMemoryStore(storage, {
+    store: new AtlasMemoryStore(new LocalStorageAtlasMemoryRepository(storage), {
       now: () => "2026-09-04T12:00:00.000Z",
       createId: () => `memory-${++id}`,
     }),
@@ -49,7 +52,9 @@ test("creates explicit memory and reloads it through a new store lifecycle", () 
     topic: "SAT study time",
     content: "I prefer studying SAT in the morning.",
   });
-  const reloaded = new AtlasMemoryStore(storage).load();
+  const reloaded = new AtlasMemoryStore(
+    new LocalStorageAtlasMemoryRepository(storage)
+  ).load();
 
   assert.equal(saved.length, 1);
   assert.deepEqual(reloaded, saved);
@@ -185,7 +190,10 @@ test("rejects malformed persistence, invalid timestamps, and duplicate active co
   for (const raw of malformedCases) {
     const storage = new MemoryStorage();
     storage.setItem(ATLAS_MEMORY_STORAGE_KEY, raw);
-    assert.deepEqual(new AtlasMemoryStore(storage).load(), []);
+    assert.deepEqual(
+      new AtlasMemoryStore(new LocalStorageAtlasMemoryRepository(storage)).load(),
+      []
+    );
   }
 });
 
