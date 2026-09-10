@@ -13,6 +13,7 @@
     "test:profile-capture-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageProfileCaptureRepositories.test.ts",
     "test:atlas-memory-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageAtlasMemoryRepository.test.ts",
     "test:notification-state-data": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/localStorageNotificationStateRepository.test.ts",
+    "test:powersync-foundation": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/data/powerSyncDatabaseFoundation.test.ts",
     "test:atlas": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/atlas/atlasIntelligenceCoordinator.test.ts tests/atlas/dailyBriefEngine.test.ts tests/atlas/recommendationEngine.test.ts tests/atlas/memoryPatternEngine.test.ts tests/atlas/atlasMemory.test.ts tests/atlas/proactiveInsightEngine.test.ts tests/atlas/atlasReasoningBoundary.test.ts tests/atlas/providerConformance.test.ts tests/atlas/ollamaAtlasProvider.test.ts tests/atlas/atlasAIOrchestrator.test.ts tests/atlas/atlasInteractionState.test.ts tests/atlas/localReasoningProbe.test.ts",
     "test:notifications": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/notifications/notifications.test.ts",
     "test:reviews": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/reviewEngine.test.ts",
@@ -20,6 +21,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@powersync/web": "^2.3.1",
     "@tailwindcss/vite": "^4.3.2",
     "framer-motion": "^12.42.2",
     "react": "^19.2.7",
@@ -40,6 +42,7 @@
     "globals": "^17.7.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.62.0",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vite-plugin-wasm": "^3.6.0"
   }
 }
