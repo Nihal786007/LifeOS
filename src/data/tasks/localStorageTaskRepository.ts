@@ -58,6 +58,11 @@ function isTaskCollection(value: unknown): value is Task[] {
   return Array.isArray(value) && value.every(isTask);
 }
 
+export type TaskSourceSnapshot =
+  | { status: "missing"; tasks: [] }
+  | { status: "valid"; tasks: Task[] }
+  | { status: "invalid"; tasks: [] };
+
 export class LocalStorageTaskRepository implements TaskRepository {
   private readonly storage: TaskStorage;
   private readonly storageEvents?: TaskStorageEventTarget;
@@ -71,14 +76,21 @@ export class LocalStorageTaskRepository implements TaskRepository {
   }
 
   load(): Task[] {
+    const snapshot = this.inspect();
+    return snapshot.status === "valid" ? snapshot.tasks : [];
+  }
+
+  inspect(): TaskSourceSnapshot {
     const saved = this.storage.getItem(STORAGE_KEYS.TASKS);
-    if (!saved) return [];
+    if (saved === null) return { status: "missing", tasks: [] };
 
     try {
       const parsed: unknown = JSON.parse(saved);
-      return isTaskCollection(parsed) ? parsed : [];
+      return isTaskCollection(parsed)
+        ? { status: "valid", tasks: parsed }
+        : { status: "invalid", tasks: [] };
     } catch {
-      return [];
+      return { status: "invalid", tasks: [] };
     }
   }
 

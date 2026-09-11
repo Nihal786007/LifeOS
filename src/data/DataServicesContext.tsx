@@ -25,8 +25,12 @@ import type {
 } from "./planning/planningRepositories";
 
 import type {
-  TaskRepository,
-} from "./tasks/taskRepository";
+  AsyncTaskRepository,
+} from "./tasks/asyncTaskRepository";
+
+import {
+  PowerSyncTaskRepository,
+} from "./tasks/powerSyncTaskRepository";
 
 import {
   LocalStorageHabitRepository,
@@ -86,7 +90,7 @@ import {
 } from "../services/ExecutionHistoryService";
 
 export interface DataServices {
-  taskRepository: TaskRepository;
+  taskRepository: AsyncTaskRepository;
   lifeGoalRepository: LifeGoalRepository;
   monthlyOutcomeRepository: MonthlyOutcomeRepository;
   weeklyFocusRepository: WeeklyFocusRepository;
@@ -115,10 +119,17 @@ function createBrowserDataServices(): DataServices {
     window
   );
 
+  const localStorageTaskRepository = new LocalStorageTaskRepository(
+    window.localStorage,
+    window
+  );
+
+  const powerSyncDatabase = createLifeOSPowerSyncDatabase();
+
   browserDataServices = {
-    taskRepository: new LocalStorageTaskRepository(
-      window.localStorage,
-      window
+    taskRepository: new PowerSyncTaskRepository(
+      powerSyncDatabase,
+      localStorageTaskRepository
     ),
     lifeGoalRepository: new LocalStorageLifeGoalRepository(
       window.localStorage,
@@ -145,7 +156,7 @@ function createBrowserDataServices(): DataServices {
       window
     ),
     captureRepository: new PowerSyncCaptureRepository(
-      createLifeOSPowerSyncDatabase(),
+      powerSyncDatabase,
       localStorageCaptureRepository
     ),
     atlasMemoryRepository: new LocalStorageAtlasMemoryRepository(

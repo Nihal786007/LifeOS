@@ -21,6 +21,7 @@ export type PowerSyncProbeDatabase =
 export const POWERSYNC_CAPTURES_TABLE = "captures" as const;
 export const POWERSYNC_MIGRATION_JOURNAL_TABLE =
   "migration_journal" as const;
+export const POWERSYNC_TASKS_TABLE = "tasks" as const;
 
 export const powerSyncCapturesTable = Table.createLocalOnly({
   text: column.text,
@@ -35,9 +36,23 @@ export const powerSyncMigrationJournalTable = Table.createLocalOnly({
   completed_at: column.text,
 });
 
+export const powerSyncTasksTable = Table.createLocalOnly({
+  title: column.text,
+  description: column.text,
+  due_date: column.text,
+  priority: column.text,
+  weekly_target_id: column.text,
+  completed: column.integer,
+  completed_at: column.text,
+  created_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
 export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_CAPTURES_TABLE]: powerSyncCapturesTable,
   [POWERSYNC_MIGRATION_JOURNAL_TABLE]: powerSyncMigrationJournalTable,
+  [POWERSYNC_TASKS_TABLE]: powerSyncTasksTable,
 });
 
 export type LifeOSPowerSyncDatabase =
