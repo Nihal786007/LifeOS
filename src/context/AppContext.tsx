@@ -19,6 +19,10 @@ import {
   useDataServices,
 } from "../data/DataServicesContext";
 
+import type {
+  CapturePersistencePhase,
+} from "../data/captures/asyncCaptureRepository";
+
 function createDefaultProfile(): UserProfile {
   return {
     name: "",
@@ -39,13 +43,18 @@ type AppContextType = {
   captures:
     Capture[];
 
+  capturePersistence: {
+    phase: CapturePersistencePhase;
+    error: string | null;
+  };
+
   addCapture: (
     text: string
-  ) => void;
+  ) => Promise<void>;
 
   deleteCapture: (
     id: number
-  ) => void;
+  ) => Promise<void>;
 
   // =========================
   // PROFILE
@@ -84,28 +93,71 @@ export function AppProvider({
   const [
     captures,
     setCaptures,
-  ] =
-    useState<
-      Capture[]
-    >(
-      () => captureRepository.load()
-    );
+  ] = useState<Capture[]>([]);
+
+  const [
+    capturePersistence,
+    setCapturePersistence,
+  ] = useState<{
+    phase: CapturePersistencePhase;
+    error: string | null;
+  }>({
+    phase: "uninitialized",
+    error: null,
+  });
 
   const capturesRef = useRef(captures);
+  const capturesHydratedRef = useRef(false);
 
   useEffect(() => {
-    return captureRepository.subscribe(() => {
-      const nextCaptures = captureRepository.load();
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+
+    void captureRepository.initialize((phase) => {
+      if (!active) return;
+      setCapturePersistence({ phase, error: null });
+    }).then((nextCaptures) => {
+      if (!active) return;
+
+      capturesHydratedRef.current = true;
       capturesRef.current = nextCaptures;
       setCaptures(nextCaptures);
+      setCapturePersistence({ phase: "hydrated", error: null });
+
+      unsubscribe = captureRepository.subscribe((event) => {
+        if (!active) return;
+
+        if (event.type === "error") {
+          setCapturePersistence({
+            phase: "error",
+            error: event.error.message,
+          });
+          return;
+        }
+
+        capturesRef.current = event.captures;
+        setCaptures(event.captures);
+        setCapturePersistence({ phase: "hydrated", error: null });
+      });
+    }).catch((error: unknown) => {
+      if (!active) return;
+      setCapturePersistence({
+        phase: "error",
+        error: error instanceof Error ? error.message : String(error),
+      });
     });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [
     captureRepository,
   ]);
 
-  function addCapture(
+  async function addCapture(
     text: string
-  ) {
+  ): Promise<void> {
     const trimmedText =
       text.trim();
 
@@ -113,23 +165,48 @@ export function AppProvider({
       return;
     }
 
+    const hydratedCaptures = await captureRepository.initialize();
+    if (!capturesHydratedRef.current) {
+      capturesHydratedRef.current = true;
+      capturesRef.current = hydratedCaptures;
+      setCaptures(hydratedCaptures);
+      setCapturePersistence({ phase: "hydrated", error: null });
+    }
+
+    const capture: Capture = {
+      id: Date.now(),
+      text: trimmedText,
+      createdAt: new Date().toISOString(),
+    };
+
     const nextCaptures = [
-      {
-        id: Date.now(),
-        text: trimmedText,
-        createdAt: new Date().toISOString(),
-      },
+      capture,
       ...capturesRef.current,
     ];
 
     capturesRef.current = nextCaptures;
     setCaptures(nextCaptures);
-    captureRepository.save(nextCaptures);
+    setCapturePersistence({ phase: "hydrated", error: null });
+
+    try {
+      await captureRepository.insert(capture);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setCapturePersistence({ phase: "error", error: message });
+      throw error;
+    }
   }
 
-  function deleteCapture(
+  async function deleteCapture(
     id: number
-  ) {
+  ): Promise<void> {
+    const hydratedCaptures = await captureRepository.initialize();
+    if (!capturesHydratedRef.current) {
+      capturesHydratedRef.current = true;
+      capturesRef.current = hydratedCaptures;
+      setCaptures(hydratedCaptures);
+    }
+
     const nextCaptures = capturesRef.current.filter(
       (capture) => capture.id !== id
     );
@@ -138,7 +215,15 @@ export function AppProvider({
 
     capturesRef.current = nextCaptures;
     setCaptures(nextCaptures);
-    captureRepository.save(nextCaptures);
+
+    try {
+      await captureRepository.delete(id);
+      setCapturePersistence({ phase: "hydrated", error: null });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setCapturePersistence({ phase: "error", error: message });
+      throw error;
+    }
   }
 
   // =========================
@@ -196,6 +281,7 @@ export function AppProvider({
         // =========================
 
         captures,
+        capturePersistence,
         addCapture,
         deleteCapture,
 

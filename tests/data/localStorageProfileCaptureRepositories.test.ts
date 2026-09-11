@@ -172,6 +172,10 @@ test("capture missing storage returns an empty collection without writing", () =
   assert.deepEqual(repository.load(), []);
   assert.deepEqual(storage.reads, [CAPTURE_KEY]);
   assert.deepEqual(storage.writes, []);
+  assert.deepEqual(repository.inspect(), {
+    status: "missing",
+    captures: [],
+  });
 });
 
 test("capture valid load preserves IDs, text, timestamps, order, and unknown fields", () => {
@@ -187,6 +191,10 @@ test("capture valid load preserves IDs, text, timestamps, order, and unknown fie
   assert.deepEqual(loaded, stored);
   assert.deepEqual(loaded.map((capture) => capture.id), [200, 100]);
   assert.deepEqual(storage.writes, []);
+  assert.deepEqual(new LocalStorageCaptureRepository(storage).inspect(), {
+    status: "valid",
+    captures: stored,
+  });
 });
 
 test("capture save and load round-trip uses only the active key", () => {
@@ -215,6 +223,10 @@ test("capture malformed and invalid payloads fall back without rewriting", () =>
     storage.values.set(CAPTURE_KEY, value);
 
     assert.deepEqual(new LocalStorageCaptureRepository(storage).load(), []);
+    assert.deepEqual(new LocalStorageCaptureRepository(storage).inspect(), {
+      status: "invalid",
+      captures: [],
+    });
     assert.equal(storage.values.get(CAPTURE_KEY), value);
     assert.deepEqual(storage.writes, []);
   }

@@ -21,6 +21,11 @@ export interface ProfileCaptureStorageEventTarget {
 const PROFILE_STORAGE_KEY = "lifeos-profile";
 const CAPTURE_STORAGE_KEY = "lifeos-captures";
 
+export type CaptureSourceSnapshot =
+  | { status: "missing"; captures: [] }
+  | { status: "valid"; captures: Capture[] }
+  | { status: "invalid"; captures: [] };
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -110,14 +115,21 @@ export class LocalStorageCaptureRepository implements CaptureRepository {
   }
 
   load(): Capture[] {
+    const snapshot = this.inspect();
+    return snapshot.status === "valid" ? snapshot.captures : [];
+  }
+
+  inspect(): CaptureSourceSnapshot {
     const saved = this.storage.getItem(CAPTURE_STORAGE_KEY);
-    if (!saved) return [];
+    if (saved === null) return { status: "missing", captures: [] };
 
     try {
       const parsed: unknown = JSON.parse(saved);
-      return isCaptureCollection(parsed) ? parsed : [];
+      return isCaptureCollection(parsed)
+        ? { status: "valid", captures: parsed }
+        : { status: "invalid", captures: [] };
     } catch {
-      return [];
+      return { status: "invalid", captures: [] };
     }
   }
 

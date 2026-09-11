@@ -21,7 +21,7 @@ interface CaptureModalProps {
 
   onCapture: (
     text: string
-  ) => void;
+  ) => Promise<void>;
 }
 
 // ==========================================
@@ -37,6 +37,9 @@ export default function CaptureModal({
     text,
     setText,
   ] = useState("");
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -62,6 +65,7 @@ export default function CaptureModal({
 
   function resetAndClose() {
     setText("");
+    setError(null);
 
     onClose();
   }
@@ -70,7 +74,7 @@ export default function CaptureModal({
   // Standard Capture
   // ==========================================
 
-  function handleCapture() {
+  async function handleCapture() {
     const trimmedText =
       text.trim();
 
@@ -78,11 +82,21 @@ export default function CaptureModal({
       return;
     }
 
-    onCapture(
-      trimmedText
-    );
+    setSubmitting(true);
+    setError(null);
 
-    resetAndClose();
+    try {
+      await onCapture(trimmedText);
+      resetAndClose();
+    } catch (captureError) {
+      setError(
+        captureError instanceof Error
+          ? captureError.message
+          : "Quick Capture could not be saved."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   // ==========================================
@@ -214,6 +228,16 @@ export default function CaptureModal({
               focus:border-cyan-500
             "
           />
+
+          {error && (
+            <p
+              role="alert"
+              className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+            >
+              Capture is still visible for this session, but local persistence
+              failed: {error}
+            </p>
+          )}
         </div>
 
         {/* ======================================
@@ -235,6 +259,7 @@ export default function CaptureModal({
             onClick={
               resetAndClose
             }
+            disabled={submitting}
           >
             Cancel
           </Button>
@@ -243,9 +268,9 @@ export default function CaptureModal({
             onClick={
               handleCapture
             }
-            disabled={text.trim().length === 0}
+            disabled={submitting || text.trim().length === 0}
           >
-            Capture
+            {submitting ? "Saving…" : "Capture"}
           </Button>
         </div>
       </Card>

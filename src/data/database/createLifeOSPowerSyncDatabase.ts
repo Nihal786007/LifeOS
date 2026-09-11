@@ -4,8 +4,12 @@ import {
 } from "@powersync/web";
 
 import {
+  lifeOSPowerSyncSchema,
   lifeOSPowerSyncProbeSchema,
 } from "./lifeOSPowerSyncSchema";
+
+export const LIFEOS_LOCAL_DATABASE_NAME =
+  "lifeos-local-v1.sqlite" as const;
 
 export const POWERSYNC_PROBE_DATABASE_NAME =
   "lifeos-ps-probe-v1.sqlite" as const;
@@ -40,6 +44,18 @@ export function createLifeOSPowerSyncProbeDatabase() {
     schema: lifeOSPowerSyncProbeSchema,
     database: {
       dbFilename: POWERSYNC_PROBE_DATABASE_NAME,
+      vfs: POWERSYNC_PROBE_VFS,
+      enableMultiTabs: false,
+      useWebWorker: true,
+    },
+  });
+}
+
+export function createLifeOSPowerSyncDatabase() {
+  return new PowerSyncDatabase({
+    schema: lifeOSPowerSyncSchema,
+    database: {
+      dbFilename: LIFEOS_LOCAL_DATABASE_NAME,
       vfs: POWERSYNC_PROBE_VFS,
       enableMultiTabs: false,
       useWebWorker: true,

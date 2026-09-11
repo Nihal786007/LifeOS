@@ -50,9 +50,20 @@ import {
 } from "./profileCapture/localStorageProfileCaptureRepositories";
 
 import type {
-  CaptureRepository,
   ProfileRepository,
 } from "./profileCapture/profileCaptureRepositories";
+
+import type {
+  AsyncCaptureRepository,
+} from "./captures/asyncCaptureRepository";
+
+import {
+  PowerSyncCaptureRepository,
+} from "./captures/powerSyncCaptureRepository";
+
+import {
+  createLifeOSPowerSyncDatabase,
+} from "./database/createLifeOSPowerSyncDatabase";
 
 import {
   LocalStorageAtlasMemoryRepository,
@@ -82,7 +93,7 @@ export interface DataServices {
   habitRepository: HabitRepository;
   executionHistoryRepository: ExecutionHistoryRepository;
   profileRepository: ProfileRepository;
-  captureRepository: CaptureRepository;
+  captureRepository: AsyncCaptureRepository;
   atlasMemoryRepository: AtlasMemoryRepository;
   notificationStateRepository: NotificationStateRepository;
 }
@@ -94,8 +105,17 @@ interface DataServicesProviderProps {
 
 const DataServicesContext = createContext<DataServices | null>(null);
 
+let browserDataServices: DataServices | undefined;
+
 function createBrowserDataServices(): DataServices {
-  return {
+  if (browserDataServices) return browserDataServices;
+
+  const localStorageCaptureRepository = new LocalStorageCaptureRepository(
+    window.localStorage,
+    window
+  );
+
+  browserDataServices = {
     taskRepository: new LocalStorageTaskRepository(
       window.localStorage,
       window
@@ -124,9 +144,9 @@ function createBrowserDataServices(): DataServices {
       window.localStorage,
       window
     ),
-    captureRepository: new LocalStorageCaptureRepository(
-      window.localStorage,
-      window
+    captureRepository: new PowerSyncCaptureRepository(
+      createLifeOSPowerSyncDatabase(),
+      localStorageCaptureRepository
     ),
     atlasMemoryRepository: new LocalStorageAtlasMemoryRepository(
       window.localStorage,
@@ -137,6 +157,8 @@ function createBrowserDataServices(): DataServices {
       window
     ),
   };
+
+  return browserDataServices;
 }
 
 export function DataServicesProvider({
