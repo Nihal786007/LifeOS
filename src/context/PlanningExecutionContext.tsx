@@ -40,6 +40,10 @@ import {
   useTasks,
 } from "./TaskContext";
 
+import {
+  usePlanningState,
+} from "./PlanningStateContext";
+
 import type {
   PlanningState,
 } from "../engines/PlanningKernel";
@@ -220,19 +224,20 @@ export function PlanningExecutionProvider({
 }) {
   const {
     lifeGoals,
-    replaceLifeGoals,
   } = useLifeGoals();
 
   const {
     monthlyPlans,
-    replaceMonthlyPlans,
   } = useMonthlyPlanning();
 
   const {
     weeklyTargets,
     addCalendarWeeklyTarget,
-    replaceWeeklyTargets,
   } = useWeeklyPlanning();
+
+  const {
+    replacePlanningState,
+  } = usePlanningState();
 
   const {
     tasks,
@@ -263,17 +268,11 @@ export function PlanningExecutionProvider({
   function applyState(
     state: PlanningState
   ) {
-    replaceLifeGoals(
-      state.lifeGoals
-    );
-
-    replaceMonthlyPlans(
-      state.monthlyTargets
-    );
-
-    replaceWeeklyTargets(
-      state.weeklyTargets
-    );
+    replacePlanningState({
+      lifeGoals: state.lifeGoals,
+      monthlyOutcomes: state.monthlyTargets,
+      weeklyFocuses: state.weeklyTargets,
+    });
 
     replaceTasks(
       state.tasks
@@ -855,6 +854,7 @@ export function PlanningExecutionProvider({
 // Hook
 // ==========================================
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function usePlanningExecution() {
   const context =
     useContext(

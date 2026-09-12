@@ -6,8 +6,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
 } from "react";
 
 import type {
@@ -15,8 +13,8 @@ import type {
 } from "react";
 
 import {
-  useDataServices,
-} from "../data/DataServicesContext";
+  usePlanningState,
+} from "./PlanningStateContext";
 
 import type {
   MonthlyTarget,
@@ -61,25 +59,11 @@ export function MonthlyPlanningProvider({
   children: ReactNode;
 }) {
   const {
-    monthlyOutcomeRepository,
-  } = useDataServices();
+    planningState,
+    replacePlanningState,
+  } = usePlanningState();
 
-  const [
-    monthlyPlans,
-    setMonthlyPlans,
-  ] = useState<
-    MonthlyTarget[]
-  >(() => monthlyOutcomeRepository.load());
-
-  // ==========================================
-  // Persistence
-  // ==========================================
-
-  useEffect(() => {
-    return monthlyOutcomeRepository.subscribe(() => {
-      setMonthlyPlans(monthlyOutcomeRepository.load());
-    });
-  }, [monthlyOutcomeRepository]);
+  const monthlyPlans = planningState.monthlyOutcomes;
 
   // ==========================================
   // State Application
@@ -88,12 +72,10 @@ export function MonthlyPlanningProvider({
   function replaceMonthlyPlans(
     nextMonthlyPlans: MonthlyTarget[]
   ) {
-    setMonthlyPlans(
-      nextMonthlyPlans
-    );
-    monthlyOutcomeRepository.save(
-      nextMonthlyPlans
-    );
+    replacePlanningState({
+      ...planningState,
+      monthlyOutcomes: nextMonthlyPlans,
+    });
   }
 
   // ==========================================

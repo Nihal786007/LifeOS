@@ -28,6 +28,10 @@ import {
 } from "../context/TaskContext";
 
 import {
+  PlanningStateProvider,
+} from "../context/PlanningStateContext";
+
+import {
   XPProvider,
 } from "../context/XPContext";
 
@@ -57,23 +61,25 @@ export function AppProviders({
   return (
     <DataServicesProvider>
       <AppProvider>
-        <LifeGoalsProvider>
-          <MonthlyPlanningProvider>
-            <TaskProvider>
-              <WeeklyPlanningProvider>
-                <XPProvider>
-                  <HabitProvider>
-                    <HabitExecutionProvider>
-                      <PlanningExecutionProvider>
-                        {children}
-                      </PlanningExecutionProvider>
-                    </HabitExecutionProvider>
-                  </HabitProvider>
-                </XPProvider>
-              </WeeklyPlanningProvider>
-            </TaskProvider>
-          </MonthlyPlanningProvider>
-        </LifeGoalsProvider>
+        <TaskProvider>
+          <PlanningStateProvider>
+            <LifeGoalsProvider>
+              <MonthlyPlanningProvider>
+                <WeeklyPlanningProvider>
+                  <XPProvider>
+                    <HabitProvider>
+                      <HabitExecutionProvider>
+                        <PlanningExecutionProvider>
+                          {children}
+                        </PlanningExecutionProvider>
+                      </HabitExecutionProvider>
+                    </HabitProvider>
+                  </XPProvider>
+                </WeeklyPlanningProvider>
+              </MonthlyPlanningProvider>
+            </LifeGoalsProvider>
+          </PlanningStateProvider>
+        </TaskProvider>
       </AppProvider>
     </DataServicesProvider>
   );

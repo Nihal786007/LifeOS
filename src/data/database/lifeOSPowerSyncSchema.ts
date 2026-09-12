@@ -22,6 +22,9 @@ export const POWERSYNC_CAPTURES_TABLE = "captures" as const;
 export const POWERSYNC_MIGRATION_JOURNAL_TABLE =
   "migration_journal" as const;
 export const POWERSYNC_TASKS_TABLE = "tasks" as const;
+export const POWERSYNC_LIFE_GOALS_TABLE = "life_goals" as const;
+export const POWERSYNC_MONTHLY_OUTCOMES_TABLE = "monthly_outcomes" as const;
+export const POWERSYNC_WEEKLY_FOCUSES_TABLE = "weekly_focuses" as const;
 
 export const powerSyncCapturesTable = Table.createLocalOnly({
   text: column.text,
@@ -49,10 +52,53 @@ export const powerSyncTasksTable = Table.createLocalOnly({
   extras_json: column.text,
 });
 
+export const powerSyncLifeGoalsTable = Table.createLocalOnly({
+  title: column.text,
+  description: column.text,
+  progress: column.real,
+  completed: column.integer,
+  completed_at: column.text,
+  start_date: column.text,
+  target_date: column.text,
+  created_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
+export const powerSyncMonthlyOutcomesTable = Table.createLocalOnly({
+  title: column.text,
+  month: column.integer,
+  year: column.integer,
+  goal_id: column.text,
+  progress: column.real,
+  completed: column.integer,
+  completed_at: column.text,
+  created_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
+export const powerSyncWeeklyFocusesTable = Table.createLocalOnly({
+  title: column.text,
+  monthly_target_id: column.text,
+  week: column.integer,
+  week_start_date: column.text,
+  week_end_date: column.text,
+  progress: column.real,
+  completed: column.integer,
+  completed_at: column.text,
+  created_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
 export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_CAPTURES_TABLE]: powerSyncCapturesTable,
   [POWERSYNC_MIGRATION_JOURNAL_TABLE]: powerSyncMigrationJournalTable,
-  [POWERSYNC_TASKS_TABLE]: powerSyncTasksTable,
+    [POWERSYNC_TASKS_TABLE]: powerSyncTasksTable,
+  [POWERSYNC_LIFE_GOALS_TABLE]: powerSyncLifeGoalsTable,
+  [POWERSYNC_MONTHLY_OUTCOMES_TABLE]: powerSyncMonthlyOutcomesTable,
+  [POWERSYNC_WEEKLY_FOCUSES_TABLE]: powerSyncWeeklyFocusesTable,
 });
 
 export type LifeOSPowerSyncDatabase =

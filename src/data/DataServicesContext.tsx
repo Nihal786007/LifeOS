@@ -19,10 +19,12 @@ import {
 } from "./planning/localStoragePlanningRepositories";
 
 import type {
-  LifeGoalRepository,
-  MonthlyOutcomeRepository,
-  WeeklyFocusRepository,
-} from "./planning/planningRepositories";
+  AsyncPlanningRepository,
+} from "./planning/asyncPlanningRepository";
+
+import {
+  PowerSyncPlanningRepository,
+} from "./planning/powerSyncPlanningRepository";
 
 import type {
   AsyncTaskRepository,
@@ -91,9 +93,7 @@ import {
 
 export interface DataServices {
   taskRepository: AsyncTaskRepository;
-  lifeGoalRepository: LifeGoalRepository;
-  monthlyOutcomeRepository: MonthlyOutcomeRepository;
-  weeklyFocusRepository: WeeklyFocusRepository;
+  planningRepository: AsyncPlanningRepository;
   habitRepository: HabitRepository;
   executionHistoryRepository: ExecutionHistoryRepository;
   profileRepository: ProfileRepository;
@@ -124,6 +124,13 @@ function createBrowserDataServices(): DataServices {
     window
   );
 
+  const localStorageLifeGoalRepository =
+    new LocalStorageLifeGoalRepository(window.localStorage, window);
+  const localStorageMonthlyOutcomeRepository =
+    new LocalStorageMonthlyOutcomeRepository(window.localStorage, window);
+  const localStorageWeeklyFocusRepository =
+    new LocalStorageWeeklyFocusRepository(window.localStorage, window);
+
   const powerSyncDatabase = createLifeOSPowerSyncDatabase();
 
   browserDataServices = {
@@ -131,17 +138,13 @@ function createBrowserDataServices(): DataServices {
       powerSyncDatabase,
       localStorageTaskRepository
     ),
-    lifeGoalRepository: new LocalStorageLifeGoalRepository(
-      window.localStorage,
-      window
-    ),
-    monthlyOutcomeRepository: new LocalStorageMonthlyOutcomeRepository(
-      window.localStorage,
-      window
-    ),
-    weeklyFocusRepository: new LocalStorageWeeklyFocusRepository(
-      window.localStorage,
-      window
+    planningRepository: new PowerSyncPlanningRepository(
+      powerSyncDatabase,
+      {
+        lifeGoals: localStorageLifeGoalRepository,
+        monthlyOutcomes: localStorageMonthlyOutcomeRepository,
+        weeklyFocuses: localStorageWeeklyFocusRepository,
+      }
     ),
     habitRepository: new LocalStorageHabitRepository(
       window.localStorage,

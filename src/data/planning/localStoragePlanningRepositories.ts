@@ -26,6 +26,11 @@ export interface PlanningStorageEventTarget {
 
 type CollectionGuard<T> = (value: unknown) => value is T[];
 
+export type PlanningSourceSnapshot<T> =
+  | { status: "missing"; records: [] }
+  | { status: "valid"; records: T[] }
+  | { status: "invalid"; records: [] };
+
 function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || typeof value === "string";
 }
@@ -109,19 +114,21 @@ const isWeeklyTargetCollection: CollectionGuard<WeeklyTarget> = (
 ): value is WeeklyTarget[] =>
   Array.isArray(value) && value.every(isWeeklyTarget);
 
-function loadCollection<T>(
+function inspectCollection<T>(
   storage: PlanningStorage,
   key: string,
   isCollection: CollectionGuard<T>
-): T[] {
+): PlanningSourceSnapshot<T> {
   const saved = storage.getItem(key);
-  if (!saved) return [];
+  if (!saved) return { status: "missing", records: [] };
 
   try {
     const parsed: unknown = JSON.parse(saved);
-    return isCollection(parsed) ? parsed : [];
+    return isCollection(parsed)
+      ? { status: "valid", records: parsed }
+      : { status: "invalid", records: [] };
   } catch {
-    return [];
+    return { status: "invalid", records: [] };
   }
 }
 
@@ -153,7 +160,11 @@ export class LocalStorageLifeGoalRepository implements LifeGoalRepository {
   }
 
   load(): LifeGoal[] {
-    return loadCollection(
+    return this.inspect().records;
+  }
+
+  inspect(): PlanningSourceSnapshot<LifeGoal> {
+    return inspectCollection(
       this.storage,
       STORAGE_KEYS.LIFE_GOALS,
       isLifeGoalCollection
@@ -187,7 +198,11 @@ implements MonthlyOutcomeRepository {
   }
 
   load(): MonthlyTarget[] {
-    return loadCollection(
+    return this.inspect().records;
+  }
+
+  inspect(): PlanningSourceSnapshot<MonthlyTarget> {
+    return inspectCollection(
       this.storage,
       STORAGE_KEYS.MONTHLY_TARGETS,
       isMonthlyTargetCollection
@@ -223,7 +238,11 @@ export class LocalStorageWeeklyFocusRepository implements WeeklyFocusRepository 
   }
 
   load(): WeeklyTarget[] {
-    return loadCollection(
+    return this.inspect().records;
+  }
+
+  inspect(): PlanningSourceSnapshot<WeeklyTarget> {
+    return inspectCollection(
       this.storage,
       STORAGE_KEYS.WEEKLY_TARGETS,
       isWeeklyTargetCollection

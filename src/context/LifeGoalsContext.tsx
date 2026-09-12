@@ -6,8 +6,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
 } from "react";
 
 import type {
@@ -15,8 +13,8 @@ import type {
 } from "react";
 
 import {
-  useDataServices,
-} from "../data/DataServicesContext";
+  usePlanningState,
+} from "./PlanningStateContext";
 
 import type {
   LifeGoal,
@@ -60,25 +58,11 @@ export function LifeGoalsProvider({
   children: ReactNode;
 }) {
   const {
-    lifeGoalRepository,
-  } = useDataServices();
+    planningState,
+    replacePlanningState,
+  } = usePlanningState();
 
-  const [
-    lifeGoals,
-    setLifeGoals,
-  ] = useState<LifeGoal[]>(() =>
-    lifeGoalRepository.load()
-  );
-
-  // ==========================================
-  // Persistence
-  // ==========================================
-
-  useEffect(() => {
-    return lifeGoalRepository.subscribe(() => {
-      setLifeGoals(lifeGoalRepository.load());
-    });
-  }, [lifeGoalRepository]);
+  const lifeGoals = planningState.lifeGoals;
 
   // ==========================================
   // Planning / Execution State Application
@@ -87,12 +71,10 @@ export function LifeGoalsProvider({
   function replaceLifeGoals(
     nextLifeGoals: LifeGoal[]
   ) {
-    setLifeGoals(
-      nextLifeGoals
-    );
-    lifeGoalRepository.save(
-      nextLifeGoals
-    );
+    replacePlanningState({
+      ...planningState,
+      lifeGoals: nextLifeGoals,
+    });
   }
 
   // ==========================================

@@ -6,8 +6,6 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
 } from "react";
 
 import type {
@@ -15,8 +13,8 @@ import type {
 } from "react";
 
 import {
-  useDataServices,
-} from "../data/DataServicesContext";
+  usePlanningState,
+} from "./PlanningStateContext";
 
 import type {
   WeeklyTarget,
@@ -207,25 +205,11 @@ export function WeeklyPlanningProvider({
   children: ReactNode;
 }) {
   const {
-    weeklyFocusRepository,
-  } = useDataServices();
+    planningState,
+    replacePlanningState,
+  } = usePlanningState();
 
-  const [
-    weeklyTargets,
-    setWeeklyTargets,
-  ] = useState<
-    WeeklyTarget[]
-  >(() => weeklyFocusRepository.load());
-
-  // ==========================================
-  // Persistence
-  // ==========================================
-
-  useEffect(() => {
-    return weeklyFocusRepository.subscribe(() => {
-      setWeeklyTargets(weeklyFocusRepository.load());
-    });
-  }, [weeklyFocusRepository]);
+  const weeklyTargets = planningState.weeklyFocuses;
 
   // ==========================================
   // Real Calendar Weekly Target Creation
@@ -311,12 +295,10 @@ export function WeeklyPlanningProvider({
       target,
     ];
 
-    setWeeklyTargets(
-      nextWeeklyTargets
-    );
-    weeklyFocusRepository.save(
-      nextWeeklyTargets
-    );
+    replacePlanningState({
+      ...planningState,
+      weeklyFocuses: nextWeeklyTargets,
+    });
   }
 
   // ==========================================
@@ -326,12 +308,10 @@ export function WeeklyPlanningProvider({
   function replaceWeeklyTargets(
     nextWeeklyTargets: WeeklyTarget[]
   ) {
-    setWeeklyTargets(
-      nextWeeklyTargets
-    );
-    weeklyFocusRepository.save(
-      nextWeeklyTargets
-    );
+    replacePlanningState({
+      ...planningState,
+      weeklyFocuses: nextWeeklyTargets,
+    });
   }
 
   // ==========================================
