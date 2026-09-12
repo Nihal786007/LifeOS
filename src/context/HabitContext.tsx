@@ -29,8 +29,13 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+
+import type {
+  HabitPersistencePhase,
+} from "../data/habits/asyncHabitRepository";
 
 import type {
   ReactNode,
@@ -59,6 +64,11 @@ interface HabitContextValue {
   completions:
     HabitCompletion[];
 
+  habitPersistence: {
+    phase: HabitPersistencePhase;
+    error: string | null;
+  };
+
   replaceHabitState: (
     nextState: HabitState
   ) => void;
@@ -86,30 +96,109 @@ export function HabitProvider({
     habitRepository,
   } = useDataServices();
 
-  const [
-    habitState,
-    setHabitState,
-  ] =
-    useState<HabitState>(
-      () => habitRepository.load()
-    );
+  const [habitState, setHabitState] = useState<HabitState>({
+    habits: [],
+    completions: [],
+  });
+  const [habitPersistence, setHabitPersistence] = useState<{
+    phase: HabitPersistencePhase;
+    error: string | null;
+  }>({
+    phase: "uninitialized",
+    error: null,
+  });
+  const [hydrated, setHydrated] = useState(false);
+  const mountedRef = useRef(false);
+  const replacementVersionRef = useRef(0);
+  const expectedWatchStateRef = useRef<HabitState | null>(null);
+  const watchBlockedAfterFailureRef = useRef(false);
 
   useEffect(() => {
-    return habitRepository.subscribe(() => {
-      setHabitState(
-        habitRepository.load()
-      );
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+    mountedRef.current = true;
+
+    void habitRepository.initialize((phase) => {
+      if (!active) return;
+      setHabitPersistence({ phase, error: null });
+    }).then((nextState) => {
+      if (!active) return;
+      setHabitState(nextState);
+      setHydrated(true);
+      setHabitPersistence({ phase: "hydrated", error: null });
+
+      unsubscribe = habitRepository.subscribe((event) => {
+        if (!active) return;
+        if (event.type === "error") {
+          setHabitPersistence({ phase: "error", error: event.error.message });
+          console.error("Habit persistence watch failed", event.error);
+          return;
+        }
+        if (watchBlockedAfterFailureRef.current) return;
+
+        const expected = expectedWatchStateRef.current;
+        if (expected) {
+          if (JSON.stringify(event.state) !== JSON.stringify(expected)) return;
+          expectedWatchStateRef.current = null;
+        }
+        setHabitState(event.state);
+        setHabitPersistence({ phase: "hydrated", error: null });
+      });
+    }).catch((error: unknown) => {
+      if (!active) return;
+      const message = error instanceof Error ? error.message : String(error);
+      setHabitPersistence({ phase: "error", error: message });
+      console.error("Habit persistence initialization failed", error);
     });
+
+    return () => {
+      active = false;
+      mountedRef.current = false;
+      unsubscribe();
+    };
   }, [habitRepository]);
 
   function replaceHabitState(
     nextState: HabitState
   ) {
-    setHabitState(
-      nextState
-    );
-    habitRepository.save(
-      nextState
+    if (!hydrated) {
+      const error = new Error("Habit mutations require hydrated persistence");
+      setHabitPersistence({ phase: "error", error: error.message });
+      console.error(error);
+      return;
+    }
+
+    const version = replacementVersionRef.current + 1;
+    replacementVersionRef.current = version;
+    expectedWatchStateRef.current = nextState;
+    watchBlockedAfterFailureRef.current = false;
+    setHabitState(nextState);
+
+    void habitRepository.replace(nextState).then(() => {
+      if (!mountedRef.current || version !== replacementVersionRef.current) return;
+      setHabitPersistence({ phase: "hydrated", error: null });
+    }).catch((error: unknown) => {
+      if (!mountedRef.current) return;
+      if (version === replacementVersionRef.current) {
+        expectedWatchStateRef.current = null;
+        watchBlockedAfterFailureRef.current = true;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      setHabitPersistence({ phase: "error", error: message });
+      console.error("Habit persistence replacement failed", error);
+    });
+  }
+
+  if (!hydrated) {
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-center text-sm text-slate-400"
+        role={habitPersistence.phase === "error" ? "alert" : "status"}
+      >
+        {habitPersistence.phase === "error"
+          ? `Habits could not be loaded. ${habitPersistence.error ?? "Reload LifeOS to try again."}`
+          : "Loading your habits…"}
+      </div>
     );
   }
 
@@ -123,6 +212,8 @@ export function HabitProvider({
 
         completions:
           habitState.completions,
+
+        habitPersistence,
 
         replaceHabitState,
       }}

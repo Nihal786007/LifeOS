@@ -39,8 +39,12 @@ import {
 } from "./habits/localStorageHabitRepository";
 
 import type {
-  HabitRepository,
-} from "./habits/habitRepository";
+  AsyncHabitRepository,
+} from "./habits/asyncHabitRepository";
+
+import {
+  PowerSyncHabitRepository,
+} from "./habits/powerSyncHabitRepository";
 
 import {
   LocalStorageExecutionHistoryRepository,
@@ -94,7 +98,7 @@ import {
 export interface DataServices {
   taskRepository: AsyncTaskRepository;
   planningRepository: AsyncPlanningRepository;
-  habitRepository: HabitRepository;
+  habitRepository: AsyncHabitRepository;
   executionHistoryRepository: ExecutionHistoryRepository;
   profileRepository: ProfileRepository;
   captureRepository: AsyncCaptureRepository;
@@ -133,6 +137,11 @@ function createBrowserDataServices(): DataServices {
 
   const powerSyncDatabase = createLifeOSPowerSyncDatabase();
 
+  const localStorageHabitRepository = new LocalStorageHabitRepository(
+    window.localStorage,
+    window
+  );
+
   browserDataServices = {
     taskRepository: new PowerSyncTaskRepository(
       powerSyncDatabase,
@@ -146,9 +155,9 @@ function createBrowserDataServices(): DataServices {
         weeklyFocuses: localStorageWeeklyFocusRepository,
       }
     ),
-    habitRepository: new LocalStorageHabitRepository(
-      window.localStorage,
-      window
+    habitRepository: new PowerSyncHabitRepository(
+      powerSyncDatabase,
+      localStorageHabitRepository
     ),
     executionHistoryRepository: new LocalStorageExecutionHistoryRepository(
       window.localStorage,

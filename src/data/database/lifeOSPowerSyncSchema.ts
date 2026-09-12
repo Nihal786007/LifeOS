@@ -25,6 +25,10 @@ export const POWERSYNC_TASKS_TABLE = "tasks" as const;
 export const POWERSYNC_LIFE_GOALS_TABLE = "life_goals" as const;
 export const POWERSYNC_MONTHLY_OUTCOMES_TABLE = "monthly_outcomes" as const;
 export const POWERSYNC_WEEKLY_FOCUSES_TABLE = "weekly_focuses" as const;
+export const POWERSYNC_HABIT_DEFINITIONS_TABLE =
+  "habit_definitions" as const;
+export const POWERSYNC_HABIT_COMPLETIONS_TABLE =
+  "habit_completions" as const;
 
 export const powerSyncCapturesTable = Table.createLocalOnly({
   text: column.text,
@@ -92,6 +96,27 @@ export const powerSyncWeeklyFocusesTable = Table.createLocalOnly({
   extras_json: column.text,
 });
 
+export const powerSyncHabitDefinitionsTable = Table.createLocalOnly({
+  name: column.text,
+  description: column.text,
+  active_days_json: column.text,
+  start_date: column.text,
+  archived: column.integer,
+  archived_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
+export const powerSyncHabitCompletionsTable = Table.createLocalOnly({
+  habit_id: column.text,
+  date: column.text,
+  completed_at: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
 export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_CAPTURES_TABLE]: powerSyncCapturesTable,
   [POWERSYNC_MIGRATION_JOURNAL_TABLE]: powerSyncMigrationJournalTable,
@@ -99,6 +124,8 @@ export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_LIFE_GOALS_TABLE]: powerSyncLifeGoalsTable,
   [POWERSYNC_MONTHLY_OUTCOMES_TABLE]: powerSyncMonthlyOutcomesTable,
   [POWERSYNC_WEEKLY_FOCUSES_TABLE]: powerSyncWeeklyFocusesTable,
+  [POWERSYNC_HABIT_DEFINITIONS_TABLE]: powerSyncHabitDefinitionsTable,
+  [POWERSYNC_HABIT_COMPLETIONS_TABLE]: powerSyncHabitCompletionsTable,
 });
 
 export type LifeOSPowerSyncDatabase =

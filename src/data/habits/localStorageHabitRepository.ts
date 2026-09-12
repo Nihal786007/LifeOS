@@ -19,7 +19,12 @@ export interface HabitStorageEventTarget {
   removeEventListener(type: "storage", listener: EventListener): void;
 }
 
-const HABIT_STATE_STORAGE_KEY = "lifeos-habit-state-v2";
+export const HABIT_STATE_STORAGE_KEY = "lifeos-habit-state-v2" as const;
+
+export type HabitSourceSnapshot =
+  | { status: "missing"; state: HabitState }
+  | { status: "valid"; state: HabitState }
+  | { status: "invalid"; state: HabitState };
 
 const HABIT_WEEKDAYS: readonly HabitWeekday[] = [
   "monday",
@@ -107,14 +112,20 @@ export class LocalStorageHabitRepository implements HabitRepository {
   }
 
   load(): HabitState {
+    return this.inspect().state;
+  }
+
+  inspect(): HabitSourceSnapshot {
     const saved = this.storage.getItem(HABIT_STATE_STORAGE_KEY);
-    if (!saved) return emptyHabitState();
+    if (!saved) return { status: "missing", state: emptyHabitState() };
 
     try {
       const parsed: unknown = JSON.parse(saved);
-      return isHabitState(parsed) ? parsed : emptyHabitState();
+      return isHabitState(parsed)
+        ? { status: "valid", state: parsed }
+        : { status: "invalid", state: emptyHabitState() };
     } catch {
-      return emptyHabitState();
+      return { status: "invalid", state: emptyHabitState() };
     }
   }
 
