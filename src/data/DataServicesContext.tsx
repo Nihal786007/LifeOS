@@ -1,6 +1,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -51,8 +52,13 @@ import {
 } from "./execution/localStorageExecutionHistoryRepository";
 
 import type {
-  ExecutionHistoryRepository,
-} from "./execution/executionHistoryRepository";
+  AsyncExecutionHistoryRepository,
+  ExecutionHistoryPersistencePhase,
+} from "./execution/asyncExecutionHistoryRepository";
+
+import {
+  PowerSyncExecutionHistoryRepository,
+} from "./execution/powerSyncExecutionHistoryRepository";
 
 import {
   LocalStorageCaptureRepository,
@@ -99,7 +105,7 @@ export interface DataServices {
   taskRepository: AsyncTaskRepository;
   planningRepository: AsyncPlanningRepository;
   habitRepository: AsyncHabitRepository;
-  executionHistoryRepository: ExecutionHistoryRepository;
+  executionHistoryRepository: AsyncExecutionHistoryRepository;
   profileRepository: ProfileRepository;
   captureRepository: AsyncCaptureRepository;
   atlasMemoryRepository: AtlasMemoryRepository;
@@ -159,9 +165,12 @@ function createBrowserDataServices(): DataServices {
       powerSyncDatabase,
       localStorageHabitRepository
     ),
-    executionHistoryRepository: new LocalStorageExecutionHistoryRepository(
-      window.localStorage,
-      window
+    executionHistoryRepository: new PowerSyncExecutionHistoryRepository(
+      powerSyncDatabase,
+      new LocalStorageExecutionHistoryRepository(
+        window.localStorage,
+        window
+      )
     ),
     profileRepository: new LocalStorageProfileRepository(
       window.localStorage,
@@ -195,6 +204,44 @@ export function DataServicesProvider({
     );
     return resolved;
   });
+
+  const [executionHistoryPersistence, setExecutionHistoryPersistence] =
+    useState<{
+      phase: ExecutionHistoryPersistencePhase;
+      error: string | null;
+    }>({ phase: "uninitialized", error: null });
+
+  useEffect(() => {
+    let active = true;
+
+    void ExecutionHistoryService.initialize((phase) => {
+      if (active) setExecutionHistoryPersistence({ phase, error: null });
+    }).then(() => {
+      if (active) setExecutionHistoryPersistence({ phase: "hydrated", error: null });
+    }).catch((error: unknown) => {
+      if (!active) return;
+      const message = error instanceof Error ? error.message : String(error);
+      setExecutionHistoryPersistence({ phase: "error", error: message });
+      console.error("Execution History persistence initialization failed", error);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (executionHistoryPersistence.phase !== "hydrated") {
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-center text-sm text-slate-400"
+        role={executionHistoryPersistence.phase === "error" ? "alert" : "status"}
+      >
+        {executionHistoryPersistence.phase === "error"
+          ? `Execution history could not be loaded. ${executionHistoryPersistence.error ?? "Reload LifeOS to try again."}`
+          : "Loading your activity history…"}
+      </div>
+    );
+  }
 
   return (
     <DataServicesContext.Provider value={resolvedServices}>

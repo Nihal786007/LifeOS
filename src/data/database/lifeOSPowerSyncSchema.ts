@@ -29,6 +29,8 @@ export const POWERSYNC_HABIT_DEFINITIONS_TABLE =
   "habit_definitions" as const;
 export const POWERSYNC_HABIT_COMPLETIONS_TABLE =
   "habit_completions" as const;
+export const POWERSYNC_EXECUTION_RECORDS_TABLE =
+  "execution_records" as const;
 
 export const powerSyncCapturesTable = Table.createLocalOnly({
   text: column.text,
@@ -117,6 +119,21 @@ export const powerSyncHabitCompletionsTable = Table.createLocalOnly({
   extras_json: column.text,
 });
 
+export const powerSyncExecutionRecordsTable = Table.createLocalOnly({
+  execution_id: column.text,
+  type: column.text,
+  entity_id: column.text,
+  title: column.text,
+  description: column.text,
+  created_at: column.text,
+  xp_awarded: column.real,
+  icon: column.text,
+  color: column.text,
+  metadata_json: column.text,
+  sort_order: column.integer,
+  extras_json: column.text,
+});
+
 export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_CAPTURES_TABLE]: powerSyncCapturesTable,
   [POWERSYNC_MIGRATION_JOURNAL_TABLE]: powerSyncMigrationJournalTable,
@@ -126,6 +143,7 @@ export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_WEEKLY_FOCUSES_TABLE]: powerSyncWeeklyFocusesTable,
   [POWERSYNC_HABIT_DEFINITIONS_TABLE]: powerSyncHabitDefinitionsTable,
   [POWERSYNC_HABIT_COMPLETIONS_TABLE]: powerSyncHabitCompletionsTable,
+  [POWERSYNC_EXECUTION_RECORDS_TABLE]: powerSyncExecutionRecordsTable,
 });
 
 export type LifeOSPowerSyncDatabase =
