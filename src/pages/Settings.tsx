@@ -13,10 +13,10 @@ import {
   FaUser,
 } from "react-icons/fa";
 
-import { STORAGE_KEYS } from "../constants/storage";
 import { useApp } from "../context/AppContext";
 import { useXP } from "../context/XPContext";
-import { ExecutionHistoryService } from "../services/ExecutionHistoryService";
+import { useDataServices } from "../data/DataServicesContext";
+import { resetLocalTaskActivity } from "../data/reset/resetLocalTaskActivity";
 import type { UserProfile } from "../shared/types";
 
 import Button from "../components/ui/Button";
@@ -33,6 +33,11 @@ type SaveFeedback =
   | { kind: "idle" }
   | { kind: "error"; message: string }
   | { kind: "success"; message: string };
+
+type ResetState =
+  | { kind: "idle" }
+  | { kind: "working" }
+  | { kind: "error"; message: string };
 
 const ATLAS_PERSONALITIES: readonly UserProfile["atlasPersonality"][] = [
   "Professional",
@@ -64,6 +69,10 @@ function isSupportedTimeZone(timezone: string): boolean {
 function Settings() {
   const { profile, updateProfile } = useApp();
   const {
+    taskRepository,
+    executionHistoryRepository,
+  } = useDataServices();
+  const {
     totalXP,
     level,
     progress,
@@ -74,6 +83,7 @@ function Settings() {
     createDraft(profile)
   );
   const [feedback, setFeedback] = useState<SaveFeedback>({ kind: "idle" });
+  const [resetState, setResetState] = useState<ResetState>({ kind: "idle" });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -126,7 +136,7 @@ function Settings() {
     });
   }
 
-  function resetTestActivity() {
+  async function resetTestActivity() {
     const confirmed = confirm(
       "Reset task, XP, and execution-history test data?\n\nYour profile, goals, habits, captures, and planning data will be preserved."
     );
@@ -135,9 +145,20 @@ function Settings() {
       return;
     }
 
-    localStorage.removeItem(STORAGE_KEYS.TASKS);
-    ExecutionHistoryService.clear();
-    location.reload();
+    setResetState({ kind: "working" });
+
+    try {
+      await resetLocalTaskActivity({
+        taskRepository,
+        executionHistoryRepository,
+      });
+      location.reload();
+    } catch (error) {
+      setResetState({
+        kind: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   return (
@@ -387,11 +408,19 @@ function Settings() {
               <Button
                 type="button"
                 variant="danger"
-                onClick={resetTestActivity}
+                onClick={() => void resetTestActivity()}
+                disabled={resetState.kind === "working"}
                 className="mt-5"
               >
-                Reset local activity
+                {resetState.kind === "working"
+                  ? "Resetting local activity…"
+                  : "Reset local activity"}
               </Button>
+              {resetState.kind === "error" && (
+                <p className="mt-3 text-xs text-red-300" role="alert">
+                  Reset failed. No reload was performed. {resetState.message}
+                </p>
+              )}
             </div>
           </Card>
         </div>
