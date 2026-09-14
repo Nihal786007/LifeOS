@@ -26,6 +26,11 @@ export type CaptureSourceSnapshot =
   | { status: "valid"; captures: Capture[] }
   | { status: "invalid"; captures: [] };
 
+export type ProfileSourceSnapshot =
+  | { status: "missing"; profile: null }
+  | { status: "valid"; profile: UserProfile }
+  | { status: "invalid"; profile: null };
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -78,14 +83,21 @@ export class LocalStorageProfileRepository implements ProfileRepository {
   }
 
   load(): UserProfile | null {
+    const snapshot = this.inspect();
+    return snapshot.status === "valid" ? snapshot.profile : null;
+  }
+
+  inspect(): ProfileSourceSnapshot {
     const saved = this.storage.getItem(PROFILE_STORAGE_KEY);
-    if (!saved) return null;
+    if (saved === null) return { status: "missing", profile: null };
 
     try {
       const parsed: unknown = JSON.parse(saved);
-      return isUserProfile(parsed) ? parsed : null;
+      return isUserProfile(parsed)
+        ? { status: "valid", profile: parsed }
+        : { status: "invalid", profile: null };
     } catch {
-      return null;
+      return { status: "invalid", profile: null };
     }
   }
 

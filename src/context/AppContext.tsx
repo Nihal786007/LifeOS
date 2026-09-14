@@ -22,6 +22,7 @@ import {
 import type {
   CapturePersistencePhase,
 } from "../data/captures/asyncCaptureRepository";
+import type { ProfilePersistencePhase } from "../data/profile/asyncProfileRepository";
 
 function createDefaultProfile(): UserProfile {
   return {
@@ -233,21 +234,65 @@ export function AppProvider({
   const [
     profile,
     setProfile,
-  ] =
-    useState<
-      UserProfile
-    >(
-      () => profileRepository.load() ?? createDefaultProfile()
-    );
+  ] = useState<UserProfile>(createDefaultProfile);
+
+  const [profilePersistence, setProfilePersistence] = useState<{
+    phase: ProfilePersistencePhase;
+    error: string | null;
+  }>({ phase: "uninitialized", error: null });
+  const [profileHydrated, setProfileHydrated] = useState(false);
 
   const profileRef = useRef(profile);
+  const profileMountedRef = useRef(false);
+  const profileReplacementVersionRef = useRef(0);
+  const expectedWatchProfileRef = useRef<UserProfile | null>(null);
+  const profileWatchBlockedAfterFailureRef = useRef(false);
 
   useEffect(() => {
-    return profileRepository.subscribe(() => {
-      const nextProfile = profileRepository.load() ?? createDefaultProfile();
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+    profileMountedRef.current = true;
+
+    void profileRepository.initialize((phase) => {
+      if (active) setProfilePersistence({ phase, error: null });
+    }).then((storedProfile) => {
+      if (!active) return;
+      const nextProfile = storedProfile ?? createDefaultProfile();
       profileRef.current = nextProfile;
       setProfile(nextProfile);
+      setProfileHydrated(true);
+      setProfilePersistence({ phase: "hydrated", error: null });
+
+      unsubscribe = profileRepository.subscribe((event) => {
+        if (!active) return;
+        if (event.type === "error") {
+          setProfilePersistence({ phase: "error", error: event.error.message });
+          console.error("Profile persistence watch failed", event.error);
+          return;
+        }
+        if (profileWatchBlockedAfterFailureRef.current) return;
+        const next = event.profile ?? createDefaultProfile();
+        const expected = expectedWatchProfileRef.current;
+        if (expected) {
+          if (JSON.stringify(next) !== JSON.stringify(expected)) return;
+          expectedWatchProfileRef.current = null;
+        }
+        profileRef.current = next;
+        setProfile(next);
+        setProfilePersistence({ phase: "hydrated", error: null });
+      });
+    }).catch((error: unknown) => {
+      if (!active) return;
+      const message = error instanceof Error ? error.message : String(error);
+      setProfilePersistence({ phase: "error", error: message });
+      console.error("Profile persistence initialization failed", error);
     });
+
+    return () => {
+      active = false;
+      profileMountedRef.current = false;
+      unsubscribe();
+    };
   }, [
     profileRepository,
   ]);
@@ -268,9 +313,41 @@ export function AppProvider({
       ...data,
     };
 
+    const version = profileReplacementVersionRef.current + 1;
+    profileReplacementVersionRef.current = version;
+    expectedWatchProfileRef.current = nextProfile;
+    profileWatchBlockedAfterFailureRef.current = false;
     profileRef.current = nextProfile;
     setProfile(nextProfile);
-    profileRepository.save(nextProfile);
+    void profileRepository.replace(nextProfile).then((persisted) => {
+      if (!profileMountedRef.current || version !== profileReplacementVersionRef.current) return;
+      if (JSON.stringify(persisted) !== JSON.stringify(nextProfile)) {
+        throw new Error("Profile persistence returned an unexpected snapshot");
+      }
+      setProfilePersistence({ phase: "hydrated", error: null });
+    }).catch((error: unknown) => {
+      if (!profileMountedRef.current) return;
+      if (version === profileReplacementVersionRef.current) {
+        expectedWatchProfileRef.current = null;
+        profileWatchBlockedAfterFailureRef.current = true;
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      setProfilePersistence({ phase: "error", error: message });
+      console.error("Profile persistence replacement failed", error);
+    });
+  }
+
+  if (!profileHydrated) {
+    return (
+      <div
+        className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-center text-sm text-slate-400"
+        role={profilePersistence.phase === "error" ? "alert" : "status"}
+      >
+        {profilePersistence.phase === "error"
+          ? `Profile could not be loaded. ${profilePersistence.error ?? "Reload LifeOS to try again."}`
+          : "Loading your profile…"}
+      </div>
+    );
   }
 
   return (

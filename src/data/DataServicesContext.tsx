@@ -65,9 +65,8 @@ import {
   LocalStorageProfileRepository,
 } from "./profileCapture/localStorageProfileCaptureRepositories";
 
-import type {
-  ProfileRepository,
-} from "./profileCapture/profileCaptureRepositories";
+import type { AsyncProfileRepository } from "./profile/asyncProfileRepository";
+import { PowerSyncProfileRepository } from "./profile/powerSyncProfileRepository";
 
 import type {
   AsyncCaptureRepository,
@@ -106,7 +105,7 @@ export interface DataServices {
   planningRepository: AsyncPlanningRepository;
   habitRepository: AsyncHabitRepository;
   executionHistoryRepository: AsyncExecutionHistoryRepository;
-  profileRepository: ProfileRepository;
+  profileRepository: AsyncProfileRepository;
   captureRepository: AsyncCaptureRepository;
   atlasMemoryRepository: AtlasMemoryRepository;
   notificationStateRepository: NotificationStateRepository;
@@ -172,9 +171,9 @@ function createBrowserDataServices(): DataServices {
         window
       )
     ),
-    profileRepository: new LocalStorageProfileRepository(
-      window.localStorage,
-      window
+    profileRepository: new PowerSyncProfileRepository(
+      powerSyncDatabase,
+      new LocalStorageProfileRepository(window.localStorage, window)
     ),
     captureRepository: new PowerSyncCaptureRepository(
       powerSyncDatabase,
