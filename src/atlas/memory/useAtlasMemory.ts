@@ -11,6 +11,8 @@ export interface AtlasMemoryController {
   items: readonly AtlasMemoryItem[];
   activeMemories: readonly AtlasMemoryItem[];
   supersededMemories: readonly AtlasMemoryItem[];
+  ready: boolean;
+  persistenceError?: string;
   saveMemory(input: AtlasMemoryInput): void;
   deleteMemory(id: string): void;
   clearAll(): void;
@@ -26,24 +28,58 @@ export function useAtlasMemory(
   );
 
   const [items, setItems] = useState<readonly AtlasMemoryItem[]>(
-    () => store.load()
+    () => injectedStore ? store.load() : []
   );
+  const [ready, setReady] = useState(Boolean(injectedStore));
+  const [persistenceError, setPersistenceError] = useState<string>();
 
-  useEffect(() =>
-    store.subscribe(() => setItems(store.load())),
-  [store]);
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+
+    if (injectedStore) {
+      unsubscribe = store.subscribe(() => setItems(store.load()));
+      return () => { active = false; unsubscribe(); };
+    }
+
+    void atlasMemoryRepository.initialize().then(() => {
+      if (!active) return;
+      setItems(store.load());
+      setReady(true);
+      setPersistenceError(undefined);
+      unsubscribe = store.subscribe(() => {
+        if (!active) return;
+        const state = atlasMemoryRepository.getPersistenceState();
+        if (state.error) setPersistenceError(state.error.message);
+        else { setItems(store.load()); setPersistenceError(undefined); }
+      });
+    }).catch((error: unknown) => {
+      if (active) setPersistenceError(error instanceof Error ? error.message : String(error));
+    });
+
+    return () => { active = false; unsubscribe(); };
+  }, [atlasMemoryRepository, injectedStore, store]);
 
   const saveMemory = useCallback(
-    (input: AtlasMemoryInput) => setItems(store.saveMemory(input)),
-    [store]
+    (input: AtlasMemoryInput) => {
+      if (!ready) throw new Error("ATLAS Memory is still loading.");
+      setItems(store.saveMemory(input));
+    },
+    [ready, store]
   );
   const deleteMemory = useCallback(
-    (id: string) => setItems(store.deleteMemory(id)),
-    [store]
+    (id: string) => {
+      if (!ready) throw new Error("ATLAS Memory is still loading.");
+      setItems(store.deleteMemory(id));
+    },
+    [ready, store]
   );
   const clearAll = useCallback(
-    () => setItems(store.clearAll()),
-    [store]
+    () => {
+      if (!ready) throw new Error("ATLAS Memory is still loading.");
+      setItems(store.clearAll());
+    },
+    [ready, store]
   );
 
   const activeMemories = useMemo(
@@ -59,6 +95,8 @@ export function useAtlasMemory(
     items,
     activeMemories,
     supersededMemories,
+    ready,
+    persistenceError,
     saveMemory,
     deleteMemory,
     clearAll,

@@ -95,6 +95,8 @@ export function useAtlasInteraction(
         return;
       }
 
+      if (!memory.ready) return;
+
       sequence.current += 1;
 
       const requestId = [
@@ -154,6 +156,7 @@ export function useAtlasInteraction(
     [
       canonicalState,
       memory.activeMemories,
+      memory.ready,
       orchestrator,
       state.conversation,
     ]

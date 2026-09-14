@@ -19,6 +19,11 @@ export interface AtlasMemoryStorageEventTarget {
   removeEventListener(type: "storage", listener: EventListener): void;
 }
 
+export type AtlasMemorySourceSnapshot =
+  | { status: "missing"; items: readonly [] }
+  | { status: "valid"; items: readonly AtlasMemoryItem[] }
+  | { status: "invalid"; items: readonly [] };
+
 export class LocalStorageAtlasMemoryRepository
 implements AtlasMemoryRepository {
   private readonly storage: AtlasMemoryStorage;
@@ -33,16 +38,21 @@ implements AtlasMemoryRepository {
   }
 
   load(): readonly AtlasMemoryItem[] {
+    const snapshot = this.inspect();
+    return snapshot.status === "valid" ? structuredClone(snapshot.items) : [];
+  }
+
+  inspect(): AtlasMemorySourceSnapshot {
     const saved = this.storage.getItem(ATLAS_MEMORY_STORAGE_KEY);
-    if (!saved) return [];
+    if (saved === null) return { status: "missing", items: [] };
 
     try {
       const parsed: unknown = JSON.parse(saved);
       return isAtlasMemoryEnvelope(parsed)
-        ? structuredClone(parsed.items)
-        : [];
+        ? { status: "valid", items: structuredClone(parsed.items) }
+        : { status: "invalid", items: [] };
     } catch {
-      return [];
+      return { status: "invalid", items: [] };
     }
   }
 

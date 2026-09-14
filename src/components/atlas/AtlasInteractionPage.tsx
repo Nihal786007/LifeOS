@@ -274,6 +274,7 @@ export default function AtlasInteractionPage({
                   type="submit"
                   disabled={
                     isLoading ||
+                    !memory.ready ||
                     question.trim().length === 0
                   }
                   className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 px-5 py-2.5 text-sm font-black text-slate-950 shadow-lg shadow-cyan-500/15 transition hover:-translate-y-0.5 hover:shadow-cyan-500/25 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"

@@ -109,9 +109,12 @@ export default function AtlasMemoryPanel({
         {error && (
           <p className="text-xs text-rose-300">{error}</p>
         )}
+        {memory.persistenceError && (
+          <p className="text-xs text-rose-300">{memory.persistenceError}</p>
+        )}
         <button
           type="button"
-          disabled={!topic.trim() || !content.trim()}
+          disabled={!memory.ready || !topic.trim() || !content.trim()}
           onClick={save}
           className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-2.5 text-sm font-bold text-violet-200 transition hover:bg-violet-400/15 disabled:cursor-not-allowed disabled:opacity-40"
         >
@@ -150,7 +153,11 @@ export default function AtlasMemoryPanel({
           </article>
         ))}
 
-        {memory.activeMemories.length === 0 && (
+        {!memory.ready ? (
+          <p className="rounded-xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
+            Loading explicit memories…
+          </p>
+        ) : memory.activeMemories.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
             No active memories. Questions and ATLAS answers are not
             remembered automatically.

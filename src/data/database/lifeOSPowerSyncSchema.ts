@@ -32,6 +32,7 @@ export const POWERSYNC_HABIT_COMPLETIONS_TABLE =
 export const POWERSYNC_EXECUTION_RECORDS_TABLE =
   "execution_records" as const;
 export const POWERSYNC_PROFILES_TABLE = "profiles" as const;
+export const POWERSYNC_ATLAS_MEMORY_ITEMS_TABLE = "atlas_memory_items" as const;
 
 export const powerSyncCapturesTable = Table.createLocalOnly({
   text: column.text,
@@ -139,6 +140,18 @@ export const powerSyncProfilesTable = Table.createLocalOnly({
   profile_json: column.text,
 });
 
+export const powerSyncAtlasMemoryItemsTable = Table.createLocalOnly({
+  type: column.text,
+  topic: column.text,
+  content: column.text,
+  source: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  status: column.text,
+  supersedes_memory_id: column.text,
+  sort_order: column.integer,
+});
+
 export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_CAPTURES_TABLE]: powerSyncCapturesTable,
   [POWERSYNC_MIGRATION_JOURNAL_TABLE]: powerSyncMigrationJournalTable,
@@ -150,6 +163,7 @@ export const lifeOSPowerSyncSchema = new Schema({
   [POWERSYNC_HABIT_COMPLETIONS_TABLE]: powerSyncHabitCompletionsTable,
   [POWERSYNC_EXECUTION_RECORDS_TABLE]: powerSyncExecutionRecordsTable,
   [POWERSYNC_PROFILES_TABLE]: powerSyncProfilesTable,
+  [POWERSYNC_ATLAS_MEMORY_ITEMS_TABLE]: powerSyncAtlasMemoryItemsTable,
 });
 
 export type LifeOSPowerSyncDatabase =

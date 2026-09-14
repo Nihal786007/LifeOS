@@ -84,9 +84,8 @@ import {
   LocalStorageAtlasMemoryRepository,
 } from "./atlasMemory/localStorageAtlasMemoryRepository";
 
-import type {
-  AtlasMemoryRepository,
-} from "./atlasMemory/atlasMemoryRepository";
+import type { AsyncAtlasMemoryRepository } from "./atlasMemory/asyncAtlasMemoryRepository";
+import { PowerSyncAtlasMemoryRepository } from "./atlasMemory/powerSyncAtlasMemoryRepository";
 
 import {
   LocalStorageNotificationStateRepository,
@@ -107,7 +106,7 @@ export interface DataServices {
   executionHistoryRepository: AsyncExecutionHistoryRepository;
   profileRepository: AsyncProfileRepository;
   captureRepository: AsyncCaptureRepository;
-  atlasMemoryRepository: AtlasMemoryRepository;
+  atlasMemoryRepository: AsyncAtlasMemoryRepository;
   notificationStateRepository: NotificationStateRepository;
 }
 
@@ -179,9 +178,9 @@ function createBrowserDataServices(): DataServices {
       powerSyncDatabase,
       localStorageCaptureRepository
     ),
-    atlasMemoryRepository: new LocalStorageAtlasMemoryRepository(
-      window.localStorage,
-      window
+    atlasMemoryRepository: new PowerSyncAtlasMemoryRepository(
+      powerSyncDatabase,
+      new LocalStorageAtlasMemoryRepository(window.localStorage, window)
     ),
     notificationStateRepository: new LocalStorageNotificationStateRepository(
       window.localStorage,
