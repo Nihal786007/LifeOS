@@ -18,6 +18,7 @@ import {
 } from "../atlas/state/useAtlasCanonicalState";
 
 import {
+  DEFAULT_NOTIFICATION_PREFERENCES,
   NotificationEngine,
 } from "./notificationEngine.ts";
 
@@ -28,6 +29,7 @@ import type {
 
 import { NotificationStore } from "./notificationStore.ts";
 import { useDataServices } from "../data/DataServicesContext";
+import type { NotificationUIState } from "./notificationStore";
 
 export interface NotificationView extends LifeOSNotification {
   read: boolean;
@@ -52,11 +54,38 @@ export function useNotificationCenter(
     () => new NotificationStore(notificationStateRepository),
     [notificationStateRepository]
   );
-  const [uiState, setUIState] = useState(() => store.load());
+  const [uiState, setUIState] = useState<NotificationUIState | null>(null);
+  const [persistenceError, setPersistenceError] = useState<string | null>(null);
 
-  useEffect(() =>
-    store.subscribe(() => setUIState(store.load())),
-  [store]);
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: () => void = () => undefined;
+    void notificationStateRepository.initialize().then(() => {
+      if (!active) return;
+      setUIState(store.load());
+      setPersistenceError(null);
+      unsubscribe = store.subscribe(() => {
+        if (!active) return;
+        const persistence = notificationStateRepository.getPersistenceState();
+        if (persistence.phase === "error") {
+          setPersistenceError(
+            persistence.error?.message ?? "Notification settings could not be saved."
+          );
+          return;
+        }
+        setUIState(store.load());
+        setPersistenceError(null);
+      });
+    }).catch((error: unknown) => {
+      if (!active) return;
+      setPersistenceError(error instanceof Error ? error.message : String(error));
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [notificationStateRepository, store]);
 
   const deterministic = useMemo(
     () => orchestrator.buildDeterministicPackage(canonicalState),
@@ -76,30 +105,30 @@ export function useNotificationCenter(
         intelligence: deterministic.intelligenceReport,
         proactive,
         localDate: toLocalDateKey(canonicalState.capturedAt),
-        preferences: uiState.preferences,
+        preferences: uiState?.preferences ?? DEFAULT_NOTIFICATION_PREFERENCES,
       }),
     [
       canonicalState,
       deterministic.intelligenceReport,
       proactive,
-      uiState.preferences,
+      uiState?.preferences,
     ]
   );
 
   const dismissed = useMemo(
-    () => new Set(uiState.dismissedIds),
-    [uiState.dismissedIds]
+    () => new Set(uiState?.dismissedIds ?? []),
+    [uiState?.dismissedIds]
   );
-  const read = useMemo(() => new Set(uiState.readIds), [uiState.readIds]);
+  const read = useMemo(() => new Set(uiState?.readIds ?? []), [uiState?.readIds]);
   const notifications = useMemo<readonly NotificationView[]>(
     () =>
-      derived
+      (uiState ? derived : [])
         .filter((notification) => !dismissed.has(notification.id))
         .map((notification) => ({
           ...notification,
           read: read.has(notification.id),
         })),
-    [derived, dismissed, read]
+    [derived, dismissed, read, uiState]
   );
   const unreadCount = notifications.filter(
     (notification) => !notification.read
@@ -107,40 +136,48 @@ export function useNotificationCenter(
 
   const markRead = useCallback(
     (id: string) => {
-      setUIState((current) => store.markRead(current, id));
+      if (persistenceError) return;
+      setUIState((current) => current ? store.markRead(current, id) : current);
     },
-    [store]
+    [persistenceError, store]
   );
 
   const markAllRead = useCallback(() => {
-    setUIState((current) =>
-      store.markAllRead(
+    if (persistenceError) return;
+    setUIState((current) => current
+      ? store.markAllRead(
         current,
         notifications.map((notification) => notification.id)
       )
+      : current
     );
-  }, [notifications, store]);
+  }, [notifications, persistenceError, store]);
 
   const dismiss = useCallback(
     (id: string) => {
-      setUIState((current) => store.dismiss(current, id));
+      if (persistenceError) return;
+      setUIState((current) => current ? store.dismiss(current, id) : current);
     },
-    [store]
+    [persistenceError, store]
   );
 
   const setCategoryEnabled = useCallback(
     (category: NotificationCategory, enabled: boolean) => {
-      setUIState((current) =>
-        store.setCategoryEnabled(current, category, enabled)
+      if (persistenceError) return;
+      setUIState((current) => current
+        ? store.setCategoryEnabled(current, category, enabled)
+        : current
       );
     },
-    [store]
+    [persistenceError, store]
   );
 
   return {
     notifications,
     unreadCount,
-    preferences: uiState.preferences,
+    ready: uiState !== null,
+    persistenceError,
+    preferences: uiState?.preferences,
     markRead,
     markAllRead,
     dismiss,

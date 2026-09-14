@@ -91,9 +91,8 @@ import {
   LocalStorageNotificationStateRepository,
 } from "./notifications/localStorageNotificationStateRepository";
 
-import type {
-  NotificationStateRepository,
-} from "./notifications/notificationStateRepository";
+import type { AsyncNotificationStateRepository } from "./notifications/asyncNotificationStateRepository";
+import { PowerSyncNotificationStateRepository } from "./notifications/powerSyncNotificationStateRepository";
 
 import {
   ExecutionHistoryService,
@@ -107,7 +106,7 @@ export interface DataServices {
   profileRepository: AsyncProfileRepository;
   captureRepository: AsyncCaptureRepository;
   atlasMemoryRepository: AsyncAtlasMemoryRepository;
-  notificationStateRepository: NotificationStateRepository;
+  notificationStateRepository: AsyncNotificationStateRepository;
 }
 
 interface DataServicesProviderProps {
@@ -182,9 +181,12 @@ function createBrowserDataServices(): DataServices {
       powerSyncDatabase,
       new LocalStorageAtlasMemoryRepository(window.localStorage, window)
     ),
-    notificationStateRepository: new LocalStorageNotificationStateRepository(
-      window.localStorage,
-      window
+    notificationStateRepository: new PowerSyncNotificationStateRepository(
+      powerSyncDatabase,
+      new LocalStorageNotificationStateRepository(
+        window.localStorage,
+        window
+      )
     ),
   };
 

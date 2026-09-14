@@ -15,9 +15,14 @@ export const NOTIFICATION_STORAGE_KEY =
   "lifeos-notification-state-v1" as const;
 export const NOTIFICATION_STATE_VERSION = "1.0" as const;
 
-interface NotificationStateEnvelope extends NotificationPersistedState {
+export interface NotificationStateEnvelope extends NotificationPersistedState {
   version: typeof NOTIFICATION_STATE_VERSION;
 }
+
+export type NotificationStateSourceSnapshot =
+  | { status: "missing"; state: null }
+  | { status: "valid"; state: NotificationPersistedState }
+  | { status: "invalid"; state: null };
 
 export interface NotificationStateStorage {
   getItem(key: string): string | null;
@@ -30,7 +35,7 @@ export interface NotificationStateStorageEventTarget {
   removeEventListener(type: "storage", listener: EventListener): void;
 }
 
-function defaultState(): NotificationPersistedState {
+export function createDefaultNotificationState(): NotificationPersistedState {
   return {
     readIds: [],
     dismissedIds: [],
@@ -51,7 +56,7 @@ function validPreferences(value: unknown): value is NotificationPreferences {
   );
 }
 
-function copyPreferences(
+export function copyNotificationPreferences(
   preferences: NotificationPreferences
 ): NotificationPreferences {
   return {
@@ -77,13 +82,20 @@ implements NotificationStateRepository {
   }
 
   load(): NotificationPersistedState {
+    const snapshot = this.inspect();
+    return snapshot.status === "valid"
+      ? structuredClone(snapshot.state)
+      : createDefaultNotificationState();
+  }
+
+  inspect(): NotificationStateSourceSnapshot {
     const saved = this.storage.getItem(NOTIFICATION_STORAGE_KEY);
-    if (!saved) return defaultState();
+    if (saved === null) return { status: "missing", state: null };
 
     try {
       const parsed: unknown = JSON.parse(saved);
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-        return defaultState();
+        return { status: "invalid", state: null };
       }
 
       const candidate = parsed as Record<string, unknown>;
@@ -93,16 +105,16 @@ implements NotificationStateRepository {
         !validIds(candidate.dismissedIds) ||
         !validPreferences(candidate.preferences)
       ) {
-        return defaultState();
+        return { status: "invalid", state: null };
       }
 
-      return {
+      return { status: "valid", state: {
         readIds: structuredClone(candidate.readIds),
         dismissedIds: structuredClone(candidate.dismissedIds),
-        preferences: copyPreferences(candidate.preferences),
-      };
+        preferences: copyNotificationPreferences(candidate.preferences),
+      } };
     } catch {
-      return defaultState();
+      return { status: "invalid", state: null };
     }
   }
 
@@ -111,7 +123,7 @@ implements NotificationStateRepository {
       version: NOTIFICATION_STATE_VERSION,
       readIds: structuredClone(state.readIds),
       dismissedIds: structuredClone(state.dismissedIds),
-      preferences: copyPreferences(state.preferences),
+      preferences: copyNotificationPreferences(state.preferences),
     };
 
     this.storage.setItem(

@@ -65,6 +65,8 @@ export default function NotificationCenter({
   const {
     notifications,
     unreadCount,
+    ready,
+    persistenceError,
     preferences,
     markRead,
     markAllRead,
@@ -179,7 +181,8 @@ export default function NotificationCenter({
                         {CATEGORY_LABELS[category]}
                         <input
                           type="checkbox"
-                          checked={preferences[category]}
+                          checked={preferences?.[category] ?? true}
+                          disabled={!ready}
                           onChange={(event) =>
                             setCategoryEnabled(category, event.target.checked)
                           }
@@ -193,6 +196,14 @@ export default function NotificationCenter({
             )}
 
             <div className="flex min-h-0 flex-1 flex-col">
+              {ready && persistenceError && (
+                <p
+                  className="shrink-0 border-b border-rose-400/20 bg-rose-400/10 px-5 py-3 text-xs text-rose-200"
+                  role="alert"
+                >
+                  Notification settings could not be saved. {persistenceError}
+                </p>
+              )}
               {notifications.length > 0 && (
                 <div className="flex shrink-0 items-center justify-between border-b border-slate-800/80 px-5 py-3">
                   <p className="text-xs text-slate-500">
@@ -211,7 +222,13 @@ export default function NotificationCenter({
               )}
 
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
-                {notifications.length === 0 ? (
+                {!ready ? (
+                  <div className="flex h-full min-h-48 items-center justify-center px-8 text-center text-sm text-slate-400">
+                    {persistenceError
+                      ? `Notification settings could not be loaded. ${persistenceError}`
+                      : "Loading notification settings…"}
+                  </div>
+                ) : notifications.length === 0 ? (
                   <div className="flex h-full min-h-48 items-center justify-center px-8 text-center">
                     <div>
                       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.05] text-cyan-300">
