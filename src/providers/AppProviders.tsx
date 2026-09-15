@@ -51,6 +51,9 @@ import {
   DataServicesProvider,
 } from "../data/DataServicesContext";
 
+import { AuthProvider } from "../auth/AuthContext";
+import AuthDataBoundary from "../components/auth/AuthDataBoundary";
+
 interface AppProvidersProps {
   children: ReactNode;
 }
@@ -59,28 +62,32 @@ export function AppProviders({
   children,
 }: AppProvidersProps) {
   return (
-    <DataServicesProvider>
-      <AppProvider>
-        <TaskProvider>
-          <PlanningStateProvider>
-            <LifeGoalsProvider>
-              <MonthlyPlanningProvider>
-                <WeeklyPlanningProvider>
-                  <XPProvider>
-                    <HabitProvider>
-                      <HabitExecutionProvider>
-                        <PlanningExecutionProvider>
-                          {children}
-                        </PlanningExecutionProvider>
-                      </HabitExecutionProvider>
-                    </HabitProvider>
-                  </XPProvider>
-                </WeeklyPlanningProvider>
-              </MonthlyPlanningProvider>
-            </LifeGoalsProvider>
-          </PlanningStateProvider>
-        </TaskProvider>
-      </AppProvider>
-    </DataServicesProvider>
+    <AuthProvider>
+      <AuthDataBoundary>
+        <DataServicesProvider>
+          <AppProvider>
+            <TaskProvider>
+              <PlanningStateProvider>
+                <LifeGoalsProvider>
+                  <MonthlyPlanningProvider>
+                    <WeeklyPlanningProvider>
+                      <XPProvider>
+                        <HabitProvider>
+                          <HabitExecutionProvider>
+                            <PlanningExecutionProvider>
+                              {children}
+                            </PlanningExecutionProvider>
+                          </HabitExecutionProvider>
+                        </HabitProvider>
+                      </XPProvider>
+                    </WeeklyPlanningProvider>
+                  </MonthlyPlanningProvider>
+                </LifeGoalsProvider>
+              </PlanningStateProvider>
+            </TaskProvider>
+          </AppProvider>
+        </DataServicesProvider>
+      </AuthDataBoundary>
+    </AuthProvider>
   );
 }
