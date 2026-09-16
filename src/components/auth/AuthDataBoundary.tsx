@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { selectAuthDataAccess } from "../../auth/authState";
 import { useAuth } from "../../auth/AuthContext";
 import AuthScreen from "./AuthScreen";
+import { useAccountData } from "../../data/account/AccountDataContext";
 
 interface AuthDataBoundaryProps {
   children: ReactNode;
@@ -10,6 +11,7 @@ interface AuthDataBoundaryProps {
 
 export default function AuthDataBoundary({ children }: AuthDataBoundaryProps) {
   const auth = useAuth();
+  const account = useAccountData();
   const access = selectAuthDataAccess(auth);
 
   if (access === "wait-for-auth") {
@@ -30,7 +32,11 @@ export default function AuthDataBoundary({ children }: AuthDataBoundaryProps) {
 
   if (access === "show-auth") return <AuthScreen />;
 
-  if (access === "show-app") return <>{children}</>;
+  if (account.phase === "ready") return <>{children}</>;
+
+  if (account.phase === "checking" || account.phase === "preparing") {
+    return <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-sm text-slate-400" role="status">{account.phase === "checking" ? "Checking your account data…" : "Preparing your secure LifeOS workspace…"}</main>;
+  }
 
   return (
     <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-4 py-10 text-white">
@@ -42,14 +48,19 @@ export default function AuthDataBoundary({ children }: AuthDataBoundaryProps) {
           Choose your data setup next
         </h1>
         <p className="mt-3 text-sm leading-6 text-slate-400">
-          Signed in as {auth.identity?.email ?? "your account"}. LifeOS is intentionally not opening the unbound device database until you choose whether to adopt it or use cloud data.
+          Signed in as {auth.identity?.email ?? "your account"}. Choose what LifeOS should do with data already stored on this device.
         </p>
+        {account.error && <p className="mt-4 rounded-xl border border-rose-500/30 bg-rose-950/30 px-4 py-3 text-sm text-rose-200" role="alert">{account.error}</p>}
+        <div className="mt-6 grid gap-3 text-left">
+          <button type="button" onClick={() => void account.chooseAdoption()} className="rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-5 py-4 text-left transition hover:border-cyan-300"><span className="block font-black text-cyan-200">Adopt this device’s data into this account</span><span className="mt-1 block text-xs leading-5 text-slate-400">Uploads canonical LifeOS data only after conflict checks.</span></button>
+          <button type="button" onClick={() => void account.chooseCloud()} className="rounded-xl border border-slate-700 px-5 py-4 text-left transition hover:border-cyan-400/50"><span className="block font-black text-slate-100">Use existing cloud data</span><span className="mt-1 block text-xs leading-5 text-slate-400">Leaves this device’s unbound data unchanged.</span></button>
+        </div>
         <button
           type="button"
           onClick={() => void auth.signOut()}
           className="mt-6 rounded-xl border border-slate-700 px-5 py-3 text-sm font-bold text-slate-200 transition hover:border-cyan-400/50 hover:text-cyan-300"
         >
-          Sign out
+          Cancel sign-in setup
         </button>
       </section>
     </main>

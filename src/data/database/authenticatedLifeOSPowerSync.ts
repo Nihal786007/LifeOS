@@ -127,6 +127,12 @@ export const authenticatedLifeOSPowerSyncSchema = new Schema({
     ...ownedEntityColumns,
     state_json: column.text,
   }),
+  account_binding: Table.createLocalOnly({
+    user_hash: column.text,
+    setup_choice: column.text,
+    adoption_version: column.integer,
+    completed_at: column.text,
+  }),
   migration_journal: Table.createLocalOnly({
     source_key: column.text,
     record_count: column.integer,
@@ -149,13 +155,17 @@ export function assertAuthenticatedUserId(userId: string): string {
 }
 
 export async function authenticatedDatabaseName(userId: string): Promise<string> {
+  return `lifeos-user-${await authenticatedUserHash(userId)}-v1.sqlite`;
+}
+
+export async function authenticatedUserHash(userId: string): Promise<string> {
   const normalized = assertAuthenticatedUserId(userId);
   const bytes = new TextEncoder().encode(`lifeos:${normalized}`);
   const digest = await globalThis.crypto.subtle.digest("SHA-256", bytes);
   const hash = Array.from(new Uint8Array(digest), (value) =>
     value.toString(16).padStart(2, "0")
   ).join("");
-  return `lifeos-user-${hash.slice(0, 32)}-v1.sqlite`;
+  return hash.slice(0, 32);
 }
 
 export async function createAuthenticatedLifeOSPowerSyncDatabase(

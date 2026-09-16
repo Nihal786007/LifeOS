@@ -53,6 +53,7 @@ import {
 
 import { AuthProvider } from "../auth/AuthContext";
 import AuthDataBoundary from "../components/auth/AuthDataBoundary";
+import { AccountDataProvider, useAccountData } from "../data/account/AccountDataContext";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -63,8 +64,22 @@ export function AppProviders({
 }: AppProvidersProps) {
   return (
     <AuthProvider>
-      <AuthDataBoundary>
-        <DataServicesProvider>
+      <AccountDataProvider>
+        <AuthDataBoundary>
+          <AuthenticatedCanonicalProviders>
+            {children}
+          </AuthenticatedCanonicalProviders>
+        </AuthDataBoundary>
+      </AccountDataProvider>
+    </AuthProvider>
+  );
+}
+
+function AuthenticatedCanonicalProviders({ children }: AppProvidersProps) {
+  const { services } = useAccountData();
+  if (!services) throw new Error("Authenticated data services are unavailable");
+  return (
+        <DataServicesProvider services={services}>
           <AppProvider>
             <TaskProvider>
               <PlanningStateProvider>
@@ -87,7 +102,5 @@ export function AppProviders({
             </TaskProvider>
           </AppProvider>
         </DataServicesProvider>
-      </AuthDataBoundary>
-    </AuthProvider>
   );
 }

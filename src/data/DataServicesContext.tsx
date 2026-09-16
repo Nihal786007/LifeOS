@@ -118,7 +118,8 @@ const DataServicesContext = createContext<DataServices | null>(null);
 
 let browserDataServices: DataServices | undefined;
 
-function createBrowserDataServices(): DataServices {
+// eslint-disable-next-line react-refresh/only-export-components
+export function createUnboundBrowserDataServices(): DataServices {
   if (browserDataServices) return browserDataServices;
 
   const localStorageCaptureRepository = new LocalStorageCaptureRepository(
@@ -198,7 +199,7 @@ export function DataServicesProvider({
   services,
 }: DataServicesProviderProps) {
   const [resolvedServices] = useState<DataServices>(() => {
-    const resolved = services ?? createBrowserDataServices();
+    const resolved = services ?? createUnboundBrowserDataServices();
     ExecutionHistoryService.configureRepository(
       resolved.executionHistoryRepository
     );
@@ -227,8 +228,9 @@ export function DataServicesProvider({
 
     return () => {
       active = false;
+      ExecutionHistoryService.releaseRepository(resolvedServices.executionHistoryRepository);
     };
-  }, []);
+  }, [resolvedServices]);
 
   if (executionHistoryPersistence.phase !== "hydrated") {
     return (

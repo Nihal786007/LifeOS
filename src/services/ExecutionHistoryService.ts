@@ -81,6 +81,20 @@ export class ExecutionHistoryService {
     }
   }
 
+  static releaseRepository(repository: CompatibleRepository): void {
+    if (this.repository !== repository) return;
+    this.repositoryUnsubscribe();
+    this.repositoryUnsubscribe = () => undefined;
+    this.repository = null;
+    this.records = [];
+    this.phase = "uninitialized";
+    this.persistenceError = null;
+    this.initialization = undefined;
+    this.mutationVersion = 0;
+    this.expectedSnapshot = null;
+    this.notify();
+  }
+
   static initialize(
     onPhase?: (phase: "opening" | "migration") => void
   ): Promise<ExecutionRecord[]> {
