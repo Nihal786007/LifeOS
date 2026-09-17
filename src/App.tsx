@@ -28,7 +28,7 @@ import Atlas from "./pages/Atlas";
 import Reviews from "./pages/Reviews";
 
 import {
-  createLocalAtlasAIOrchestrator,
+  createAtlasAIOrchestrator,
 } from "./atlas/composition/createLocalAtlasAIOrchestrator";
 
 import {
@@ -51,7 +51,7 @@ function AppContent() {
   const mainContentRef = useRef<HTMLElement>(null);
 
   const atlasOrchestrator = useMemo(
-    () => createLocalAtlasAIOrchestrator(),
+    () => createAtlasAIOrchestrator(),
     []
   );
 
