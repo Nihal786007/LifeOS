@@ -133,6 +133,14 @@ export const authenticatedLifeOSPowerSyncSchema = new Schema({
     adoption_version: column.integer,
     completed_at: column.text,
   }),
+  adoption_journal: Table.createLocalOnly({
+    user_hash: column.text,
+    adoption_version: column.integer,
+    source_hashes_json: column.text,
+    completed_domains_json: column.text,
+    started_at: column.text,
+    updated_at: column.text,
+  }),
   migration_journal: Table.createLocalOnly({
     source_key: column.text,
     record_count: column.integer,

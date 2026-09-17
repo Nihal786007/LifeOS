@@ -199,11 +199,7 @@ export function DataServicesProvider({
   services,
 }: DataServicesProviderProps) {
   const [resolvedServices] = useState<DataServices>(() => {
-    const resolved = services ?? createUnboundBrowserDataServices();
-    ExecutionHistoryService.configureRepository(
-      resolved.executionHistoryRepository
-    );
-    return resolved;
+    return services ?? createUnboundBrowserDataServices();
   });
 
   const [executionHistoryPersistence, setExecutionHistoryPersistence] =
@@ -214,6 +210,9 @@ export function DataServicesProvider({
 
   useEffect(() => {
     let active = true;
+    ExecutionHistoryService.configureRepository(
+      resolvedServices.executionHistoryRepository
+    );
 
     void ExecutionHistoryService.initialize((phase) => {
       if (active) setExecutionHistoryPersistence({ phase, error: null });

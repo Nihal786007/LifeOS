@@ -38,6 +38,23 @@ export default function AuthDataBoundary({ children }: AuthDataBoundaryProps) {
     return <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-sm text-slate-400" role="status">{account.phase === "checking" ? "Checking your account data…" : "Preparing your secure LifeOS workspace…"}</main>;
   }
 
+  if (account.phase === "conflict") {
+    return (
+      <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-4 py-10 text-white">
+        <section className="w-full max-w-lg rounded-3xl border border-amber-500/30 bg-slate-900/90 p-7 shadow-2xl shadow-amber-950/20" role="alert">
+          <p className="text-xs font-black uppercase tracking-[0.3em] text-amber-300">Data conflict</p>
+          <h1 className="mt-3 text-2xl font-black">Automatic adoption cannot continue safely</h1>
+          <p className="mt-3 text-sm leading-6 text-slate-300">This device and your cloud account both contain different data. LifeOS has not merged or replaced either version.</p>
+          {account.conflictDomains.length > 0 && <p className="mt-4 rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-400">Affected areas: {account.conflictDomains.join(", ")}</p>}
+          <div className="mt-6 grid gap-3">
+            <button type="button" onClick={() => void account.chooseCloud()} className="rounded-xl border border-cyan-400/40 bg-cyan-400/10 px-5 py-4 text-left transition hover:border-cyan-300"><span className="block font-black text-cyan-200">Use existing cloud data</span><span className="mt-1 block text-xs leading-5 text-slate-400">Keeps the original device data unchanged and opens this account’s cloud workspace.</span></button>
+            <button type="button" onClick={() => void auth.signOut()} className="rounded-xl border border-slate-700 px-5 py-4 text-left transition hover:border-amber-400/50"><span className="block font-black text-slate-100">Keep device data and cancel setup</span><span className="mt-1 block text-xs leading-5 text-slate-400">Signs out without merging or replacing either data set.</span></button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-4 py-10 text-white">
       <section className="w-full max-w-lg rounded-3xl border border-slate-800 bg-slate-900/80 p-7 text-center shadow-2xl shadow-cyan-950/20">

@@ -115,7 +115,7 @@ test("authenticated schema contains exactly 11 synced tables and bounded local m
   const synced = json.tables.filter((table) => !table.local_only);
   const local = json.tables.filter((table) => table.local_only);
   assert.equal(synced.length, 11);
-  assert.deepEqual(local.map((table) => table.name).sort(), ["account_binding", "migration_journal"]);
+  assert.deepEqual(local.map((table) => table.name).sort(), ["account_binding", "adoption_journal", "migration_journal"]);
   for (const table of synced) {
     assert.ok(table.columns.some((column) => column.name === "user_id"));
     assert.ok(table.columns.some((column) => column.name === "entity_id"));
