@@ -188,7 +188,7 @@ export function buildGeminiAtlasRequest(request: HostedAtlasRequest) {
     generationConfig: {
       maxOutputTokens: 512,
       responseFormat: {
-        text: { mimeType: "application/json", schema: ATLAS_OUTPUT_SCHEMA },
+        text: { mimeType: "APPLICATION_JSON", schema: ATLAS_OUTPUT_SCHEMA },
       },
     },
   };
