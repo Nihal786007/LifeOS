@@ -4,7 +4,10 @@ import {
   resolveSupabasePublishableKey,
   type AtlasRuntimeEnvironment,
 } from "../../supabase/functions/atlas-reason/runtimeConfig.ts";
-import { createHostedRuntimeRegistration } from
+import {
+  createHostedProviderSelectionDiagnostic,
+  createHostedRuntimeRegistration,
+} from
   "../../supabase/functions/atlas-reason/runtimeRegistry.ts";
 
 function environment(values: Record<string, string | undefined>): AtlasRuntimeEnvironment {
@@ -123,4 +126,58 @@ test("registers Qwen only from normalized server-side configuration", () => {
     qwenAdapterRegistered: true,
   });
   assert.equal(JSON.stringify(runtime.diagnostics).includes("server-only-qwen-key"), false);
+  assert.deepEqual(createHostedProviderSelectionDiagnostic(runtime), {
+    configuredProviderId: "qwen",
+    selectedProviderId: "qwen",
+    providerRegistered: true,
+    qwenApiKeyPresent: true,
+    qwenModelConfigured: true,
+    qwenBaseUrlConfigured: true,
+  });
+});
+
+test("reports Qwen as unavailable without exposing missing or configured values", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: "qwen",
+    QWEN_ATLAS_MODEL: "qwen3.7-plus-2026-05-26",
+    QWEN_ATLAS_BASE_URL: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+  }));
+  assert.deepEqual(createHostedProviderSelectionDiagnostic(runtime), {
+    configuredProviderId: "qwen",
+    selectedProviderId: null,
+    providerRegistered: false,
+    qwenApiKeyPresent: false,
+    qwenModelConfigured: true,
+    qwenBaseUrlConfigured: true,
+  });
+});
+
+test("keeps Gemini selection unchanged and fails closed for unsupported providers", () => {
+  const gemini = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: "gemini",
+    GEMINI_API_KEY: "server-only-gemini-key",
+  }));
+  assert.deepEqual(createHostedProviderSelectionDiagnostic(gemini), {
+    configuredProviderId: "gemini",
+    selectedProviderId: "gemini",
+    providerRegistered: true,
+    qwenApiKeyPresent: false,
+    qwenModelConfigured: false,
+    qwenBaseUrlConfigured: false,
+  });
+
+  const unsupportedValue = "private-provider-value";
+  const unsupported = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: unsupportedValue,
+  }));
+  const diagnostic = createHostedProviderSelectionDiagnostic(unsupported);
+  assert.deepEqual(diagnostic, {
+    configuredProviderId: "unknown",
+    selectedProviderId: null,
+    providerRegistered: false,
+    qwenApiKeyPresent: false,
+    qwenModelConfigured: false,
+    qwenBaseUrlConfigured: false,
+  });
+  assert.equal(JSON.stringify(diagnostic).includes(unsupportedValue), false);
 });

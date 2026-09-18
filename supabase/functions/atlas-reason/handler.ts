@@ -11,11 +11,13 @@ import {
   buildHostedAtlasResponse,
 } from "./providerRegistry.ts";
 import { isHostedProviderFailure } from "./providerFailure.ts";
+import type { HostedProviderSelectionDiagnostic } from "./runtimeRegistry.ts";
 
 export interface AtlasReasonHandlerDependencies {
   authenticate(accessToken: string): Promise<{ userId: string } | null>;
   registry: HostedModelAdapterRegistry;
   configuredProvider: string | undefined;
+  providerSelectionDiagnostic?: HostedProviderSelectionDiagnostic;
   timeoutMs?: number;
   now?: () => number;
 }
@@ -61,21 +63,30 @@ export function createAtlasReasonHandler(dependencies: AtlasReasonHandlerDepende
   const timeoutMs = dependencies.timeoutMs ?? 25_000;
   const now = dependencies.now ?? Date.now;
   return async (request: Request): Promise<Response> => {
+    const diagnosticRequested = request.method === "GET" &&
+      new URL(request.url).searchParams.get("diagnostic") === "provider-selection";
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         },
       });
     }
-    if (request.method !== "POST") return json(405, { error: "method_not_allowed" });
+    if (request.method !== "POST" && !diagnosticRequested) {
+      return json(405, { error: "method_not_allowed" });
+    }
     const token = bearerToken(request);
     if (!token) return json(401, { error: "authentication_required" });
     const identity = await dependencies.authenticate(token);
     if (!identity?.userId) return json(401, { error: "invalid_or_expired_token" });
+    if (diagnosticRequested) {
+      return dependencies.providerSelectionDiagnostic
+        ? json(200, dependencies.providerSelectionDiagnostic)
+        : json(503, { error: "provider_diagnostic_unavailable" });
+    }
     if (!dependencies.configuredProvider) {
       return json(503, { error: "hosted_provider_not_configured" });
     }

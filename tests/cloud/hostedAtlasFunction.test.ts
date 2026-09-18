@@ -9,6 +9,8 @@ import {
   type HostedModelAdapter,
 } from "../../supabase/functions/atlas-reason/providerRegistry.ts";
 import { HostedProviderFailure } from "../../supabase/functions/atlas-reason/providerFailure.ts";
+import type { HostedProviderSelectionDiagnostic } from
+  "../../supabase/functions/atlas-reason/runtimeRegistry.ts";
 
 function adapter(overrides: Partial<HostedModelAdapter> = {}): HostedModelAdapter {
   return {
@@ -24,6 +26,13 @@ function request(body: unknown, token?: string) {
     headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify(body),
   });
+}
+
+function diagnosticRequest(token?: string) {
+  return new Request(
+    "https://example.supabase.co/functions/v1/atlas-reason?diagnostic=provider-selection",
+    { method: "GET", headers: token ? { Authorization: `Bearer ${token}` } : {} }
+  );
 }
 
 function handler(modelAdapter = adapter(), authenticate = async (token: string) =>
@@ -42,6 +51,33 @@ test("backend rejects missing, invalid, and expired authentication", async () =>
   assert.equal((await handler()(request(body))).status, 401);
   assert.equal((await handler()(request(body, "invalid"))).status, 401);
   assert.equal((await handler()(request(body, "expired"))).status, 401);
+});
+
+test("authenticated provider diagnostic returns only safe selection metadata without invoking a model", async () => {
+  let providerCalls = 0;
+  const model = adapter({ generate: async () => {
+    providerCalls += 1;
+    throw new Error("must not run");
+  } });
+  const diagnostic: HostedProviderSelectionDiagnostic = {
+    configuredProviderId: "qwen",
+    selectedProviderId: "qwen",
+    providerRegistered: true,
+    qwenApiKeyPresent: true,
+    qwenModelConfigured: true,
+    qwenBaseUrlConfigured: true,
+  };
+  const reason = createAtlasReasonHandler({
+    authenticate: async (token) => token === "valid-a" ? { userId: "user-a" } : null,
+    configuredProvider: "qwen",
+    registry: new HostedModelAdapterRegistry().register({ ...model, provider: "qwen" }),
+    providerSelectionDiagnostic: diagnostic,
+  });
+  assert.equal((await reason(diagnosticRequest())).status, 401);
+  const response = await reason(diagnosticRequest("valid-a"));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), diagnostic);
+  assert.equal(providerCalls, 0);
 });
 
 test("backend derives separate authenticated identities and never trusts client user_id", async () => {
@@ -116,6 +152,28 @@ test("backend returns only sanitized hosted-provider diagnostic metadata", async
   });
   assert.equal(unknownBody.includes("credential"), false);
   assert.equal(unknownBody.includes("prompt details"), false);
+});
+
+test("Qwen provider failures preserve only the safe selected provider ID", async () => {
+  const body = createHostedAtlasRequest(hostedTestRequest());
+  const qwen = adapter({
+    provider: "qwen",
+    generate: async () => {
+      throw new HostedProviderFailure({
+        provider: "qwen",
+        upstreamHttpStatus: 503,
+        category: "provider_server_error",
+      });
+    },
+  });
+  const response = await handler(qwen)(request(body, "valid-a"));
+  assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), {
+    error: "provider_failure",
+    provider: "qwen",
+    upstreamStatus: 503,
+    category: "provider_server_error",
+  });
 });
 
 test("backend timeout diagnostics remain local and sanitized", async () => {

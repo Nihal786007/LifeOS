@@ -20,9 +20,47 @@ export interface HostedRuntimeRegistration {
   diagnostics: HostedRuntimeDiagnostics;
 }
 
+export type HostedDiagnosticProviderId = "qwen" | "gemini" | "unknown";
+
+export interface HostedProviderSelectionDiagnostic {
+  configuredProviderId: HostedDiagnosticProviderId;
+  selectedProviderId: Exclude<HostedDiagnosticProviderId, "unknown"> | null;
+  providerRegistered: boolean;
+  qwenApiKeyPresent: boolean;
+  qwenModelConfigured: boolean;
+  qwenBaseUrlConfigured: boolean;
+}
+
 function normalized(environment: AtlasRuntimeEnvironment, name: string): string | undefined {
   const value = environment.get(name)?.trim();
   return value ? value : undefined;
+}
+
+function diagnosticProviderId(value: string | undefined): HostedDiagnosticProviderId {
+  return value === "qwen" || value === "gemini" ? value : "unknown";
+}
+
+export function createHostedProviderSelectionDiagnostic(
+  runtime: HostedRuntimeRegistration
+): HostedProviderSelectionDiagnostic {
+  const configuredProviderId = diagnosticProviderId(runtime.configuredProvider);
+  const selectedProviderId = (() => {
+    if (configuredProviderId === "unknown") return null;
+    try {
+      const resolved = runtime.registry.resolve(configuredProviderId).provider;
+      return resolved === "qwen" || resolved === "gemini" ? resolved : null;
+    } catch {
+      return null;
+    }
+  })();
+  return {
+    configuredProviderId,
+    selectedProviderId,
+    providerRegistered: selectedProviderId !== null,
+    qwenApiKeyPresent: runtime.diagnostics.qwenApiKeyPresent,
+    qwenModelConfigured: runtime.diagnostics.qwenAtlasModelPresent,
+    qwenBaseUrlConfigured: runtime.diagnostics.qwenApiBaseUrlPresent,
+  };
 }
 
 export function createHostedRuntimeRegistration(
