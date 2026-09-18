@@ -4,6 +4,8 @@ import {
   resolveSupabasePublishableKey,
   type AtlasRuntimeEnvironment,
 } from "../../supabase/functions/atlas-reason/runtimeConfig.ts";
+import { createHostedRuntimeRegistration } from
+  "../../supabase/functions/atlas-reason/runtimeRegistry.ts";
 
 function environment(values: Record<string, string | undefined>): AtlasRuntimeEnvironment {
   return { get: (name) => values[name] };
@@ -51,4 +53,44 @@ test("fails closed when the hosted default entry is empty", () => {
 
 test("fails closed when hosted and local configurations are both missing", () => {
   assert.throws(() => resolveSupabasePublishableKey(environment({})), sanitizedError);
+});
+
+test("registers Gemini from normalized request-time hosted configuration", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: " Gemini ",
+    GEMINI_API_KEY: " server-only-key ",
+    GEMINI_ATLAS_MODEL: " gemini-3.8-flash ",
+  }));
+  assert.equal(runtime.configuredProvider, "gemini");
+  assert.equal(runtime.registry.resolve("gemini").model, "gemini-3.8-flash");
+  assert.deepEqual(runtime.diagnostics, {
+    geminiApiKeyPresent: true,
+    atlasHostedProviderPresent: true,
+    geminiAtlasModelPresent: true,
+    geminiAdapterRegistered: true,
+  });
+});
+
+test("reports safe booleans and leaves Gemini unavailable when its key is absent", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: "gemini",
+    GEMINI_ATLAS_MODEL: "gemini-3.8-flash",
+  }));
+  assert.deepEqual(runtime.diagnostics, {
+    geminiApiKeyPresent: false,
+    atlasHostedProviderPresent: true,
+    geminiAtlasModelPresent: true,
+    geminiAdapterRegistered: false,
+  });
+  assert.throws(() => runtime.registry.resolve("gemini"), /not configured/);
+});
+
+test("does not expose configuration values through runtime diagnostics", () => {
+  const secret = "must-never-appear-in-diagnostics";
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: "gemini",
+    GEMINI_API_KEY: secret,
+    GEMINI_ATLAS_MODEL: "gemini-3.8-flash",
+  }));
+  assert.equal(JSON.stringify(runtime.diagnostics).includes(secret), false);
 });

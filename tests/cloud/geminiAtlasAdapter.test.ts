@@ -132,11 +132,15 @@ test("Gemini adapter surfaces HTTP errors and forwards cancellation without leak
 });
 
 test("Gemini remains server-only and is registered only when its server secret exists", () => {
-  const source = readFileSync(new URL(
+  const entrypoint = readFileSync(new URL(
     "../../supabase/functions/atlas-reason/index.ts", import.meta.url
   ), "utf8");
-  assert.match(source, /Deno\.env\.get\("GEMINI_API_KEY"\)/);
-  assert.match(source, /Deno\.env\.get\("GEMINI_ATLAS_MODEL"\)/);
-  assert.equal(source.includes("VITE_GEMINI"), false);
-  assert.equal(source.includes("register(createGeminiAtlasAdapter"), true);
+  const registration = readFileSync(new URL(
+    "../../supabase/functions/atlas-reason/runtimeRegistry.ts", import.meta.url
+  ), "utf8");
+  assert.match(entrypoint, /createHostedRuntimeRegistration\(Deno\.env\)/);
+  assert.match(registration, /normalized\(environment, "GEMINI_API_KEY"\)/);
+  assert.match(registration, /normalized\(environment, "GEMINI_ATLAS_MODEL"\)/);
+  assert.equal(`${entrypoint}\n${registration}`.includes("VITE_GEMINI"), false);
+  assert.equal(registration.includes("register(createGeminiAtlasAdapter"), true);
 });
