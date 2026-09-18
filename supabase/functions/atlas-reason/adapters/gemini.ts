@@ -9,6 +9,10 @@ import type {
   HostedModelAdapter,
   HostedModelAdapterResult,
 } from "../providerRegistry.ts";
+import {
+  HostedProviderFailure,
+  normalizeHostedProviderHttpFailure,
+} from "../providerFailure.ts";
 
 export const DEFAULT_GEMINI_ATLAS_MODEL = "gemini-3.8-flash";
 const GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
@@ -149,7 +153,11 @@ export function createGeminiAtlasAdapter(
         }
       );
       if (!response.ok) {
-        throw new Error(`Gemini request failed with HTTP ${response.status}.`);
+        throw new HostedProviderFailure({
+          provider: "gemini",
+          upstreamHttpStatus: response.status,
+          category: normalizeHostedProviderHttpFailure(response.status),
+        });
       }
       const payload = await response.json();
       const generated = responseText(payload);

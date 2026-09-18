@@ -7,6 +7,10 @@ import {
   createGeminiAtlasAdapter,
   DEFAULT_GEMINI_ATLAS_MODEL,
 } from "../../supabase/functions/atlas-reason/adapters/gemini.ts";
+import {
+  HostedProviderFailure,
+  type HostedProviderFailureCategory,
+} from "../../supabase/functions/atlas-reason/providerFailure.ts";
 import { hostedTestRequest } from "../atlas/hostedAtlasFixtures.ts";
 
 function geminiResponse(output: unknown, overrides: Record<string, unknown> = {}) {
@@ -104,17 +108,44 @@ test("Gemini adapter rejects malformed, extra-field, empty, and truncated output
   }] }), /incomplete or empty/);
 });
 
-test("Gemini adapter surfaces HTTP errors and forwards cancellation without leaking response bodies", async () => {
+test("Gemini adapter normalizes HTTP failures without leaking response bodies or credentials", async () => {
   const request = createHostedAtlasRequest(hostedTestRequest());
-  const failing = createGeminiAtlasAdapter({
-    apiKey: "secret",
-    fetchImpl: async () => new Response("sensitive vendor error", { status: 429 }),
-  });
-  await assert.rejects(() => failing.generate(request, {
-    signal: new AbortController().signal,
-    authenticatedUserId: "user-a",
-  }), (failure: unknown) => failure instanceof Error &&
-    failure.message === "Gemini request failed with HTTP 429.");
+  const cases: ReadonlyArray<readonly [number, HostedProviderFailureCategory]> = [
+    [400, "invalid_request_or_schema"],
+    [401, "authentication"],
+    [403, "permission"],
+    [404, "model_not_found_or_unavailable"],
+    [408, "timeout"],
+    [429, "rate_limited"],
+    [503, "provider_server_error"],
+    [418, "unknown_provider_failure"],
+  ];
+  for (const [status, category] of cases) {
+    const failing = createGeminiAtlasAdapter({
+      apiKey: "server-only-secret",
+      fetchImpl: async () => new Response(
+        "sensitive vendor body with prompt, token, and credential details",
+        { status }
+      ),
+    });
+    await assert.rejects(() => failing.generate(request, {
+      signal: new AbortController().signal,
+      authenticatedUserId: "user-a",
+    }), (failure: unknown) => {
+      assert.ok(failure instanceof HostedProviderFailure);
+      assert.equal(failure.provider, "gemini");
+      assert.equal(failure.upstreamHttpStatus, status);
+      assert.equal(failure.category, category);
+      const serialized = JSON.stringify(failure);
+      assert.equal(serialized.includes("sensitive vendor body"), false);
+      assert.equal(serialized.includes("server-only-secret"), false);
+      return true;
+    });
+  }
+});
+
+test("Gemini adapter forwards cancellation without converting it into vendor diagnostics", async () => {
+  const request = createHostedAtlasRequest(hostedTestRequest());
 
   const controller = new AbortController();
   const cancelling = createGeminiAtlasAdapter({

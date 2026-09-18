@@ -10,6 +10,7 @@ import {
   HostedModelAdapterRegistry,
   buildHostedAtlasResponse,
 } from "./providerRegistry.ts";
+import { isHostedProviderFailure } from "./providerFailure.ts";
 
 export interface AtlasReasonHandlerDependencies {
   authenticate(accessToken: string): Promise<{ userId: string } | null>;
@@ -113,11 +114,30 @@ export function createAtlasReasonHandler(dependencies: AtlasReasonHandlerDepende
       const response = buildHostedAtlasResponse(payload, adapter, result, Math.max(0, now() - startedAt));
       assertHostedAtlasResponse(response);
       return json(200, response);
-    } catch {
+    } catch (failure) {
       const timedOut = controller.signal.aborted;
-      return json(timedOut ? 504 : 502, {
-        error: timedOut ? "provider_timeout" : "provider_failure",
-        message: timedOut ? "Hosted provider timed out." : "Hosted provider failed safely.",
+      if (timedOut) {
+        return json(504, {
+          error: "provider_timeout",
+          provider: adapter.provider,
+          category: "timeout",
+          message: "Hosted provider timed out.",
+        });
+      }
+      if (isHostedProviderFailure(failure)) {
+        return json(502, {
+          error: "provider_failure",
+          provider: failure.provider,
+          ...(failure.upstreamHttpStatus === undefined
+            ? {} : { upstreamStatus: failure.upstreamHttpStatus }),
+          category: failure.category,
+        });
+      }
+      return json(502, {
+        error: "provider_failure",
+        provider: adapter.provider,
+        category: "unknown_provider_failure",
+        message: "Hosted provider failed safely.",
       });
     } finally {
       clearTimeout(timer);

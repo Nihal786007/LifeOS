@@ -8,6 +8,7 @@ import {
   HostedModelAdapterRegistry,
   type HostedModelAdapter,
 } from "../../supabase/functions/atlas-reason/providerRegistry.ts";
+import { HostedProviderFailure } from "../../supabase/functions/atlas-reason/providerFailure.ts";
 
 function adapter(overrides: Partial<HostedModelAdapter> = {}): HostedModelAdapter {
   return {
@@ -30,7 +31,7 @@ function handler(modelAdapter = adapter(), authenticate = async (token: string) 
   timeoutMs = 100) {
   return createAtlasReasonHandler({
     authenticate,
-    configuredProvider: "openai",
+    configuredProvider: modelAdapter.provider,
     registry: new HostedModelAdapterRegistry().register(modelAdapter),
     timeoutMs,
   });
@@ -69,6 +70,66 @@ test("backend rejects unknown refs, provider failures, oversized requests, and t
     options.signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
   }) });
   assert.equal((await handler(slow, undefined, 5)(request(body, "valid-a"))).status, 504);
+});
+
+test("backend returns only sanitized hosted-provider diagnostic metadata", async () => {
+  const body = createHostedAtlasRequest(hostedTestRequest());
+  const diagnosed = adapter({
+    provider: "gemini",
+    generate: async () => {
+      throw new HostedProviderFailure({
+        provider: "gemini",
+        upstreamHttpStatus: 404,
+        category: "model_not_found_or_unavailable",
+      });
+    },
+  });
+  const response = await handler(diagnosed)(request(body, "valid-a"));
+  assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), {
+    error: "provider_failure",
+    provider: "gemini",
+    upstreamStatus: 404,
+    category: "model_not_found_or_unavailable",
+  });
+
+  const unknown = adapter({
+    provider: "gemini",
+    generate: async () => {
+      throw new Error("vendor response body containing credential and prompt details");
+    },
+  });
+  const unknownResponse = await handler(unknown)(request(body, "valid-a"));
+  assert.equal(unknownResponse.status, 502);
+  const unknownBody = await unknownResponse.text();
+  assert.deepEqual(JSON.parse(unknownBody), {
+    error: "provider_failure",
+    provider: "gemini",
+    category: "unknown_provider_failure",
+    message: "Hosted provider failed safely.",
+  });
+  assert.equal(unknownBody.includes("credential"), false);
+  assert.equal(unknownBody.includes("prompt details"), false);
+});
+
+test("backend timeout diagnostics remain local and sanitized", async () => {
+  const body = createHostedAtlasRequest(hostedTestRequest());
+  const slow = adapter({
+    provider: "gemini",
+    generate: async (_body, options) => new Promise((_, reject) => {
+      options.signal.addEventListener("abort", () => reject(new Error("raw timeout detail")), {
+        once: true,
+      });
+    }),
+  });
+  const response = await handler(slow, undefined, 5)(request(body, "valid-a"));
+  assert.equal(response.status, 504);
+  assert.deepEqual(await response.json(), {
+    error: "provider_timeout",
+    provider: "gemini",
+    category: "timeout",
+    message: "Hosted provider timed out.",
+  });
 });
 
 test("client source contains no hosted vendor API secret names", () => {
