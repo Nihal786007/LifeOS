@@ -15,12 +15,18 @@ export interface HostedProviderFailureDetails {
   provider: HostedAtlasProviderFamily;
   category: HostedProviderFailureCategory;
   upstreamHttpStatus?: number;
+  googleStatus?: string;
+  reason?: string;
+  fieldViolationPaths?: readonly string[];
 }
 
 export class HostedProviderFailure extends Error {
   readonly provider: HostedAtlasProviderFamily;
   readonly category: HostedProviderFailureCategory;
   readonly upstreamHttpStatus?: number;
+  readonly googleStatus?: string;
+  readonly reason?: string;
+  readonly fieldViolationPaths?: readonly string[];
 
   constructor(details: HostedProviderFailureDetails) {
     super("Hosted provider request failed safely.");
@@ -28,6 +34,10 @@ export class HostedProviderFailure extends Error {
     this.provider = details.provider;
     this.category = details.category;
     this.upstreamHttpStatus = details.upstreamHttpStatus;
+    this.googleStatus = details.googleStatus;
+    this.reason = details.reason;
+    this.fieldViolationPaths = details.fieldViolationPaths === undefined
+      ? undefined : [...details.fieldViolationPaths];
   }
 }
 

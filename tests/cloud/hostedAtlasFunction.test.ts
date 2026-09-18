@@ -81,6 +81,9 @@ test("backend returns only sanitized hosted-provider diagnostic metadata", async
         provider: "gemini",
         upstreamHttpStatus: 404,
         category: "model_not_found_or_unavailable",
+        googleStatus: "NOT_FOUND",
+        reason: "MODEL_NOT_FOUND",
+        fieldViolationPaths: ["generationConfig.responseFormat"],
       });
     },
   });
@@ -91,6 +94,9 @@ test("backend returns only sanitized hosted-provider diagnostic metadata", async
     provider: "gemini",
     upstreamStatus: 404,
     category: "model_not_found_or_unavailable",
+    googleStatus: "NOT_FOUND",
+    reason: "MODEL_NOT_FOUND",
+    fieldViolationPaths: ["generationConfig.responseFormat"],
   });
 
   const unknown = adapter({

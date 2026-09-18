@@ -131,6 +131,11 @@ export function createAtlasReasonHandler(dependencies: AtlasReasonHandlerDepende
           ...(failure.upstreamHttpStatus === undefined
             ? {} : { upstreamStatus: failure.upstreamHttpStatus }),
           category: failure.category,
+          ...(failure.googleStatus === undefined
+            ? {} : { googleStatus: failure.googleStatus }),
+          ...(failure.reason === undefined ? {} : { reason: failure.reason }),
+          ...(failure.fieldViolationPaths === undefined
+            ? {} : { fieldViolationPaths: [...failure.fieldViolationPaths] }),
         });
       }
       return json(502, {

@@ -15,6 +15,8 @@ import {
 
 export const DEFAULT_GEMINI_ATLAS_MODEL = "gemini-3.8-flash";
 const GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta";
+const MAX_GOOGLE_ERROR_BODY_LENGTH = 16_384;
+const MAX_GOOGLE_FIELD_VIOLATIONS = 5;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -51,6 +53,73 @@ const ATLAS_OUTPUT_SCHEMA = {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+interface GoogleErrorMetadata {
+  googleStatus?: string;
+  reason?: string;
+  fieldViolationPaths?: readonly string[];
+}
+
+function safeMachineIdentifier(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  return /^[A-Z][A-Z0-9_]{0,62}$/.test(normalized) ? normalized : undefined;
+}
+
+function safeFieldPath(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim();
+  if (normalized.length === 0 || normalized.length > 160) return undefined;
+  return /^[A-Za-z][A-Za-z0-9_]*(?:\[\d+\])?(?:\.[A-Za-z][A-Za-z0-9_]*(?:\[\d+\])?)*$/.test(normalized)
+    ? normalized : undefined;
+}
+
+export function extractGoogleErrorMetadata(value: unknown): GoogleErrorMetadata {
+  if (!isRecord(value) || !isRecord(value.error)) return {};
+  const error = value.error;
+  const googleStatus = safeMachineIdentifier(error.status);
+  let reason: string | undefined;
+  const fieldViolationPaths: string[] = [];
+  if (Array.isArray(error.details)) {
+    for (const detail of error.details) {
+      if (!isRecord(detail)) continue;
+      const detailType = detail["@type"];
+      if (detailType === "type.googleapis.com/google.rpc.ErrorInfo" && reason === undefined) {
+        reason = safeMachineIdentifier(detail.reason);
+      }
+      if (detailType !== "type.googleapis.com/google.rpc.BadRequest" ||
+          !Array.isArray(detail.fieldViolations)) continue;
+      for (const violation of detail.fieldViolations) {
+        if (!isRecord(violation)) continue;
+        if (reason === undefined) reason = safeMachineIdentifier(violation.reason);
+        const field = safeFieldPath(violation.field);
+        if (field !== undefined && !fieldViolationPaths.includes(field) &&
+            fieldViolationPaths.length < MAX_GOOGLE_FIELD_VIOLATIONS) {
+          fieldViolationPaths.push(field);
+        }
+      }
+    }
+  }
+  return {
+    ...(googleStatus === undefined ? {} : { googleStatus }),
+    ...(reason === undefined ? {} : { reason }),
+    ...(fieldViolationPaths.length === 0 ? {} : { fieldViolationPaths }),
+  };
+}
+
+async function readGoogleErrorMetadata(response: Response): Promise<GoogleErrorMetadata> {
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("application/json")) return {};
+  const declaredLength = Number(response.headers.get("content-length"));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_GOOGLE_ERROR_BODY_LENGTH) return {};
+  try {
+    const body = await response.text();
+    if (body.length > MAX_GOOGLE_ERROR_BODY_LENGTH) return {};
+    return extractGoogleErrorMetadata(JSON.parse(body));
+  } catch {
+    return {};
+  }
 }
 
 function hasExactKeys(value: Record<string, unknown>, expected: readonly string[]): boolean {
@@ -150,10 +219,12 @@ export function createGeminiAtlasAdapter(
         }
       );
       if (!response.ok) {
+        const metadata = await readGoogleErrorMetadata(response);
         throw new HostedProviderFailure({
           provider: "gemini",
           upstreamHttpStatus: response.status,
           category: normalizeHostedProviderHttpFailure(response.status),
+          ...metadata,
         });
       }
       const payload = await response.json();

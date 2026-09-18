@@ -6,6 +6,7 @@ import {
   buildGeminiAtlasRequest,
   createGeminiAtlasAdapter,
   DEFAULT_GEMINI_ATLAS_MODEL,
+  extractGoogleErrorMetadata,
 } from "../../supabase/functions/atlas-reason/adapters/gemini.ts";
 import {
   HostedProviderFailure,
@@ -143,12 +144,118 @@ test("Gemini adapter normalizes HTTP failures without leaking response bodies or
       assert.equal(failure.provider, "gemini");
       assert.equal(failure.upstreamHttpStatus, status);
       assert.equal(failure.category, category);
+      assert.equal(failure.googleStatus, undefined);
+      assert.equal(failure.reason, undefined);
+      assert.equal(failure.fieldViolationPaths, undefined);
       const serialized = JSON.stringify(failure);
       assert.equal(serialized.includes("sensitive vendor body"), false);
       assert.equal(serialized.includes("server-only-secret"), false);
       return true;
     });
   }
+});
+
+test("Gemini adapter allowlists only bounded structured Google error metadata", async () => {
+  const oversized = "A".repeat(200);
+  const metadata = extractGoogleErrorMetadata({
+    error: {
+      code: 400,
+      status: "INVALID_ARGUMENT",
+      message: "raw vendor message containing a credential and prompt",
+      unexpected: { secret: "must-not-propagate" },
+      details: [
+        {
+          "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+          reason: "INVALID_JSON_PAYLOAD",
+          domain: "googleapis.com",
+          metadata: { credential: "must-not-propagate" },
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.BadRequest",
+          fieldViolations: [
+            { field: "generationConfig.responseFormat", description: "raw detail" },
+            { field: "contents[0].parts", reason: "FIELD_INVALID" },
+            { field: "generationConfig;credential=value" },
+            { field: oversized },
+          ],
+        },
+        {
+          "@type": "type.googleapis.com/google.rpc.DebugInfo",
+          reason: "SHOULD_NOT_PROPAGATE",
+          fieldViolations: [{ field: "headers.authorization" }],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(metadata, {
+    googleStatus: "INVALID_ARGUMENT",
+    reason: "INVALID_JSON_PAYLOAD",
+    fieldViolationPaths: ["generationConfig.responseFormat", "contents[0].parts"],
+  });
+  const serialized = JSON.stringify(metadata);
+  for (const forbidden of ["raw vendor", "credential", "prompt", "must-not-propagate",
+    "authorization", "SHOULD_NOT_PROPAGATE", oversized]) {
+    assert.equal(serialized.includes(forbidden), false);
+  }
+
+  assert.deepEqual(extractGoogleErrorMetadata({
+    error: {
+      status: "x".repeat(100),
+      details: [{
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        reason: "contains spaces and untrusted text",
+      }],
+    },
+  }), {});
+});
+
+test("Gemini adapter exposes safe JSON diagnostics and keeps non-JSON bodies opaque", async () => {
+  const request = createHostedAtlasRequest(hostedTestRequest());
+  const invoke = (response: Response) => createGeminiAtlasAdapter({
+    apiKey: "server-only-secret",
+    fetchImpl: async () => response,
+  }).generate(request, {
+    signal: new AbortController().signal,
+    authenticatedUserId: "user-a",
+  });
+  await assert.rejects(() => invoke(Response.json({
+    error: {
+      code: 400,
+      status: "INVALID_ARGUMENT",
+      message: "raw message must remain private",
+      details: [{
+        "@type": "type.googleapis.com/google.rpc.BadRequest",
+        fieldViolations: [{
+          field: "generationConfig.responseFormat",
+          reason: "FIELD_INVALID",
+          description: "raw description must remain private",
+        }],
+      }],
+    },
+  }, { status: 400 })), (failure: unknown) => {
+    assert.ok(failure instanceof HostedProviderFailure);
+    assert.equal(failure.googleStatus, "INVALID_ARGUMENT");
+    assert.equal(failure.reason, "FIELD_INVALID");
+    assert.deepEqual(failure.fieldViolationPaths, ["generationConfig.responseFormat"]);
+    const serialized = JSON.stringify(failure);
+    assert.equal(serialized.includes("raw message"), false);
+    assert.equal(serialized.includes("raw description"), false);
+    assert.equal(serialized.includes("server-only-secret"), false);
+    return true;
+  });
+  await assert.rejects(() => invoke(new Response(
+    "credential=private prompt=private", {
+      status: 400,
+      headers: { "Content-Type": "text/plain" },
+    }
+  )), (failure: unknown) => {
+    assert.ok(failure instanceof HostedProviderFailure);
+    assert.equal(failure.googleStatus, undefined);
+    assert.equal(failure.reason, undefined);
+    assert.equal(failure.fieldViolationPaths, undefined);
+    assert.equal(JSON.stringify(failure).includes("credential"), false);
+    return true;
+  });
 });
 
 test("Gemini adapter forwards cancellation without converting it into vendor diagnostics", async () => {
