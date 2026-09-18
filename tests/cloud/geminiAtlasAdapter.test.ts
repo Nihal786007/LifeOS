@@ -55,6 +55,13 @@ test("Gemini adapter serializes only bounded ATLAS grounding with structured out
   assert.equal(body.generationConfig.responseFormat.text.mimeType, "application/json");
   assert.deepEqual(body.generationConfig.responseFormat.text.schema.required,
     ["commentary", "factReferences", "limitations"]);
+  assert.equal("temperature" in body.generationConfig, false);
+  assert.equal(JSON.stringify(body.generationConfig).includes("maxLength"), false);
+  assert.equal(body.generationConfig.maxOutputTokens, 512);
+  assert.deepEqual(
+    Object.keys(body.generationConfig.responseFormat.text).sort(),
+    ["mimeType", "schema"]
+  );
   const grounding = JSON.parse(body.contents[0].parts[0].text);
   assert.deepEqual(grounding.allowedFactReferences,
     request.factCore.facts.map((fact) => fact.ref));

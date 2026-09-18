@@ -1,5 +1,4 @@
 import {
-  HOSTED_ATLAS_MAX_COMMENTARY_LENGTH,
   HOSTED_ATLAS_MAX_FACT_REFERENCES,
   HOSTED_ATLAS_MAX_LIMITATIONS,
   type HostedAtlasRequest,
@@ -32,7 +31,6 @@ const ATLAS_OUTPUT_SCHEMA = {
   properties: {
     commentary: {
       type: "string",
-      maxLength: HOSTED_ATLAS_MAX_COMMENTARY_LENGTH,
       description: "Concise grounded commentary that does not repeat the deterministic answer.",
     },
     factReferences: {
@@ -44,7 +42,7 @@ const ATLAS_OUTPUT_SCHEMA = {
     limitations: {
       type: "array",
       maxItems: HOSTED_ATLAS_MAX_LIMITATIONS,
-      items: { type: "string", maxLength: 240 },
+      items: { type: "string" },
       description: "Honest evidence limitations; use an empty array when none apply.",
     },
   },
@@ -119,7 +117,6 @@ export function buildGeminiAtlasRequest(request: HostedAtlasRequest) {
       }) }],
     }],
     generationConfig: {
-      temperature: 0.2,
       maxOutputTokens: 512,
       responseFormat: {
         text: { mimeType: "application/json", schema: ATLAS_OUTPUT_SCHEMA },
