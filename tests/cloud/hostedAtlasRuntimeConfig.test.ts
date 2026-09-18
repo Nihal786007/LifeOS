@@ -68,6 +68,10 @@ test("registers Gemini from normalized request-time hosted configuration", () =>
     atlasHostedProviderPresent: true,
     geminiAtlasModelPresent: true,
     geminiAdapterRegistered: true,
+    qwenApiKeyPresent: false,
+    qwenAtlasModelPresent: false,
+    qwenApiBaseUrlPresent: false,
+    qwenAdapterRegistered: false,
   });
 });
 
@@ -81,6 +85,10 @@ test("reports safe booleans and leaves Gemini unavailable when its key is absent
     atlasHostedProviderPresent: true,
     geminiAtlasModelPresent: true,
     geminiAdapterRegistered: false,
+    qwenApiKeyPresent: false,
+    qwenAtlasModelPresent: false,
+    qwenApiBaseUrlPresent: false,
+    qwenAdapterRegistered: false,
   });
   assert.throws(() => runtime.registry.resolve("gemini"), /not configured/);
 });
@@ -93,4 +101,26 @@ test("does not expose configuration values through runtime diagnostics", () => {
     GEMINI_ATLAS_MODEL: "gemini-3.8-flash",
   }));
   assert.equal(JSON.stringify(runtime.diagnostics).includes(secret), false);
+});
+
+test("registers Qwen only from normalized server-side configuration", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: " QWEN ",
+    QWEN_API_KEY: " server-only-qwen-key ",
+    QWEN_ATLAS_MODEL: " qwen3.7-plus-2026-05-26 ",
+    QWEN_ATLAS_BASE_URL: " https://workspace.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1 ",
+  }));
+  assert.equal(runtime.configuredProvider, "qwen");
+  assert.equal(runtime.registry.resolve("qwen").model, "qwen3.7-plus-2026-05-26");
+  assert.deepEqual(runtime.diagnostics, {
+    geminiApiKeyPresent: false,
+    atlasHostedProviderPresent: true,
+    geminiAtlasModelPresent: false,
+    geminiAdapterRegistered: false,
+    qwenApiKeyPresent: true,
+    qwenAtlasModelPresent: true,
+    qwenApiBaseUrlPresent: true,
+    qwenAdapterRegistered: true,
+  });
+  assert.equal(JSON.stringify(runtime.diagnostics).includes("server-only-qwen-key"), false);
 });

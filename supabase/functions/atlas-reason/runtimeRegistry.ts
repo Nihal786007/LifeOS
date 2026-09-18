@@ -1,4 +1,5 @@
 import { createGeminiAtlasAdapter } from "./adapters/gemini.ts";
+import { createQwenAtlasAdapter } from "./adapters/qwen.ts";
 import { HostedModelAdapterRegistry } from "./providerRegistry.ts";
 import type { AtlasRuntimeEnvironment } from "./runtimeConfig.ts";
 
@@ -7,6 +8,10 @@ export interface HostedRuntimeDiagnostics {
   atlasHostedProviderPresent: boolean;
   geminiAtlasModelPresent: boolean;
   geminiAdapterRegistered: boolean;
+  qwenApiKeyPresent: boolean;
+  qwenAtlasModelPresent: boolean;
+  qwenApiBaseUrlPresent: boolean;
+  qwenAdapterRegistered: boolean;
 }
 
 export interface HostedRuntimeRegistration {
@@ -27,11 +32,21 @@ export function createHostedRuntimeRegistration(
     ?.toLowerCase();
   const geminiApiKey = normalized(environment, "GEMINI_API_KEY");
   const geminiModel = normalized(environment, "GEMINI_ATLAS_MODEL");
+  const qwenApiKey = normalized(environment, "QWEN_API_KEY");
+  const qwenModel = normalized(environment, "QWEN_ATLAS_MODEL");
+  const qwenApiBaseUrl = normalized(environment, "QWEN_ATLAS_BASE_URL");
   const registry = new HostedModelAdapterRegistry();
   if (geminiApiKey) {
     registry.register(createGeminiAtlasAdapter({
       apiKey: geminiApiKey,
       model: geminiModel,
+    }));
+  }
+  if (qwenApiKey) {
+    registry.register(createQwenAtlasAdapter({
+      apiKey: qwenApiKey,
+      model: qwenModel,
+      apiBaseUrl: qwenApiBaseUrl,
     }));
   }
   return {
@@ -42,6 +57,10 @@ export function createHostedRuntimeRegistration(
       atlasHostedProviderPresent: configuredProvider !== undefined,
       geminiAtlasModelPresent: geminiModel !== undefined,
       geminiAdapterRegistered: geminiApiKey !== undefined,
+      qwenApiKeyPresent: qwenApiKey !== undefined,
+      qwenAtlasModelPresent: qwenModel !== undefined,
+      qwenApiBaseUrlPresent: qwenApiBaseUrl !== undefined,
+      qwenAdapterRegistered: qwenApiKey !== undefined,
     },
   };
 }
