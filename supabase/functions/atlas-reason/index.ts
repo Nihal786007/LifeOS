@@ -4,9 +4,10 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { createAtlasReasonHandler } from "./handler.ts";
 import { HostedModelAdapterRegistry } from "./providerRegistry.ts";
 import { createGeminiAtlasAdapter } from "./adapters/gemini.ts";
+import { resolveSupabasePublishableKey } from "./runtimeConfig.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-const publishableKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? "";
+const publishableKey = resolveSupabasePublishableKey(Deno.env);
 const configuredProvider = Deno.env.get("ATLAS_HOSTED_PROVIDER");
 const geminiApiKey = Deno.env.get("GEMINI_API_KEY")?.trim();
 const registry = new HostedModelAdapterRegistry();
