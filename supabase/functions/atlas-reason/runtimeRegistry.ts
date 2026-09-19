@@ -1,5 +1,6 @@
 import { createGeminiAtlasAdapter } from "./adapters/gemini.ts";
 import { createQwenAtlasAdapter } from "./adapters/qwen.ts";
+import { createMistralAtlasAdapter } from "./adapters/mistral.ts";
 import { HostedModelAdapterRegistry } from "./providerRegistry.ts";
 import type { AtlasRuntimeEnvironment } from "./runtimeConfig.ts";
 
@@ -12,6 +13,10 @@ export interface HostedRuntimeDiagnostics {
   qwenAtlasModelPresent: boolean;
   qwenApiBaseUrlPresent: boolean;
   qwenAdapterRegistered: boolean;
+  mistralApiKeyPresent: boolean;
+  mistralAtlasModelPresent: boolean;
+  mistralApiBaseUrlPresent: boolean;
+  mistralAdapterRegistered: boolean;
 }
 
 export interface HostedRuntimeRegistration {
@@ -20,7 +25,7 @@ export interface HostedRuntimeRegistration {
   diagnostics: HostedRuntimeDiagnostics;
 }
 
-export type HostedDiagnosticProviderId = "qwen" | "gemini" | "unknown";
+export type HostedDiagnosticProviderId = "qwen" | "gemini" | "mistral" | "unknown";
 
 export interface HostedProviderSelectionDiagnostic {
   configuredProviderId: HostedDiagnosticProviderId;
@@ -29,6 +34,9 @@ export interface HostedProviderSelectionDiagnostic {
   qwenApiKeyPresent: boolean;
   qwenModelConfigured: boolean;
   qwenBaseUrlConfigured: boolean;
+  mistralApiKeyPresent: boolean;
+  mistralModelConfigured: boolean;
+  mistralBaseUrlConfigured: boolean;
 }
 
 function normalized(environment: AtlasRuntimeEnvironment, name: string): string | undefined {
@@ -37,7 +45,8 @@ function normalized(environment: AtlasRuntimeEnvironment, name: string): string 
 }
 
 function diagnosticProviderId(value: string | undefined): HostedDiagnosticProviderId {
-  return value === "qwen" || value === "gemini" ? value : "unknown";
+  return value === "qwen" || value === "gemini" || value === "mistral"
+    ? value : "unknown";
 }
 
 export function createHostedProviderSelectionDiagnostic(
@@ -48,7 +57,8 @@ export function createHostedProviderSelectionDiagnostic(
     if (configuredProviderId === "unknown") return null;
     try {
       const resolved = runtime.registry.resolve(configuredProviderId).provider;
-      return resolved === "qwen" || resolved === "gemini" ? resolved : null;
+      return resolved === "qwen" || resolved === "gemini" || resolved === "mistral"
+        ? resolved : null;
     } catch {
       return null;
     }
@@ -60,6 +70,9 @@ export function createHostedProviderSelectionDiagnostic(
     qwenApiKeyPresent: runtime.diagnostics.qwenApiKeyPresent,
     qwenModelConfigured: runtime.diagnostics.qwenAtlasModelPresent,
     qwenBaseUrlConfigured: runtime.diagnostics.qwenApiBaseUrlPresent,
+    mistralApiKeyPresent: runtime.diagnostics.mistralApiKeyPresent,
+    mistralModelConfigured: runtime.diagnostics.mistralAtlasModelPresent,
+    mistralBaseUrlConfigured: runtime.diagnostics.mistralApiBaseUrlPresent,
   };
 }
 
@@ -73,6 +86,9 @@ export function createHostedRuntimeRegistration(
   const qwenApiKey = normalized(environment, "QWEN_API_KEY");
   const qwenModel = normalized(environment, "QWEN_ATLAS_MODEL");
   const qwenApiBaseUrl = normalized(environment, "QWEN_ATLAS_BASE_URL");
+  const mistralApiKey = normalized(environment, "MISTRAL_API_KEY");
+  const mistralModel = normalized(environment, "MISTRAL_ATLAS_MODEL");
+  const mistralApiBaseUrl = normalized(environment, "MISTRAL_ATLAS_BASE_URL");
   const registry = new HostedModelAdapterRegistry();
   if (geminiApiKey) {
     registry.register(createGeminiAtlasAdapter({
@@ -87,6 +103,13 @@ export function createHostedRuntimeRegistration(
       apiBaseUrl: qwenApiBaseUrl,
     }));
   }
+  if (mistralApiKey) {
+    registry.register(createMistralAtlasAdapter({
+      apiKey: mistralApiKey,
+      model: mistralModel,
+      apiBaseUrl: mistralApiBaseUrl,
+    }));
+  }
   return {
     configuredProvider,
     registry,
@@ -99,6 +122,10 @@ export function createHostedRuntimeRegistration(
       qwenAtlasModelPresent: qwenModel !== undefined,
       qwenApiBaseUrlPresent: qwenApiBaseUrl !== undefined,
       qwenAdapterRegistered: qwenApiKey !== undefined,
+      mistralApiKeyPresent: mistralApiKey !== undefined,
+      mistralAtlasModelPresent: mistralModel !== undefined,
+      mistralApiBaseUrlPresent: mistralApiBaseUrl !== undefined,
+      mistralAdapterRegistered: mistralApiKey !== undefined,
     },
   };
 }

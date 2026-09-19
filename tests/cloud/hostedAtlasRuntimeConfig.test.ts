@@ -75,6 +75,10 @@ test("registers Gemini from normalized request-time hosted configuration", () =>
     qwenAtlasModelPresent: false,
     qwenApiBaseUrlPresent: false,
     qwenAdapterRegistered: false,
+    mistralApiKeyPresent: false,
+    mistralAtlasModelPresent: false,
+    mistralApiBaseUrlPresent: false,
+    mistralAdapterRegistered: false,
   });
 });
 
@@ -92,6 +96,10 @@ test("reports safe booleans and leaves Gemini unavailable when its key is absent
     qwenAtlasModelPresent: false,
     qwenApiBaseUrlPresent: false,
     qwenAdapterRegistered: false,
+    mistralApiKeyPresent: false,
+    mistralAtlasModelPresent: false,
+    mistralApiBaseUrlPresent: false,
+    mistralAdapterRegistered: false,
   });
   assert.throws(() => runtime.registry.resolve("gemini"), /not configured/);
 });
@@ -124,6 +132,10 @@ test("registers Qwen only from normalized server-side configuration", () => {
     qwenAtlasModelPresent: true,
     qwenApiBaseUrlPresent: true,
     qwenAdapterRegistered: true,
+    mistralApiKeyPresent: false,
+    mistralAtlasModelPresent: false,
+    mistralApiBaseUrlPresent: false,
+    mistralAdapterRegistered: false,
   });
   assert.equal(JSON.stringify(runtime.diagnostics).includes("server-only-qwen-key"), false);
   assert.deepEqual(createHostedProviderSelectionDiagnostic(runtime), {
@@ -133,6 +145,9 @@ test("registers Qwen only from normalized server-side configuration", () => {
     qwenApiKeyPresent: true,
     qwenModelConfigured: true,
     qwenBaseUrlConfigured: true,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: false,
+    mistralBaseUrlConfigured: false,
   });
 });
 
@@ -149,6 +164,9 @@ test("reports Qwen as unavailable without exposing missing or configured values"
     qwenApiKeyPresent: false,
     qwenModelConfigured: true,
     qwenBaseUrlConfigured: true,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: false,
+    mistralBaseUrlConfigured: false,
   });
 });
 
@@ -164,6 +182,9 @@ test("keeps Gemini selection unchanged and fails closed for unsupported provider
     qwenApiKeyPresent: false,
     qwenModelConfigured: false,
     qwenBaseUrlConfigured: false,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: false,
+    mistralBaseUrlConfigured: false,
   });
 
   const unsupportedValue = "private-provider-value";
@@ -178,6 +199,55 @@ test("keeps Gemini selection unchanged and fails closed for unsupported provider
     qwenApiKeyPresent: false,
     qwenModelConfigured: false,
     qwenBaseUrlConfigured: false,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: false,
+    mistralBaseUrlConfigured: false,
   });
   assert.equal(JSON.stringify(diagnostic).includes(unsupportedValue), false);
+});
+
+test("registers Mistral only from normalized server-side configuration", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: " MISTRAL ",
+    MISTRAL_API_KEY: " server-only-mistral-key ",
+    MISTRAL_ATLAS_MODEL: " mistral-small-2603 ",
+    MISTRAL_ATLAS_BASE_URL: " https://api.mistral.ai/v1 ",
+  }));
+  assert.equal(runtime.configuredProvider, "mistral");
+  assert.equal(runtime.registry.resolve("mistral").model, "mistral-small-2603");
+  assert.equal(runtime.diagnostics.mistralApiKeyPresent, true);
+  assert.equal(runtime.diagnostics.mistralAtlasModelPresent, true);
+  assert.equal(runtime.diagnostics.mistralApiBaseUrlPresent, true);
+  assert.equal(runtime.diagnostics.mistralAdapterRegistered, true);
+  assert.deepEqual(createHostedProviderSelectionDiagnostic(runtime), {
+    configuredProviderId: "mistral",
+    selectedProviderId: "mistral",
+    providerRegistered: true,
+    qwenApiKeyPresent: false,
+    qwenModelConfigured: false,
+    qwenBaseUrlConfigured: false,
+    mistralApiKeyPresent: true,
+    mistralModelConfigured: true,
+    mistralBaseUrlConfigured: true,
+  });
+  assert.equal(JSON.stringify(runtime.diagnostics).includes("server-only-mistral-key"), false);
+});
+
+test("reports Mistral as unavailable when its server-side key is missing", () => {
+  const runtime = createHostedRuntimeRegistration(environment({
+    ATLAS_HOSTED_PROVIDER: "mistral",
+    MISTRAL_ATLAS_MODEL: "mistral-small-2603",
+    MISTRAL_ATLAS_BASE_URL: "https://api.mistral.ai/v1",
+  }));
+  assert.deepEqual(createHostedProviderSelectionDiagnostic(runtime), {
+    configuredProviderId: "mistral",
+    selectedProviderId: null,
+    providerRegistered: false,
+    qwenApiKeyPresent: false,
+    qwenModelConfigured: false,
+    qwenBaseUrlConfigured: false,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: true,
+    mistralBaseUrlConfigured: true,
+  });
 });

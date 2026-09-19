@@ -66,6 +66,9 @@ test("authenticated provider diagnostic returns only safe selection metadata wit
     qwenApiKeyPresent: true,
     qwenModelConfigured: true,
     qwenBaseUrlConfigured: true,
+    mistralApiKeyPresent: false,
+    mistralModelConfigured: false,
+    mistralBaseUrlConfigured: false,
   };
   const reason = createAtlasReasonHandler({
     authenticate: async (token) => token === "valid-a" ? { userId: "user-a" } : null,
@@ -173,6 +176,28 @@ test("Qwen provider failures preserve only the safe selected provider ID", async
     provider: "qwen",
     upstreamStatus: 503,
     category: "provider_server_error",
+  });
+});
+
+test("Mistral provider failures preserve only the safe selected provider ID", async () => {
+  const body = createHostedAtlasRequest(hostedTestRequest());
+  const mistral = adapter({
+    provider: "mistral",
+    generate: async () => {
+      throw new HostedProviderFailure({
+        provider: "mistral",
+        upstreamHttpStatus: 429,
+        category: "rate_limited",
+      });
+    },
+  });
+  const response = await handler(mistral)(request(body, "valid-a"));
+  assert.equal(response.status, 502);
+  assert.deepEqual(await response.json(), {
+    error: "provider_failure",
+    provider: "mistral",
+    upstreamStatus: 429,
+    category: "rate_limited",
   });
 });
 
