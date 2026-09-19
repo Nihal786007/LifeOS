@@ -188,6 +188,7 @@ test("Mistral provider failures preserve only the safe selected provider ID", as
         provider: "mistral",
         upstreamHttpStatus: 429,
         category: "rate_limited",
+        rateLimitRemaining: 0,
       });
     },
   });
@@ -198,6 +199,7 @@ test("Mistral provider failures preserve only the safe selected provider ID", as
     provider: "mistral",
     upstreamStatus: 429,
     category: "rate_limited",
+    rateLimitRemaining: 0,
   });
 });
 

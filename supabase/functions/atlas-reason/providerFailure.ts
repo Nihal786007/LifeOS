@@ -18,6 +18,7 @@ export interface HostedProviderFailureDetails {
   googleStatus?: string;
   reason?: string;
   fieldViolationPaths?: readonly string[];
+  rateLimitRemaining?: number;
 }
 
 export class HostedProviderFailure extends Error {
@@ -27,6 +28,7 @@ export class HostedProviderFailure extends Error {
   readonly googleStatus?: string;
   readonly reason?: string;
   readonly fieldViolationPaths?: readonly string[];
+  readonly rateLimitRemaining?: number;
 
   constructor(details: HostedProviderFailureDetails) {
     super("Hosted provider request failed safely.");
@@ -38,6 +40,7 @@ export class HostedProviderFailure extends Error {
     this.reason = details.reason;
     this.fieldViolationPaths = details.fieldViolationPaths === undefined
       ? undefined : [...details.fieldViolationPaths];
+    this.rateLimitRemaining = details.rateLimitRemaining;
   }
 }
 

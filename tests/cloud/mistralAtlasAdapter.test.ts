@@ -163,6 +163,47 @@ test("Mistral HTTP failures remain normalized, provider-identified, and opaque",
   }
 });
 
+test("Mistral preserves only documented bounded rate-limit metadata", async () => {
+  const request = createHostedAtlasRequest(hostedTestRequest());
+  const invoke = async (remaining: string, extraHeaders: Record<string, string> = {}) => {
+    const adapter = createMistralAtlasAdapter({
+      apiKey: "server-only-secret",
+      fetchImpl: async () => new Response("sensitive provider body", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Remaining": remaining,
+          "Retry-After": "30",
+          "X-Private-Diagnostic": "must-not-propagate",
+          ...extraHeaders,
+        },
+      }),
+    });
+    try {
+      await adapter.generate(request, {
+        signal: new AbortController().signal,
+        authenticatedUserId: "user-a",
+      });
+      assert.fail("Expected a hosted provider failure.");
+    } catch (failure) {
+      assert.ok(failure instanceof HostedProviderFailure);
+      return failure;
+    }
+  };
+
+  const valid = await invoke("0");
+  assert.equal(valid.rateLimitRemaining, 0);
+  const serialized = JSON.stringify(valid);
+  assert.equal(serialized.includes("Retry-After"), false);
+  assert.equal(serialized.includes("30"), false);
+  assert.equal(serialized.includes("must-not-propagate"), false);
+  assert.equal(serialized.includes("sensitive provider body"), false);
+  assert.equal(serialized.includes("server-only-secret"), false);
+
+  for (const invalid of ["-1", "1.5", "unknown", "99999999999999999"]) {
+    assert.equal((await invoke(invalid)).rateLimitRemaining, undefined);
+  }
+});
+
 test("Mistral cancellation is forwarded and never converted to provider output", async () => {
   const request = createHostedAtlasRequest(hostedTestRequest());
   const controller = new AbortController();

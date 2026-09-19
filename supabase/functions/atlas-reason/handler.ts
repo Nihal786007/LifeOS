@@ -147,6 +147,8 @@ export function createAtlasReasonHandler(dependencies: AtlasReasonHandlerDepende
           ...(failure.reason === undefined ? {} : { reason: failure.reason }),
           ...(failure.fieldViolationPaths === undefined
             ? {} : { fieldViolationPaths: [...failure.fieldViolationPaths] }),
+          ...(failure.rateLimitRemaining === undefined
+            ? {} : { rateLimitRemaining: failure.rateLimitRemaining }),
         });
       }
       return json(502, {

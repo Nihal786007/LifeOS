@@ -84,6 +84,16 @@ function optionalUsage(value: unknown, key: string): number | undefined {
     ? item : undefined;
 }
 
+function boundedNonnegativeIntegerHeader(
+  headers: Headers,
+  name: string
+): number | undefined {
+  const value = headers.get(name)?.trim();
+  if (!value || !/^(?:0|[1-9]\d{0,15})$/.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
+
 function responseText(value: unknown): { text: string; usage: unknown } {
   if (!isRecord(value) || !Array.isArray(value.choices) || value.choices.length !== 1) {
     throw new Error("Mistral returned no single ATLAS choice.");
@@ -155,6 +165,10 @@ export function createMistralAtlasAdapter(
           provider: "mistral",
           upstreamHttpStatus: response.status,
           category: normalizeHostedProviderHttpFailure(response.status),
+          rateLimitRemaining: boundedNonnegativeIntegerHeader(
+            response.headers,
+            "X-RateLimit-Remaining"
+          ),
         });
       }
       const payload = await response.json();
