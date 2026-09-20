@@ -108,6 +108,7 @@ export interface AtlasActionApproval {
 
 export interface AtlasActionEntitySnapshot {
   taskIds: readonly number[];
+  completedTaskIds: readonly number[];
   habitIds: readonly number[];
   monthlyOutcomeIds: readonly number[];
   weeklyFocusIds: readonly number[];

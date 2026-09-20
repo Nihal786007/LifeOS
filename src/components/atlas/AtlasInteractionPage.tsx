@@ -36,6 +36,8 @@ import {
 
 import AtlasMemoryPanel from "./AtlasMemoryPanel";
 import AtlasProactiveInsights from "./AtlasProactiveInsights";
+import AtlasActionProposalCard from "./AtlasActionProposalCard";
+import { useAtlasActions } from "../../atlas/actions/useAtlasActions";
 
 const DEFAULT_PROMPT =
   "What should I focus on today and why?";
@@ -87,6 +89,10 @@ export default function AtlasInteractionPage({
 
   const [question, setQuestion] =
     useState(DEFAULT_PROMPT);
+  const [actionTitle, setActionTitle] = useState("");
+  const [actionDueDate, setActionDueDate] = useState("");
+  const [actionPriority, setActionPriority] = useState<"low" | "medium" | "high">("medium");
+  const actions = useAtlasActions();
 
   const brief = deterministic.dailyBrief;
   const priorities = brief.topPriorities;
@@ -116,7 +122,7 @@ export default function AtlasInteractionPage({
               </div>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
-                Read-only intelligence grounded in your goals,
+                Grounded intelligence that can prepare reviewable actions from your goals,
                 plans, tasks, habits, execution history, and
                 verified ATLAS evidence.
               </p>
@@ -127,10 +133,10 @@ export default function AtlasInteractionPage({
             <FaShieldHalved className="text-cyan-300" />
             <div>
               <p className="text-xs font-semibold text-slate-200">
-                Read-only reasoning
+                Permission-controlled actions
               </p>
               <p className="text-[11px] text-slate-500">
-                No actions or LifeOS mutations
+                No mutation without explicit approval
               </p>
             </div>
           </div>
@@ -446,6 +452,84 @@ export default function AtlasInteractionPage({
                 </ul>
               </details>
             )}
+          </div>
+
+          <div className="mt-7 border-t border-slate-800 pt-7">
+            <div className="flex items-center gap-3">
+              <FaShieldHalved className="text-amber-300" />
+              <div>
+                <h2 className="font-bold text-white">Prepare a LifeOS action</h2>
+                <p className="text-xs text-slate-500">Create a proposal first. Approval is always separate.</p>
+              </div>
+            </div>
+
+            {!actions.proposal && actions.status !== "executing" && (
+              <form
+                className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!actionTitle.trim()) return;
+                  actions.prepare({
+                    type: "task.create",
+                    title: `Create task: ${actionTitle.trim()}`,
+                    rationale: "Prepared from your explicit request in Ask ATLAS.",
+                    payload: {
+                      title: actionTitle,
+                      ...(actionDueDate ? { dueDate: actionDueDate } : {}),
+                      priority: actionPriority,
+                    },
+                  });
+                }}
+              >
+                <input
+                  aria-label="Task title for ATLAS action proposal"
+                  value={actionTitle}
+                  onChange={(event) => setActionTitle(event.target.value)}
+                  maxLength={240}
+                  placeholder="Task ATLAS should prepare…"
+                  className="min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
+                />
+                <input
+                  aria-label="Task due date"
+                  type="date"
+                  value={actionDueDate}
+                  onChange={(event) => setActionDueDate(event.target.value)}
+                  className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300"
+                />
+                <select
+                  aria-label="Task priority"
+                  value={actionPriority}
+                  onChange={(event) => setActionPriority(event.target.value as "low" | "medium" | "high")}
+                  className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+                <button
+                  type="submit"
+                  disabled={!actionTitle.trim()}
+                  className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2.5 text-sm font-bold text-cyan-200 disabled:opacity-40 sm:col-span-3"
+                >
+                  Prepare task proposal
+                </button>
+              </form>
+            )}
+
+            <div className="mt-5">
+              <AtlasActionProposalCard
+                proposal={actions.proposal}
+                result={actions.result}
+                executing={actions.status === "executing"}
+                onApprove={() => { void actions.approve(); }}
+                onCancel={actions.cancel}
+                onDismissResult={() => {
+                  actions.clearResult();
+                  setActionTitle("");
+                  setActionDueDate("");
+                }}
+              />
+            </div>
           </div>
         </section>
       </div>

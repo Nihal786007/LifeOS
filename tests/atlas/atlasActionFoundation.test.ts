@@ -3,11 +3,12 @@ import test from "node:test";
 import { AtlasActionExecutor } from "../../src/atlas/actions/actionExecutor.ts";
 import { AtlasPermissionEngine } from "../../src/atlas/actions/permissionEngine.ts";
 import { createAtlasActionProposal, parseAtlasActionProposalDraft } from "../../src/atlas/actions/proposal.ts";
-import type { AtlasActionApproval, AtlasActionEntitySnapshot, AtlasLifeOSActionAdapter } from "../../src/atlas/actions/types.ts";
+import type { AtlasActionApproval, AtlasActionEntitySnapshot, AtlasLifeOSActionAdapter, AtlasTaskCreatePayload } from "../../src/atlas/actions/types.ts";
+import { createAtlasActionAuditWriter, createLifeOSActionAdapter } from "../../src/atlas/actions/lifeOSActionAdapter.ts";
 
 const ID = "atlas-action:123e4567-e89b-42d3-a456-426614174000";
 const NOW = "2026-09-20T10:00:00.000Z";
-const EMPTY: AtlasActionEntitySnapshot = { taskIds: [], habitIds: [], monthlyOutcomeIds: [], weeklyFocusIds: [] };
+const EMPTY: AtlasActionEntitySnapshot = { taskIds: [], completedTaskIds: [], habitIds: [], monthlyOutcomeIds: [], weeklyFocusIds: [] };
 
 function taskProposal() {
   return createAtlasActionProposal({
@@ -80,4 +81,102 @@ test("stale entity relationships are rejected before mutation", async () => {
   const result = await executor.executeApprovedAction({ proposal, approval: APPROVED, snapshot: EMPTY });
   assert.equal(result.status, "rejected");
   assert.equal(called, false);
+});
+
+test("already-completed task proposals are rejected before mutation", async () => {
+  let called = false;
+  const executor = new AtlasActionExecutor({ execute: async () => { called = true; return { executed: true }; } });
+  const proposal = createAtlasActionProposal({ type: "task.complete", title: "Complete task", payload: { taskId: 77 } }, { id: ID, createdAt: NOW });
+  const result = await executor.executeApprovedAction({
+    proposal,
+    approval: APPROVED,
+    snapshot: { ...EMPTY, taskIds: [77], completedTaskIds: [77] },
+  });
+  assert.deepEqual(result, { status: "rejected", actionId: ID, reason: "The referenced task is already complete." });
+  assert.equal(called, false);
+});
+
+test("trusted LifeOS adapter routes task creation without repository access", async () => {
+  const calls: unknown[] = [];
+  const adapter = createLifeOSActionAdapter({
+    createTask: (payload) => { calls.push(["createTask", payload]); },
+    updateTask: () => ({ updated: true, message: "updated" }),
+    completeTask: () => undefined,
+    createHabit: () => undefined,
+    updateHabit: () => undefined,
+    createCapture: async () => undefined,
+    createGoalWeeklyFocus: () => ({ created: true, message: "created" }),
+    createPersonalWeeklyFocus: () => ({ created: true, message: "created" }),
+  });
+  const result = await adapter.execute(taskProposal());
+  assert.equal(result.executed, true);
+  assert.deepEqual(calls, [["createTask", {
+    title: "Finish ultrasonic sensor test", dueDate: "2026-09-21", priority: "high",
+  }]]);
+});
+
+test("audit writer uses the existing ledger shape without awarding XP", async () => {
+  const records: unknown[] = [];
+  const writer = createAtlasActionAuditWriter({
+    append: (items) => { records.push(...items); },
+    createId: () => 101,
+    now: () => NOW,
+  });
+  assert.deepEqual(await writer.record({
+    actionId: ID, actionType: "task.create", approvedAt: NOW,
+    approvalRequired: true, source: "atlas",
+  }), [101]);
+  assert.deepEqual(records, [{
+    id: 101,
+    type: "system",
+    entityId: 101,
+    title: "ATLAS action executed",
+    description: "task.create",
+    createdAt: NOW,
+    xpAwarded: 0,
+    metadata: {
+      source: "atlas", atlasActionId: ID, actionType: "task.create",
+      approvalRequired: true, approvedAt: NOW,
+    },
+  }]);
+});
+
+test("provider-like output cannot claim execution or bypass proposal validation", () => {
+  assert.throws(() => parseAtlasActionProposalDraft({
+    type: "task.create",
+    title: "Pretend execution",
+    payload: { title: "Task" },
+    status: "executed",
+  }), /unsupported fields/);
+});
+
+test("controlled task flow mutates exactly once only after explicit approval", async () => {
+  const tasks: AtlasTaskCreatePayload[] = [];
+  const audits: unknown[] = [];
+  const adapter = createLifeOSActionAdapter({
+    createTask: (payload) => { tasks.push(payload); },
+    updateTask: () => ({ updated: true, message: "updated" }),
+    completeTask: () => undefined,
+    createHabit: () => undefined,
+    updateHabit: () => undefined,
+    createCapture: async () => undefined,
+    createGoalWeeklyFocus: () => ({ created: true, message: "created" }),
+    createPersonalWeeklyFocus: () => ({ created: true, message: "created" }),
+  });
+  const executor = new AtlasActionExecutor(adapter, createAtlasActionAuditWriter({
+    append: (records) => { audits.push(...records); },
+    createId: () => 202,
+    now: () => NOW,
+  }));
+  const proposal = taskProposal();
+
+  assert.equal(tasks.length, 0);
+  assert.equal((await executor.executeApprovedAction({ proposal, snapshot: EMPTY })).status, "rejected");
+  assert.equal(tasks.length, 0);
+  assert.equal(audits.length, 0);
+
+  assert.equal((await executor.executeApprovedAction({ proposal, approval: APPROVED, snapshot: EMPTY })).status, "executed");
+  assert.equal(tasks.length, 1);
+  assert.equal(audits.length, 1);
+  assert.equal((audits[0] as { xpAwarded: number }).xpAwarded, 0);
 });

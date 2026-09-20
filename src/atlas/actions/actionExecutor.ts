@@ -30,8 +30,11 @@ function referenceProblem(
         ? "The referenced Weekly Focus no longer exists." : undefined;
     }
     case "task.complete":
-      return snapshot.taskIds.includes((payload as AtlasTaskCompletePayload).taskId)
-        ? undefined : "The referenced task no longer exists.";
+      if (!snapshot.taskIds.includes((payload as AtlasTaskCompletePayload).taskId)) {
+        return "The referenced task no longer exists.";
+      }
+      return snapshot.completedTaskIds.includes((payload as AtlasTaskCompletePayload).taskId)
+        ? "The referenced task is already complete." : undefined;
     case "planning.task.schedule": {
       const schedule = payload as AtlasTaskSchedulePayload;
       if (!snapshot.taskIds.includes(schedule.taskId)) return "The referenced task no longer exists.";
