@@ -14,15 +14,24 @@ interface Props {
 }
 
 function details(proposal: AtlasActionProposal): readonly string[] {
-  if (proposal.type === "task.create") {
-    const payload = proposal.payload;
-    return [
-      `Title: ${payload.title}`,
-      `Priority: ${payload.priority ?? "medium"}`,
-      `Due: ${payload.dueDate ?? "not set"}`,
-    ];
+  switch (proposal.type) {
+    case "task.create":
+      return [`Title: ${proposal.payload.title}`, `Priority: ${proposal.payload.priority ?? "medium"}`, `Due: ${proposal.payload.dueDate ?? "not set"}`];
+    case "task.update":
+      return [`Task ID: ${proposal.payload.taskId}`, ...Object.entries(proposal.payload).filter(([key]) => key !== "taskId").map(([key, value]) => `${key}: ${String(value)}`)];
+    case "task.complete":
+      return [`Task ID: ${proposal.payload.taskId}`, "Change: mark complete"];
+    case "habit.create":
+      return [`Name: ${proposal.payload.name}`, `Schedule: ${proposal.payload.activeDays.join(", ")}`];
+    case "habit.update":
+      return [`Habit ID: ${proposal.payload.habitId}`, ...Object.entries(proposal.payload).filter(([key]) => key !== "habitId").map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : String(value)}`)];
+    case "capture.create":
+      return [`Capture: ${proposal.payload.text}`];
+    case "planning.weekly_focus.create":
+      return [`Title: ${proposal.payload.title}`, `Monthly Outcome ID: ${proposal.payload.monthlyTargetId}`, `Dates: ${proposal.payload.weekStartDate} to ${proposal.payload.weekEndDate}`];
+    case "planning.task.schedule":
+      return [`Task ID: ${proposal.payload.taskId}`, `Due: ${proposal.payload.dueDate}`, ...(proposal.payload.weeklyTargetId === undefined ? [] : [`Weekly Focus ID: ${proposal.payload.weeklyTargetId ?? "none"}`])];
   }
-  return [proposal.type];
 }
 
 export default function AtlasActionProposalCard({

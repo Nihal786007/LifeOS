@@ -89,9 +89,6 @@ export default function AtlasInteractionPage({
 
   const [question, setQuestion] =
     useState(DEFAULT_PROMPT);
-  const [actionTitle, setActionTitle] = useState("");
-  const [actionDueDate, setActionDueDate] = useState("");
-  const [actionPriority, setActionPriority] = useState<"low" | "medium" | "high">("medium");
   const actions = useAtlasActions();
 
   const brief = deterministic.dailyBrief;
@@ -238,6 +235,10 @@ export default function AtlasInteractionPage({
             className="mt-6"
             onSubmit={(event) => {
               event.preventDefault();
+              if (actions.interpret(question)) {
+                setQuestion("");
+                return;
+              }
               void ask(question);
             }}
           >
@@ -255,13 +256,13 @@ export default function AtlasInteractionPage({
               onChange={(event) =>
                 setQuestion(event.target.value)
               }
-              placeholder="Ask about your focus, priorities, risks, or recent patterns…"
+              placeholder="Ask a question or request a LifeOS action…"
               className="min-h-32 w-full resize-none rounded-2xl border border-slate-700 bg-slate-950/80 p-5 text-sm leading-6 text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-400/5 disabled:cursor-not-allowed disabled:opacity-70"
             />
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-xs text-slate-600">
-                Try: “Why am I at risk?” or “What changed recently?”
+                Try: “Create a task to study SAT tomorrow” or “Why am I at risk?”
               </p>
 
               <div className="flex items-center gap-3">
@@ -463,57 +464,26 @@ export default function AtlasInteractionPage({
               </div>
             </div>
 
-            {!actions.proposal && actions.status !== "executing" && (
-              <form
-                className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto_auto]"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  if (!actionTitle.trim()) return;
-                  actions.prepare({
-                    type: "task.create",
-                    title: `Create task: ${actionTitle.trim()}`,
-                    rationale: "Prepared from your explicit request in Ask ATLAS.",
-                    payload: {
-                      title: actionTitle,
-                      ...(actionDueDate ? { dueDate: actionDueDate } : {}),
-                      priority: actionPriority,
-                    },
-                  });
-                }}
-              >
-                <input
-                  aria-label="Task title for ATLAS action proposal"
-                  value={actionTitle}
-                  onChange={(event) => setActionTitle(event.target.value)}
-                  maxLength={240}
-                  placeholder="Task ATLAS should prepare…"
-                  className="min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-white outline-none focus:border-cyan-400/50"
-                />
-                <input
-                  aria-label="Task due date"
-                  type="date"
-                  value={actionDueDate}
-                  onChange={(event) => setActionDueDate(event.target.value)}
-                  className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300"
-                />
-                <select
-                  aria-label="Task priority"
-                  value={actionPriority}
-                  onChange={(event) => setActionPriority(event.target.value as "low" | "medium" | "high")}
-                  className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-3 text-sm text-slate-300"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-                <button
-                  type="submit"
-                  disabled={!actionTitle.trim()}
-                  className="rounded-xl border border-cyan-400/30 bg-cyan-400/10 px-4 py-2.5 text-sm font-bold text-cyan-200 disabled:opacity-40 sm:col-span-3"
-                >
-                  Prepare task proposal
-                </button>
-              </form>
+            {!actions.proposal && !actions.clarification && !actions.intentFeedback && !actions.result && (
+              <p className="mt-4 rounded-xl border border-dashed border-slate-700 bg-slate-950/30 p-4 text-xs leading-5 text-slate-500">
+                Ask naturally above. Recognized LifeOS changes become proposals and never execute automatically.
+              </p>
+            )}
+
+            {actions.clarification && (
+              <div className="mt-5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] p-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-300">Clarification needed</p>
+                <p className="mt-2 text-sm leading-6 text-slate-300">{actions.clarification.question}</p>
+                <p className="mt-2 text-xs text-slate-500">Reply in the Ask ATLAS box. No action exists yet.</p>
+                <button type="button" onClick={actions.dismissIntent} className="mt-3 text-xs font-semibold text-slate-400">Cancel clarification</button>
+              </div>
+            )}
+
+            {actions.intentFeedback && (
+              <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-950/50 p-5">
+                <p className="text-sm leading-6 text-slate-300">{actions.intentFeedback}</p>
+                <button type="button" onClick={actions.dismissIntent} className="mt-3 text-xs font-semibold text-cyan-300">Dismiss</button>
+              </div>
             )}
 
             <div className="mt-5">
@@ -525,8 +495,6 @@ export default function AtlasInteractionPage({
                 onCancel={actions.cancel}
                 onDismissResult={() => {
                   actions.clearResult();
-                  setActionTitle("");
-                  setActionDueDate("");
                 }}
               />
             </div>

@@ -1,14 +1,30 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AtlasActionExecutor } from "../../src/atlas/actions/actionExecutor.ts";
+import { AtlasActionExecutor, getAtlasActionReferenceProblem } from "../../src/atlas/actions/actionExecutor.ts";
 import { AtlasPermissionEngine } from "../../src/atlas/actions/permissionEngine.ts";
 import { createAtlasActionProposal, parseAtlasActionProposalDraft } from "../../src/atlas/actions/proposal.ts";
 import type { AtlasActionApproval, AtlasActionEntitySnapshot, AtlasLifeOSActionAdapter, AtlasTaskCreatePayload } from "../../src/atlas/actions/types.ts";
 import { createAtlasActionAuditWriter, createLifeOSActionAdapter } from "../../src/atlas/actions/lifeOSActionAdapter.ts";
+import {
+  continueAtlasActionClarification,
+  interpretAtlasActionRequest,
+  parseAtlasProviderActionDraft,
+} from "../../src/atlas/actions/actionIntent.ts";
+import type { AtlasActionIntentSnapshot } from "../../src/atlas/actions/actionIntent.ts";
 
 const ID = "atlas-action:123e4567-e89b-42d3-a456-426614174000";
 const NOW = "2026-09-20T10:00:00.000Z";
 const EMPTY: AtlasActionEntitySnapshot = { taskIds: [], completedTaskIds: [], habitIds: [], monthlyOutcomeIds: [], weeklyFocusIds: [] };
+const INTENT_STATE: AtlasActionIntentSnapshot = {
+  tasks: [
+    { id: 11, title: "Chemistry assignment", completed: false },
+    { id: 12, title: "Apex sensor test", completed: false },
+  ],
+  habits: [{ id: 21, name: "Morning reading", archived: false }],
+  monthlyOutcomes: [{ id: 31, title: "Finish Apex prototype" }],
+  weeklyFocuses: [{ id: 41, title: "Test Apex sensors" }],
+};
+const INTENT_NOW = new Date(2026, 8, 20, 10, 0, 0);
 
 function taskProposal() {
   return createAtlasActionProposal({
@@ -176,6 +192,115 @@ test("controlled task flow mutates exactly once only after explicit approval", a
   assert.equal(audits.length, 0);
 
   assert.equal((await executor.executeApprovedAction({ proposal, approval: APPROVED, snapshot: EMPTY })).status, "executed");
+  assert.equal(tasks.length, 1);
+  assert.equal(audits.length, 1);
+  assert.equal((audits[0] as { xpAwarded: number }).xpAwarded, 0);
+});
+
+test("natural language creates strict task, habit, capture, and completion drafts", () => {
+  const task = interpretAtlasActionRequest("Create a high-priority task tomorrow to study SAT", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(task.status, "proposal");
+  if (task.status === "proposal") assert.deepEqual(task.draft.payload, { title: "study SAT", priority: "high", dueDate: "2026-09-21" });
+
+  const complete = interpretAtlasActionRequest("Mark my chemistry assignment complete", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(complete.status, "proposal");
+  if (complete.status === "proposal") assert.deepEqual(complete.draft.payload, { taskId: 11 });
+
+  const habit = interpretAtlasActionRequest("Start a habit for reading every day", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(habit.status, "proposal");
+  if (habit.status === "proposal") assert.equal((habit.draft.payload as { activeDays: string[] }).activeDays.length, 7);
+
+  const capture = interpretAtlasActionRequest("Remember to buy batteries", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(capture.status, "proposal");
+  if (capture.status === "proposal") assert.deepEqual(capture.draft.payload, { text: "buy batteries" });
+});
+
+test("forbidden and unsupported language never creates an executable proposal", () => {
+  for (const input of ["Delete all my tasks", "Message my friend", "Transfer ₹500"]) {
+    assert.equal(interpretAtlasActionRequest(input, { snapshot: INTENT_STATE, now: INTENT_NOW }).status, "forbidden");
+  }
+  assert.deepEqual(interpretAtlasActionRequest("How are my habits today?", { snapshot: INTENT_STATE, now: INTENT_NOW }), { status: "conversation" });
+});
+
+test("ambiguous, missing, invalid, and changed references ask for clarification", () => {
+  const ambiguousState = { ...INTENT_STATE, tasks: [...INTENT_STATE.tasks, { id: 13, title: "Chemistry assignment draft", completed: false }] };
+  const ambiguous = interpretAtlasActionRequest("Mark chemistry complete", { snapshot: ambiguousState, now: INTENT_NOW });
+  assert.equal(ambiguous.status, "clarification");
+  const missing = interpretAtlasActionRequest("Mark unknown assignment complete", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(missing.status, "clarification");
+  const invalidDate = interpretAtlasActionRequest("Create a task to study SAT 2026-02-30", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(invalidDate.status, "clarification");
+});
+
+test("unknown references are rejected before proposal presentation", () => {
+  const proposal = createAtlasActionProposal({
+    type: "task.complete", title: "Complete missing task", payload: { taskId: 999 },
+  }, { id: ID, createdAt: NOW });
+  assert.equal(getAtlasActionReferenceProblem(proposal, EMPTY), "The referenced task no longer exists.");
+});
+
+test("one bounded clarification can resolve an exact task without becoming evidence", () => {
+  const first = interpretAtlasActionRequest("Mark chemistry complete", {
+    snapshot: { ...INTENT_STATE, tasks: [...INTENT_STATE.tasks, { id: 13, title: "Chemistry notes", completed: false }] },
+    now: INTENT_NOW,
+  });
+  assert.equal(first.status, "clarification");
+  if (first.status !== "clarification") return;
+  const resolved = continueAtlasActionClarification(first.clarification, "Chemistry assignment", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(resolved.status, "proposal");
+  if (resolved.status === "proposal") assert.deepEqual(resolved.draft.payload, { taskId: 11 });
+});
+
+test("provider drafts remain strict, non-executable, and reject malformed or widened output", () => {
+  assert.deepEqual(parseAtlasProviderActionDraft(JSON.stringify({
+    type: "capture.create", title: "Create capture", payload: { text: "buy batteries" },
+  })).payload, { text: "buy batteries" });
+  assert.throws(() => parseAtlasProviderActionDraft("not-json"), /valid JSON/);
+  assert.throws(() => parseAtlasProviderActionDraft(JSON.stringify({
+    type: "task.create", title: "Create", payload: { title: "Task" }, executed: true,
+  })), /unsupported fields/);
+  assert.throws(() => parseAtlasProviderActionDraft(JSON.stringify({
+    type: "task.create", title: "Create", payload: { title: "run powershell script" },
+  })), /unsupported executable/);
+});
+
+test("the same approved proposal cannot execute twice", async () => {
+  let mutations = 0;
+  const executor = new AtlasActionExecutor({ execute: async () => { mutations += 1; return { executed: true }; } });
+  assert.equal((await executor.executeApprovedAction({ proposal: taskProposal(), approval: APPROVED, snapshot: EMPTY })).status, "executed");
+  const duplicate = await executor.executeApprovedAction({ proposal: taskProposal(), approval: APPROVED, snapshot: EMPTY });
+  assert.deepEqual(duplicate, { status: "rejected", actionId: ID, reason: "This ATLAS action has already been submitted." });
+  assert.equal(mutations, 1);
+});
+
+test("controlled natural-language runtime requires approval and produces one mutation plus one audit", async () => {
+  const intent = interpretAtlasActionRequest("Create a task to study SAT tomorrow", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(intent.status, "proposal");
+  if (intent.status !== "proposal") return;
+  const proposal = createAtlasActionProposal(intent.draft, { id: ID, createdAt: NOW });
+  const tasks: unknown[] = [];
+  const audits: unknown[] = [];
+  const adapter = createLifeOSActionAdapter({
+    createTask: (payload) => { tasks.push(payload); },
+    updateTask: () => ({ updated: true, message: "updated" }),
+    completeTask: () => undefined,
+    createHabit: () => undefined,
+    updateHabit: () => undefined,
+    createCapture: async () => undefined,
+    createGoalWeeklyFocus: () => ({ created: true, message: "created" }),
+    createPersonalWeeklyFocus: () => ({ created: true, message: "created" }),
+  });
+  const executor = new AtlasActionExecutor(adapter, createAtlasActionAuditWriter({
+    append: (records) => { audits.push(...records); }, createId: () => 303, now: () => NOW,
+  }));
+
+  assert.equal(tasks.length, 0, "proposal presentation is non-mutating");
+  assert.equal(audits.length, 0, "proposal presentation has no audit side effect");
+  assert.equal((await executor.executeApprovedAction({ proposal, snapshot: EMPTY })).status, "rejected");
+  assert.equal(tasks.length, 0, "missing approval remains non-mutating");
+
+  const result = await executor.executeApprovedAction({ proposal, approval: APPROVED, snapshot: EMPTY });
+  assert.equal(result.status, "executed");
   assert.equal(tasks.length, 1);
   assert.equal(audits.length, 1);
   assert.equal((audits[0] as { xpAwarded: number }).xpAwarded, 0);

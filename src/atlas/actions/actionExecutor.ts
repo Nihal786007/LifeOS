@@ -14,7 +14,7 @@ import type {
   AtlasWeeklyFocusCreatePayload,
 } from "./types.ts";
 
-function referenceProblem(
+export function getAtlasActionReferenceProblem(
   proposal: AtlasActionProposal,
   snapshot: AtlasActionEntitySnapshot
 ): string | undefined {
@@ -53,6 +53,8 @@ function referenceProblem(
 export class AtlasActionExecutor {
   private readonly adapter: AtlasLifeOSActionAdapter;
   private readonly auditWriter?: AtlasActionAuditWriter;
+  private readonly executingActionIds = new Set<string>();
+  private readonly executedActionIds = new Set<string>();
 
   constructor(
     adapter: AtlasLifeOSActionAdapter,
@@ -68,6 +70,9 @@ export class AtlasActionExecutor {
     snapshot: AtlasActionEntitySnapshot;
   }): Promise<AtlasActionExecutionResult> {
     const { proposal, approval, snapshot } = input;
+    if (this.executingActionIds.has(proposal.id) || this.executedActionIds.has(proposal.id)) {
+      return { status: "rejected", actionId: proposal.id, reason: "This ATLAS action has already been submitted." };
+    }
     const permission = new AtlasPermissionEngine().evaluate(proposal.type);
     if (permission.decision === "forbidden") {
       return { status: "rejected", actionId: proposal.id, reason: permission.reason };
@@ -81,14 +86,17 @@ export class AtlasActionExecutor {
         Number.isNaN(Date.parse(approval.decidedAt))) {
       return { status: "rejected", actionId: proposal.id, reason: "Explicit current user approval is required." };
     }
-    const problem = referenceProblem(proposal, snapshot);
+    const problem = getAtlasActionReferenceProblem(proposal, snapshot);
     if (problem) return { status: "rejected", actionId: proposal.id, reason: problem };
 
+    this.executingActionIds.add(proposal.id);
     try {
       const mutation = await this.adapter.execute(proposal);
       if (!mutation.executed) {
+        this.executingActionIds.delete(proposal.id);
         return { status: "rejected", actionId: proposal.id, reason: mutation.reason ?? "The trusted LifeOS mutation was not applied." };
       }
+      this.executedActionIds.add(proposal.id);
       const auditIds = this.auditWriter
         ? await this.auditWriter.record({
             actionId: proposal.id,
@@ -98,6 +106,7 @@ export class AtlasActionExecutor {
             source: "atlas",
           })
         : [];
+      this.executingActionIds.delete(proposal.id);
       return {
         status: "executed",
         actionId: proposal.id,
@@ -105,6 +114,7 @@ export class AtlasActionExecutor {
         executionRecordIds: [...(mutation.executionRecordIds ?? []), ...auditIds],
       };
     } catch {
+      this.executingActionIds.delete(proposal.id);
       return { status: "failed", actionId: proposal.id, safeError: "The approved LifeOS action could not be completed safely." };
     }
   }

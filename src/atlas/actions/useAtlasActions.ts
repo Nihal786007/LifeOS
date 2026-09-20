@@ -7,7 +7,12 @@ import { usePlanningExecution } from "../../context/PlanningExecutionContext";
 import { useTasks } from "../../context/TaskContext";
 import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { ExecutionHistoryService } from "../../services/ExecutionHistoryService";
-import { AtlasActionExecutor } from "./actionExecutor.ts";
+import {
+  continueAtlasActionClarification,
+  interpretAtlasActionRequest,
+} from "./actionIntent.ts";
+import type { AtlasActionClarification } from "./actionIntent.ts";
+import { AtlasActionExecutor, getAtlasActionReferenceProblem } from "./actionExecutor.ts";
 import {
   createAtlasActionAuditWriter,
   createLifeOSActionAdapter,
@@ -40,7 +45,24 @@ export function useAtlasActions() {
   const { weeklyTargets } = useWeeklyPlanning();
   const [proposal, setProposal] = useState<AtlasActionProposal | null>(null);
   const [result, setResult] = useState<AtlasActionExecutionResult | null>(null);
+  const [clarification, setClarification] = useState<AtlasActionClarification | null>(null);
+  const [intentFeedback, setIntentFeedback] = useState<string | null>(null);
   const [status, setStatus] = useState<AtlasActionControllerStatus>("idle");
+
+  const intentSnapshot = useMemo(() => ({
+    tasks: tasks.map(({ id, title, completed }) => ({ id, title, completed })),
+    habits: habits.map(({ id, name, archived }) => ({ id, name, archived })),
+    monthlyOutcomes: monthlyPlans.map(({ id, title }) => ({ id, title })),
+    weeklyFocuses: weeklyTargets.map(({ id, title }) => ({ id, title })),
+  }), [habits, monthlyPlans, tasks, weeklyTargets]);
+
+  const entitySnapshot = useMemo(() => ({
+    taskIds: tasks.map((task) => task.id),
+    completedTaskIds: tasks.filter((task) => task.completed).map((task) => task.id),
+    habitIds: habits.map((habit) => habit.id),
+    monthlyOutcomeIds: monthlyPlans.map((item) => item.id),
+    weeklyFocusIds: weeklyTargets.map((item) => item.id),
+  }), [habits, monthlyPlans, tasks, weeklyTargets]);
 
   const executor = useMemo(() => new AtlasActionExecutor(
     createLifeOSActionAdapter({
@@ -67,11 +89,41 @@ export function useAtlasActions() {
       id: `atlas-action:${crypto.randomUUID()}`,
       createdAt: new Date().toISOString(),
     });
+    const referenceProblem = getAtlasActionReferenceProblem(next, entitySnapshot);
+    if (referenceProblem) throw new Error(referenceProblem);
     setProposal(next);
     setResult(null);
+    setClarification(null);
+    setIntentFeedback(null);
     setStatus("pending");
     return next;
-  }, []);
+  }, [entitySnapshot]);
+
+  const interpret = useCallback((input: string): boolean => {
+    const outcome = clarification
+      ? continueAtlasActionClarification(clarification, input, { snapshot: intentSnapshot, now: new Date() })
+      : interpretAtlasActionRequest(input, { snapshot: intentSnapshot, now: new Date() });
+    if (outcome.status === "conversation") {
+      if (clarification) setClarification(null);
+      return false;
+    }
+    setResult(null);
+    setProposal(null);
+    if (outcome.status === "proposal") {
+      prepare(outcome.draft);
+      return true;
+    }
+    if (outcome.status === "clarification") {
+      setClarification(outcome.clarification);
+      setIntentFeedback(null);
+      setStatus("idle");
+      return true;
+    }
+    setClarification(null);
+    setIntentFeedback(outcome.message);
+    setStatus("idle");
+    return true;
+  }, [clarification, intentSnapshot, prepare]);
 
   const cancel = useCallback(() => {
     if (!proposal || status !== "pending") return;
@@ -93,23 +145,27 @@ export function useAtlasActions() {
     const execution = await executor.executeApprovedAction({
       proposal,
       approval,
-      snapshot: {
-        taskIds: tasks.map((task) => task.id),
-        completedTaskIds: tasks.filter((task) => task.completed).map((task) => task.id),
-        habitIds: habits.map((habit) => habit.id),
-        monthlyOutcomeIds: monthlyPlans.map((item) => item.id),
-        weeklyFocusIds: weeklyTargets.map((item) => item.id),
-      },
+      snapshot: entitySnapshot,
     });
     setResult(execution);
     setProposal(null);
     setStatus("result");
-  }, [executor, habits, monthlyPlans, proposal, status, tasks, weeklyTargets]);
+  }, [entitySnapshot, executor, proposal, status]);
 
   const clearResult = useCallback(() => {
     setResult(null);
+    setIntentFeedback(null);
+    setClarification(null);
     setStatus("idle");
   }, []);
 
-  return { status, proposal, result, prepare, approve, cancel, clearResult };
+  const dismissIntent = useCallback(() => {
+    setClarification(null);
+    setIntentFeedback(null);
+  }, []);
+
+  return {
+    status, proposal, result, clarification, intentFeedback,
+    prepare, interpret, approve, cancel, clearResult, dismissIntent,
+  };
 }

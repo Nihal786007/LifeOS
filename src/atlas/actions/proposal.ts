@@ -31,7 +31,11 @@ function requiredText(value: unknown, field: string, max = 240): string {
   if (typeof value !== "string" || value.trim().length === 0 || value.trim().length > max) {
     throw new Error(`${field} must be non-empty and at most ${max} characters.`);
   }
-  return value.trim();
+  const text = value.trim();
+  if (/https?:\/\/|javascript:|<script|\b(?:powershell|cmd\.exe|bash|sudo|curl|wget)\b|`|&&|\|\|/i.test(text)) {
+    throw new Error(`${field} contains unsupported executable or external content.`);
+  }
+  return text;
 }
 
 function optionalText(value: unknown, field: string, max = 500): string | undefined {
