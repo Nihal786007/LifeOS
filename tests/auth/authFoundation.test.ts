@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -117,4 +118,38 @@ test("auth action failures remain structured", async () => {
     await signInWithPassword(client, "person@example.com", "password"),
     { ok: false, error: "invalid credentials" }
   );
+});
+
+test("normal ready-state Settings exposes trusted sign out without deleting canonical data", () => {
+  const source = readFileSync(
+    new URL("../../src/pages/Settings.tsx", import.meta.url),
+    "utf8"
+  );
+  const handler = source.slice(
+    source.indexOf("async function signOutCurrentSession"),
+    source.indexOf("return (", source.indexOf("async function signOutCurrentSession"))
+  );
+
+  assert.match(source, /Account session/);
+  assert.match(source, /"Sign out"/);
+  assert.match(handler, /await auth\.signOut\(\)/);
+  assert.doesNotMatch(handler, /localStorage|removeItem|\.clear\(|resetLocalTaskActivity|Repository/);
+});
+
+test("a signed-out client can subsequently begin the trusted sign-in lifecycle", async () => {
+  const { client, calls } = fakeClient();
+
+  assert.equal((await signOut(client)).ok, true);
+  assert.equal((await signInWithPassword(
+    client,
+    "next-account@example.com",
+    "password"
+  )).ok, true);
+  assert.deepEqual(calls, [
+    ["sign-out"],
+    ["sign-in", {
+      email: "next-account@example.com",
+      password: "password",
+    }],
+  ]);
 });

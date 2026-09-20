@@ -9,10 +9,12 @@ import {
   FaClock,
   FaDatabase,
   FaExclamationCircle,
+  FaSignOutAlt,
   FaTrophy,
   FaUser,
 } from "react-icons/fa";
 
+import { useAuth } from "../auth/AuthContext";
 import { useApp } from "../context/AppContext";
 import { useXP } from "../context/XPContext";
 import { useDataServices } from "../data/DataServicesContext";
@@ -35,6 +37,11 @@ type SaveFeedback =
   | { kind: "success"; message: string };
 
 type ResetState =
+  | { kind: "idle" }
+  | { kind: "working" }
+  | { kind: "error"; message: string };
+
+type SignOutState =
   | { kind: "idle" }
   | { kind: "working" }
   | { kind: "error"; message: string };
@@ -67,6 +74,7 @@ function isSupportedTimeZone(timezone: string): boolean {
 }
 
 function Settings() {
+  const auth = useAuth();
   const { profile, updateProfile } = useApp();
   const {
     taskRepository,
@@ -84,6 +92,9 @@ function Settings() {
   );
   const [feedback, setFeedback] = useState<SaveFeedback>({ kind: "idle" });
   const [resetState, setResetState] = useState<ResetState>({ kind: "idle" });
+  const [signOutState, setSignOutState] = useState<SignOutState>({
+    kind: "idle",
+  });
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -157,6 +168,18 @@ function Settings() {
       setResetState({
         kind: "error",
         message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  async function signOutCurrentSession() {
+    setSignOutState({ kind: "working" });
+    const result = await auth.signOut();
+
+    if (!result.ok) {
+      setSignOutState({
+        kind: "error",
+        message: result.error ?? "Sign out failed. Please try again.",
       });
     }
   }
@@ -422,6 +445,42 @@ function Settings() {
                 </p>
               )}
             </div>
+          </Card>
+
+          <Card className="border-slate-800 bg-slate-900/70">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-slate-800 p-3 text-slate-300">
+                <FaSignOutAlt size={20} />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Account session
+                </p>
+                <h2 className="mt-1 text-xl font-bold text-white">
+                  Sign out of LifeOS
+                </h2>
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  End this session and return to the sign-in screen. Your
+                  LifeOS data is not deleted.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => void signOutCurrentSession()}
+              disabled={signOutState.kind === "working"}
+              className="mt-6"
+            >
+              <FaSignOutAlt />
+              {signOutState.kind === "working" ? "Signing out…" : "Sign out"}
+            </Button>
+            {signOutState.kind === "error" && (
+              <p className="mt-3 text-xs text-red-300" role="alert">
+                {signOutState.message}
+              </p>
+            )}
           </Card>
         </div>
       </div>
