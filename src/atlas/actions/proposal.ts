@@ -14,6 +14,9 @@ import type {
 const ACTION_TYPES = new Set<AtlasActionType>([
   "task.create", "task.update", "task.complete", "habit.create", "habit.update",
   "capture.create", "planning.weekly_focus.create", "planning.task.schedule",
+  "calendar.read", "calendar.event.create", "messaging.message.prepare",
+  "messaging.message.send", "finance.balance.read", "finance.transactions.read",
+  "finance.spending.summary",
 ]);
 const TOP_LEVEL_KEYS = [
   "type", "title", "description", "payload", "rationale", "evidenceReferences",
@@ -78,6 +81,15 @@ function priority(value: unknown) {
 function optionalRelationship(value: unknown, field: string): number | null | undefined {
   if (value === undefined || value === null) return value;
   return positiveId(value, field);
+}
+
+function time(value: unknown, field: string): string {
+  if (typeof value !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(value)) throw new Error(`${field} must use HH:MM.`);
+  return value;
+}
+
+function optionalTime(value: unknown, field: string): string | undefined {
+  return value === undefined ? undefined : time(value, field);
 }
 
 function parsePayload<T extends AtlasActionType>(
@@ -151,7 +163,41 @@ function parsePayload<T extends AtlasActionType>(
     case "planning.task.schedule":
       if (!hasOnlyKeys(value, ["taskId", "dueDate", "weeklyTargetId"])) throw new Error("planning.task.schedule payload contains unsupported fields.");
       return { taskId: positiveId(value.taskId, "taskId"), dueDate: localDate(value.dueDate, "task due date"), ...(value.weeklyTargetId === undefined ? {} : { weeklyTargetId: optionalRelationship(value.weeklyTargetId, "weeklyTargetId") }) } as unknown as AtlasActionPayloadByType[T];
+    case "calendar.read":
+      if (!hasOnlyKeys(value, ["date"])) throw new Error("calendar.read payload contains unsupported fields.");
+      return { ...(value.date === undefined ? {} : { date: localDate(value.date, "calendar date") }) } as unknown as AtlasActionPayloadByType[T];
+    case "calendar.event.create": {
+      if (!hasOnlyKeys(value, ["title", "date", "startTime", "endTime"])) throw new Error("calendar.event.create payload contains unsupported fields.");
+      const startTime = optionalTime(value.startTime, "calendar startTime");
+      const endTime = optionalTime(value.endTime, "calendar endTime");
+      if (startTime && endTime && startTime >= endTime) throw new Error("calendar event times are out of order.");
+      return { title: requiredText(value.title, "calendar title"), date: localDate(value.date, "calendar date"), ...(startTime ? { startTime } : {}), ...(endTime ? { endTime } : {}) } as unknown as AtlasActionPayloadByType[T];
+    }
+    case "messaging.message.prepare":
+    case "messaging.message.send":
+      if (!hasOnlyKeys(value, ["recipient", "content"])) throw new Error(`${type} payload contains unsupported fields.`);
+      return { recipient: requiredText(value.recipient, "message recipient", 120), content: requiredText(value.content, "message content", 1000) } as unknown as AtlasActionPayloadByType[T];
+    case "finance.balance.read":
+      if (!hasOnlyKeys(value, ["accountLabel"])) throw new Error("finance.balance.read payload contains unsupported fields.");
+      return { ...(value.accountLabel === undefined ? {} : { accountLabel: requiredText(value.accountLabel, "account label", 120) }) } as unknown as AtlasActionPayloadByType[T];
+    case "finance.transactions.read":
+      if (!hasOnlyKeys(value, ["limit"])) throw new Error("finance.transactions.read payload contains unsupported fields.");
+      if (value.limit !== undefined && (!Number.isInteger(value.limit) || (value.limit as number) < 1 || (value.limit as number) > 50)) throw new Error("transaction limit must be between 1 and 50.");
+      return { ...(value.limit === undefined ? {} : { limit: value.limit as number }) } as unknown as AtlasActionPayloadByType[T];
+    case "finance.spending.summary":
+      if (!hasOnlyKeys(value, ["period"]) || (value.period !== "week" && value.period !== "month")) throw new Error("finance spending period is invalid.");
+      return { period: value.period } as unknown as AtlasActionPayloadByType[T];
   }
+}
+
+function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (isRecord(value)) return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+  return JSON.stringify(value);
+}
+
+export function createAtlasProposalFingerprint(proposal: Pick<AtlasActionProposal, "id" | "type" | "payload">): string {
+  return canonicalJson({ id: proposal.id, type: proposal.type, payload: proposal.payload });
 }
 
 export function parseAtlasActionProposalDraft(value: unknown): AtlasActionProposalDraft {

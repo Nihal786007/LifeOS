@@ -29,8 +29,8 @@ export type AtlasActionIntentResult =
 
 const FORBIDDEN_PATTERNS = [
   /^(?:please\s+)?(?:delete|erase|remove|wipe|purge)\b/i,
-  /^(?:please\s+)?(?:message|email|text|dm|call)\b/i,
   /^(?:please\s+)?(?:transfer|send|pay|purchase|buy)\s+(?:₹|\$|€|£|\d)/i,
+  /^(?:please\s+)?email\b/i,
   /^(?:please\s+)?(?:change|reset|disable|enable)\b.*\b(?:password|security|account|permission)\b/i,
   /^(?:please\s+)?(?:run|open|execute)\b.*\b(?:shell|terminal|powershell|command|browser automation)\b/i,
 ] as const;
@@ -222,10 +222,41 @@ function weeklyFocusCreate(input: string): AtlasActionIntentResult | undefined {
   );
 }
 
+function calendarRead(input: string, now: Date): AtlasActionIntentResult | undefined {
+  if (!/^(?:please\s+)?(?:show|read|check|view)\s+(?:me\s+)?(?:my\s+)?calendar(?:\s+(?:today|tomorrow))?$/i.test(input)) return undefined;
+  const date = relativeDate(input, now);
+  return validated({ type: "calendar.read", title: "Read calendar", payload: { ...(date ? { date } : {}) }, rationale: "Prepared as a read-only mock calendar request." });
+}
+
+function calendarEventCreate(input: string, now: Date): AtlasActionIntentResult | undefined {
+  const match = input.match(/^(?:please\s+)?(?:create|add|schedule)\s+(?:an?\s+)?(.+?)\s+event\s+(today|tomorrow|\d{4}-\d{2}-\d{2})$/i);
+  if (!match) return undefined;
+  const date = relativeDate(match[2], now);
+  if (!date) return clarification("calendar.event.create", input, "What date should the calendar event use?");
+  return validated({ type: "calendar.event.create", title: `Create calendar event: ${normalize(match[1])}`, payload: { title: normalize(match[1]), date }, rationale: "Prepared for the mock calendar connector and requires approval." });
+}
+
+function messagingSend(input: string): AtlasActionIntentResult | undefined {
+  const match = input.match(/^(?:please\s+)?(?:message|text|dm)\s+([^\s]+)\s+(.+)$/i);
+  if (!match) return undefined;
+  return validated({ type: "messaging.message.send", title: `Simulate message to ${normalize(match[1])}`, payload: { recipient: normalize(match[1]), content: normalize(match[2]) }, rationale: "Prepared as an exact mock message. Recipient and content are approval-bound. No external message will be sent." });
+}
+
+function financeRead(input: string): AtlasActionIntentResult | undefined {
+  if (/^(?:please\s+)?(?:show|read|check|view)\s+(?:me\s+)?(?:my\s+)?(?:account\s+)?balance$/i.test(input)) return validated({ type: "finance.balance.read", title: "Read finance balance", payload: {}, rationale: "Prepared as a read-only mock finance request." });
+  if (/^(?:please\s+)?(?:show|read|check|view)\s+(?:me\s+)?(?:my\s+)?(?:recent\s+)?transactions$/i.test(input)) return validated({ type: "finance.transactions.read", title: "Read recent transactions", payload: { limit: 10 }, rationale: "Prepared as a bounded read-only mock finance request." });
+  const summary = input.match(/^(?:please\s+)?(?:show|summarize|review)\s+(?:my\s+)?spending\s+(?:this\s+)?(week|month)$/i);
+  return summary ? validated({ type: "finance.spending.summary", title: `Read ${summary[1].toLowerCase()} spending summary`, payload: { period: summary[1].toLowerCase() }, rationale: "Prepared as a read-only mock finance summary." }) : undefined;
+}
+
 export function classifyAtlasActionIntent(input: string): AtlasActionType | "forbidden" | "conversation" {
   const text = normalize(input);
   if (!text) return "conversation";
   if (FORBIDDEN_PATTERNS.some((pattern) => pattern.test(text))) return "forbidden";
+  if (/^(?:please\s+)?(?:show|read|check|view)\b.*\bcalendar\b/i.test(text)) return "calendar.read";
+  if (/^(?:please\s+)?(?:create|add|schedule)\b.*\bevent\b/i.test(text)) return "calendar.event.create";
+  if (/^(?:please\s+)?(?:message|text|dm)\b/i.test(text)) return "messaging.message.send";
+  if (/\b(?:balance|transactions|spending)\b/i.test(text)) return "finance.balance.read";
   if (/^(?:please\s+)?(?:create|add|make)\b.*\btask\b/i.test(text) || /^(?:(?:today|tomorrow)\s+)?(?:please\s+)?remind\s+me\s+to\b/i.test(text) || /^(?:i\s+need\s+to|i(?:'|’)ve\s+got\s+to)\b.*\b(?:today|tomorrow)\b/i.test(text)) return "task.create";
   if (/^(?:please\s+)?(?:mark|complete|finish)\b/i.test(text) || /^(?:i\s+)?(?:finished|completed)\b/i.test(text)) return "task.complete";
   if (/^(?:please\s+)?(?:move|schedule|reschedule)\b/i.test(text)) return "planning.task.schedule";
@@ -255,6 +286,10 @@ export function interpretAtlasActionRequest(input: string, options: {
     ?? habitUpdate(text, options.snapshot)
     ?? captureCreate(text)
     ?? weeklyFocusCreate(text)
+    ?? calendarRead(text, options.now)
+    ?? calendarEventCreate(text, options.now)
+    ?? messagingSend(text)
+    ?? financeRead(text)
     ?? clarification(intent, text, "Please provide the missing action details without changing the requested action.");
 }
 

@@ -16,12 +16,15 @@ import {
   createAtlasActionAuditWriter,
   createLifeOSActionAdapter,
 } from "./lifeOSActionAdapter.ts";
-import { createAtlasActionProposal } from "./proposal.ts";
+import { createAtlasActionProposal, createAtlasProposalFingerprint } from "./proposal.ts";
 import {
   resolveAtlasActionRequestWithProvider,
 } from "./candidate.ts";
 import type { AtlasActionCandidateProvider } from "./candidate.ts";
 import { OllamaAtlasActionCandidateProvider } from "../providers/ollama/ollamaAtlasActionCandidateProvider.ts";
+import { AtlasConnectorRegistry } from "../connectors/registry.ts";
+import { MockCalendarConnector, MockConnectorCandidateRouter, MockFinanceReadConnector, MockMessagingConnector } from "../connectors/mockConnectors.ts";
+import { createCompositeAtlasActionAdapter, createConnectorActionAdapter } from "../connectors/connectorActionAdapter.ts";
 import type {
   AtlasActionApproval,
   AtlasActionExecutionResult,
@@ -32,7 +35,7 @@ import type {
 export type AtlasActionControllerStatus = "idle" | "preparing" | "pending" | "executing" | "result";
 
 const DEFAULT_CANDIDATE_PROVIDER =
-  new OllamaAtlasActionCandidateProvider();
+  new MockConnectorCandidateRouter(new OllamaAtlasActionCandidateProvider());
 
 function createAuditId(): number {
   return Date.now();
@@ -57,6 +60,9 @@ export function useAtlasActions(
   const [clarification, setClarification] = useState<AtlasActionClarification | null>(null);
   const [intentFeedback, setIntentFeedback] = useState<string | null>(null);
   const [status, setStatus] = useState<AtlasActionControllerStatus>("idle");
+  const mockConnectorRegistry = useMemo(() => new AtlasConnectorRegistry([
+    new MockCalendarConnector(), new MockMessagingConnector(), new MockFinanceReadConnector(),
+  ]), []);
 
   const intentSnapshot = useMemo(() => ({
     tasks: tasks.map(({ id, title, completed }) => ({ id, title, completed })),
@@ -74,7 +80,7 @@ export function useAtlasActions(
   }), [habits, monthlyPlans, tasks, weeklyTargets]);
 
   const executor = useMemo(() => new AtlasActionExecutor(
-    createLifeOSActionAdapter({
+    createCompositeAtlasActionAdapter(createLifeOSActionAdapter({
       createTask: planning.createTask,
       updateTask: planning.updateTask,
       completeTask: planning.completeTask,
@@ -85,13 +91,13 @@ export function useAtlasActions(
         planning.createGoalWeeklyFocus(title, monthlyTargetId, weekStartDate, weekEndDate),
       createPersonalWeeklyFocus: ({ title, monthlyTargetId, weekStartDate, weekEndDate }) =>
         planning.createPersonalWeeklyFocus(title, monthlyTargetId, weekStartDate, weekEndDate),
-    }),
+    }), createConnectorActionAdapter(mockConnectorRegistry)),
     createAtlasActionAuditWriter({
       append: (records) => { ExecutionHistoryService.append(records); },
       createId: createAuditId,
       now: auditNow,
     })
-  ), [addCapture, habitExecution, planning]);
+  ), [addCapture, habitExecution, mockConnectorRegistry, planning]);
 
   const prepare = useCallback((draft: AtlasActionProposalDraft) => {
     const next = createAtlasActionProposal(draft, {
@@ -156,11 +162,12 @@ export function useAtlasActions(
     if (!proposal || status !== "pending") return;
     setStatus("executing");
     const approval: AtlasActionApproval = {
-      version: "1.0.0",
+      version: "1.1.0",
       actionId: proposal.id,
       decision: "approved",
       source: "user",
       decidedAt: new Date().toISOString(),
+      proposalFingerprint: createAtlasProposalFingerprint(proposal),
     };
     const execution = await executor.executeApprovedAction({
       proposal,
@@ -168,12 +175,12 @@ export function useAtlasActions(
       snapshot: entitySnapshot,
     });
     setResult(execution);
-    setProposal(null);
     setStatus("result");
   }, [entitySnapshot, executor, proposal, status]);
 
   const clearResult = useCallback(() => {
     setResult(null);
+    setProposal(null);
     setIntentFeedback(null);
     setClarification(null);
     setStatus("idle");

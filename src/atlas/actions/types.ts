@@ -6,7 +6,7 @@ import type {
 } from "../../shared/habits";
 
 export const ATLAS_ACTION_PROPOSAL_VERSION = "1.0.0" as const;
-export const ATLAS_ACTION_APPROVAL_VERSION = "1.0.0" as const;
+export const ATLAS_ACTION_APPROVAL_VERSION = "1.1.0" as const;
 
 export type AtlasActionType =
   | "task.create"
@@ -16,7 +16,14 @@ export type AtlasActionType =
   | "habit.update"
   | "capture.create"
   | "planning.weekly_focus.create"
-  | "planning.task.schedule";
+  | "planning.task.schedule"
+  | "calendar.read"
+  | "calendar.event.create"
+  | "messaging.message.prepare"
+  | "messaging.message.send"
+  | "finance.balance.read"
+  | "finance.transactions.read"
+  | "finance.spending.summary";
 
 export type AtlasActionRisk =
   | "READ_ONLY"
@@ -59,6 +66,18 @@ export interface AtlasTaskSchedulePayload {
   weeklyTargetId?: number | null;
 }
 
+export interface AtlasCalendarReadPayload { date?: string; }
+export interface AtlasCalendarEventCreatePayload {
+  title: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+}
+export interface AtlasMessagingPayload { recipient: string; content: string; }
+export interface AtlasFinanceBalanceReadPayload { accountLabel?: string; }
+export interface AtlasFinanceTransactionsReadPayload { limit?: number; }
+export interface AtlasFinanceSpendingSummaryPayload { period: "week" | "month"; }
+
 export interface AtlasActionPayloadByType {
   "task.create": AtlasTaskCreatePayload;
   "task.update": AtlasTaskUpdatePayload;
@@ -68,6 +87,13 @@ export interface AtlasActionPayloadByType {
   "capture.create": AtlasCaptureCreatePayload;
   "planning.weekly_focus.create": AtlasWeeklyFocusCreatePayload;
   "planning.task.schedule": AtlasTaskSchedulePayload;
+  "calendar.read": AtlasCalendarReadPayload;
+  "calendar.event.create": AtlasCalendarEventCreatePayload;
+  "messaging.message.prepare": AtlasMessagingPayload;
+  "messaging.message.send": AtlasMessagingPayload;
+  "finance.balance.read": AtlasFinanceBalanceReadPayload;
+  "finance.transactions.read": AtlasFinanceTransactionsReadPayload;
+  "finance.spending.summary": AtlasFinanceSpendingSummaryPayload;
 }
 
 interface AtlasActionProposalBase<T extends AtlasActionType> {
@@ -104,6 +130,7 @@ export interface AtlasActionApproval {
   decision: "approved" | "rejected";
   source: "user";
   decidedAt: string;
+  proposalFingerprint: string;
 }
 
 export interface AtlasActionEntitySnapshot {
@@ -139,16 +166,21 @@ export interface AtlasTrustedMutationResult {
   reason?: string;
 }
 
-export interface AtlasLifeOSActionAdapter {
+export interface AtlasActionAdapter {
   execute(proposal: AtlasActionProposal): Promise<AtlasTrustedMutationResult>;
 }
+
+export type AtlasLifeOSActionAdapter = AtlasActionAdapter;
 
 export interface AtlasActionAuditEntry {
   actionId: string;
   actionType: AtlasActionType;
-  approvedAt: string;
-  approvalRequired: true;
+  approvedAt?: string;
+  approvalRequired: boolean;
   source: "atlas";
+  connectorId?: string;
+  capability?: string;
+  resultStatus: "executed";
 }
 
 export interface AtlasActionAuditWriter {

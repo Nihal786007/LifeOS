@@ -1,4 +1,5 @@
 import type { AtlasActionRisk, AtlasActionType } from "./types.ts";
+import { getConnectorCapabilityDefinition, getConnectorCapabilityForAction } from "../connectors/registry.ts";
 
 export interface AtlasPermissionDecision {
   risk: AtlasActionRisk;
@@ -32,6 +33,21 @@ export class AtlasPermissionEngine {
         risk: "CONFIRM_REQUIRED",
         decision: "approval-required",
         reason: "This action changes canonical LifeOS data and requires explicit user approval.",
+      };
+    }
+
+    const capability = getConnectorCapabilityForAction(actionType as AtlasActionType);
+    const connectorPolicy = capability ? getConnectorCapabilityDefinition(capability) : undefined;
+    if (connectorPolicy) {
+      if (connectorPolicy.permissionTier === "FORBIDDEN" || !connectorPolicy.enabledByDefault) {
+        return { risk: "FORBIDDEN", decision: "forbidden", reason: "This connector capability is disabled or forbidden." };
+      }
+      return {
+        risk: connectorPolicy.permissionTier,
+        decision: connectorPolicy.approvalRequired ? "approval-required" : "allowed",
+        reason: connectorPolicy.approvalRequired
+          ? "This connector action requires explicit approval."
+          : "This connector action is read-only and permitted by the deterministic policy.",
       };
     }
 

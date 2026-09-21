@@ -19,6 +19,9 @@ export const ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT = 24 as const;
 export const ATLAS_ACTION_TYPES = [
   "task.create", "task.update", "task.complete", "habit.create", "habit.update",
   "capture.create", "planning.weekly_focus.create", "planning.task.schedule",
+  "calendar.read", "calendar.event.create", "messaging.message.prepare",
+  "messaging.message.send", "finance.balance.read", "finance.transactions.read",
+  "finance.spending.summary",
 ] as const satisfies readonly AtlasActionType[];
 
 export interface AtlasActionCandidate {
@@ -40,8 +43,8 @@ export interface AtlasActionCandidateRequest {
     providerMayAssignRiskOrPermission: false;
     forbiddenSemantics: readonly [
       "delete",
-      "messaging",
-      "finance",
+      "unapproved-messaging",
+      "finance-mutation",
       "account-security",
       "shell-browser",
       "external-action",
@@ -100,6 +103,13 @@ function candidateTitle(actionType: AtlasActionType): string {
     case "capture.create": return "Prepare capture";
     case "planning.weekly_focus.create": return "Prepare Weekly Focus";
     case "planning.task.schedule": return "Prepare task scheduling";
+    case "calendar.read": return "Prepare calendar read";
+    case "calendar.event.create": return "Prepare calendar event";
+    case "messaging.message.prepare": return "Prepare message draft";
+    case "messaging.message.send": return "Prepare mock message simulation";
+    case "finance.balance.read": return "Prepare balance read";
+    case "finance.transactions.read": return "Prepare transaction read";
+    case "finance.spending.summary": return "Prepare spending summary";
   }
 }
 
@@ -241,7 +251,7 @@ export function createAtlasActionCandidateRequest(
       providerHasMutationAuthority: false,
       providerMayAssignRiskOrPermission: false,
       forbiddenSemantics: [
-        "delete", "messaging", "finance", "account-security", "shell-browser", "external-action",
+        "delete", "unapproved-messaging", "finance-mutation", "account-security", "shell-browser", "external-action",
       ],
     },
   };

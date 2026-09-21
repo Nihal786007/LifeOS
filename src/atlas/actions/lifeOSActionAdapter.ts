@@ -70,6 +70,8 @@ export function createLifeOSActionAdapter(
           });
           return { executed: result.updated, entityId: taskId, reason: result.message };
         }
+        default:
+          return { executed: false, reason: "The action is not a LifeOS domain mutation." };
       }
     },
   };
@@ -91,7 +93,7 @@ export function createAtlasActionAuditWriter(
         id,
         type: "system",
         entityId: id,
-        title: "ATLAS action executed",
+        title: entry.connectorId ? "ATLAS mock connector simulated" : "ATLAS action executed",
         description: entry.actionType,
         createdAt: dependencies.now(),
         xpAwarded: 0,
@@ -100,7 +102,10 @@ export function createAtlasActionAuditWriter(
           atlasActionId: entry.actionId,
           actionType: entry.actionType,
           approvalRequired: entry.approvalRequired,
-          approvedAt: entry.approvedAt,
+          ...(entry.approvedAt === undefined ? {} : { approvedAt: entry.approvedAt }),
+          ...(entry.connectorId === undefined ? {} : { connectorId: entry.connectorId }),
+          ...(entry.capability === undefined ? {} : { capability: entry.capability }),
+          resultStatus: entry.resultStatus,
         },
       }]);
       return [id];

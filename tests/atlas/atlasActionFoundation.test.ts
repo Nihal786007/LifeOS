@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { AtlasActionExecutor, getAtlasActionReferenceProblem } from "../../src/atlas/actions/actionExecutor.ts";
 import { AtlasPermissionEngine } from "../../src/atlas/actions/permissionEngine.ts";
-import { createAtlasActionProposal, parseAtlasActionProposalDraft } from "../../src/atlas/actions/proposal.ts";
-import type { AtlasActionApproval, AtlasActionEntitySnapshot, AtlasLifeOSActionAdapter, AtlasTaskCreatePayload } from "../../src/atlas/actions/types.ts";
+import { createAtlasActionProposal, createAtlasProposalFingerprint, parseAtlasActionProposalDraft } from "../../src/atlas/actions/proposal.ts";
+import type { AtlasActionApproval, AtlasActionEntitySnapshot, AtlasActionProposal, AtlasLifeOSActionAdapter, AtlasTaskCreatePayload } from "../../src/atlas/actions/types.ts";
 import { createAtlasActionAuditWriter, createLifeOSActionAdapter } from "../../src/atlas/actions/lifeOSActionAdapter.ts";
 import {
   continueAtlasActionClarification,
@@ -44,8 +44,13 @@ function taskProposal() {
 }
 
 const APPROVED: AtlasActionApproval = {
-  version: "1.0.0", actionId: ID, decision: "approved", source: "user", decidedAt: NOW,
+  version: "1.1.0", actionId: ID, decision: "approved", source: "user", decidedAt: NOW,
+  proposalFingerprint: createAtlasProposalFingerprint(taskProposal()),
 };
+
+function approvalFor(proposal: AtlasActionProposal): AtlasActionApproval {
+  return { ...APPROVED, actionId: proposal.id, proposalFingerprint: createAtlasProposalFingerprint(proposal) };
+}
 
 test("parses a strict proposal and computes permission metadata outside model control", () => {
   const proposal = taskProposal();
@@ -112,7 +117,7 @@ test("already-completed task proposals are rejected before mutation", async () =
   const proposal = createAtlasActionProposal({ type: "task.complete", title: "Complete task", payload: { taskId: 77 } }, { id: ID, createdAt: NOW });
   const result = await executor.executeApprovedAction({
     proposal,
-    approval: APPROVED,
+    approval: approvalFor(proposal),
     snapshot: { ...EMPTY, taskIds: [77], completedTaskIds: [77] },
   });
   assert.deepEqual(result, { status: "rejected", actionId: ID, reason: "The referenced task is already complete." });
@@ -147,7 +152,7 @@ test("audit writer uses the existing ledger shape without awarding XP", async ()
   });
   assert.deepEqual(await writer.record({
     actionId: ID, actionType: "task.create", approvedAt: NOW,
-    approvalRequired: true, source: "atlas",
+    approvalRequired: true, source: "atlas", resultStatus: "executed",
   }), [101]);
   assert.deepEqual(records, [{
     id: 101,
@@ -159,7 +164,7 @@ test("audit writer uses the existing ledger shape without awarding XP", async ()
     xpAwarded: 0,
     metadata: {
       source: "atlas", atlasActionId: ID, actionType: "task.create",
-      approvalRequired: true, approvedAt: NOW,
+      approvalRequired: true, approvedAt: NOW, resultStatus: "executed",
     },
   }]);
 });
@@ -227,7 +232,7 @@ test("natural language creates strict task, habit, capture, and completion draft
 });
 
 test("forbidden and unsupported language never creates an executable proposal", () => {
-  for (const input of ["Delete all my tasks", "Message my friend", "Transfer ₹500"]) {
+  for (const input of ["Delete all my tasks", "Transfer ₹500", "Email my password to someone"]) {
     assert.equal(interpretAtlasActionRequest(input, { snapshot: INTENT_STATE, now: INTENT_NOW }).status, "forbidden");
   }
   assert.deepEqual(interpretAtlasActionRequest("How are my habits today?", { snapshot: INTENT_STATE, now: INTENT_NOW }), { status: "conversation" });
@@ -310,7 +315,7 @@ test("controlled natural-language runtime requires approval and produces one mut
   assert.equal((await executor.executeApprovedAction({ proposal, snapshot: EMPTY })).status, "rejected");
   assert.equal(tasks.length, 0, "missing approval remains non-mutating");
 
-  const result = await executor.executeApprovedAction({ proposal, approval: APPROVED, snapshot: EMPTY });
+  const result = await executor.executeApprovedAction({ proposal, approval: approvalFor(proposal), snapshot: EMPTY });
   assert.equal(result.status, "executed");
   assert.equal(tasks.length, 1);
   assert.equal(audits.length, 1);

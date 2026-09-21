@@ -1,4 +1,6 @@
 import { AtlasPermissionEngine } from "./permissionEngine.ts";
+import { createAtlasProposalFingerprint } from "./proposal.ts";
+import { getConnectorCapabilityDefinition, getConnectorCapabilityForAction } from "../connectors/registry.ts";
 import type {
   AtlasActionApproval,
   AtlasActionAuditWriter,
@@ -6,7 +8,7 @@ import type {
   AtlasActionExecutionResult,
   AtlasActionProposal,
   AtlasHabitUpdatePayload,
-  AtlasLifeOSActionAdapter,
+  AtlasActionAdapter,
   AtlasTaskCompletePayload,
   AtlasTaskCreatePayload,
   AtlasTaskSchedulePayload,
@@ -51,13 +53,13 @@ export function getAtlasActionReferenceProblem(
 }
 
 export class AtlasActionExecutor {
-  private readonly adapter: AtlasLifeOSActionAdapter;
+  private readonly adapter: AtlasActionAdapter;
   private readonly auditWriter?: AtlasActionAuditWriter;
   private readonly executingActionIds = new Set<string>();
   private readonly executedActionIds = new Set<string>();
 
   constructor(
-    adapter: AtlasLifeOSActionAdapter,
+    adapter: AtlasActionAdapter,
     auditWriter?: AtlasActionAuditWriter
   ) {
     this.adapter = adapter;
@@ -81,9 +83,11 @@ export class AtlasActionExecutor {
         proposal.requiresApproval !== (permission.decision === "approval-required")) {
       return { status: "rejected", actionId: proposal.id, reason: "The proposal permission metadata is invalid." };
     }
-    if (!approval || approval.version !== "1.0.0" || approval.source !== "user" ||
+    const approvalRequired = permission.decision === "approval-required";
+    if (approvalRequired && (!approval || approval.version !== "1.1.0" || approval.source !== "user" ||
         approval.actionId !== proposal.id || approval.decision !== "approved" ||
-        Number.isNaN(Date.parse(approval.decidedAt))) {
+        approval.proposalFingerprint !== createAtlasProposalFingerprint(proposal) ||
+        Number.isNaN(Date.parse(approval.decidedAt)))) {
       return { status: "rejected", actionId: proposal.id, reason: "Explicit current user approval is required." };
     }
     const problem = getAtlasActionReferenceProblem(proposal, snapshot);
@@ -97,13 +101,17 @@ export class AtlasActionExecutor {
         return { status: "rejected", actionId: proposal.id, reason: mutation.reason ?? "The trusted LifeOS mutation was not applied." };
       }
       this.executedActionIds.add(proposal.id);
+      const capability = getConnectorCapabilityForAction(proposal.type);
+      const connectorDefinition = capability ? getConnectorCapabilityDefinition(capability) : undefined;
       const auditIds = this.auditWriter
         ? await this.auditWriter.record({
             actionId: proposal.id,
             actionType: proposal.type,
-            approvedAt: approval.decidedAt,
-            approvalRequired: true,
+            ...(approvalRequired && approval ? { approvedAt: approval.decidedAt } : {}),
+            approvalRequired,
             source: "atlas",
+            ...(connectorDefinition ? { connectorId: connectorDefinition.connectorId, capability: connectorDefinition.capability } : {}),
+            resultStatus: "executed",
           })
         : [];
       this.executingActionIds.delete(proposal.id);
