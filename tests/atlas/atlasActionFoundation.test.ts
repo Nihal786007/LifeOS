@@ -11,6 +11,13 @@ import {
   parseAtlasProviderActionDraft,
 } from "../../src/atlas/actions/actionIntent.ts";
 import type { AtlasActionIntentSnapshot } from "../../src/atlas/actions/actionIntent.ts";
+import {
+  ATLAS_ACTION_CANDIDATE_VERSION,
+  DeterministicMockAtlasActionCandidateProvider,
+  parseAtlasActionCandidate,
+  resolveAtlasActionRequestWithProvider,
+} from "../../src/atlas/actions/candidate.ts";
+import type { AtlasActionCandidateProvider } from "../../src/atlas/actions/candidate.ts";
 
 const ID = "atlas-action:123e4567-e89b-42d3-a456-426614174000";
 const NOW = "2026-09-20T10:00:00.000Z";
@@ -202,6 +209,10 @@ test("natural language creates strict task, habit, capture, and completion draft
   assert.equal(task.status, "proposal");
   if (task.status === "proposal") assert.deepEqual(task.draft.payload, { title: "study SAT", priority: "high", dueDate: "2026-09-21" });
 
+  const spacedPriority = interpretAtlasActionRequest("Create a high priority task tomorrow to study SAT", { snapshot: INTENT_STATE, now: INTENT_NOW });
+  assert.equal(spacedPriority.status, "proposal");
+  if (spacedPriority.status === "proposal") assert.deepEqual(spacedPriority.draft.payload, { title: "study SAT", priority: "high", dueDate: "2026-09-21" });
+
   const complete = interpretAtlasActionRequest("Mark my chemistry assignment complete", { snapshot: INTENT_STATE, now: INTENT_NOW });
   assert.equal(complete.status, "proposal");
   if (complete.status === "proposal") assert.deepEqual(complete.draft.payload, { taskId: 11 });
@@ -304,4 +315,160 @@ test("controlled natural-language runtime requires approval and produces one mut
   assert.equal(tasks.length, 1);
   assert.equal(audits.length, 1);
   assert.equal((audits[0] as { xpAwarded: number }).xpAwarded, 0);
+});
+
+function providerResult(output: unknown): AtlasActionCandidateProvider {
+  return {
+    id: "test-provider",
+    generate: async () => ({ status: "candidate", output }),
+  };
+}
+
+const VALID_CANDIDATE = {
+  version: ATLAS_ACTION_CANDIDATE_VERSION,
+  actionType: "task.create",
+  payload: { title: "study SAT", priority: "high", dueDate: "2026-09-21" },
+  rationale: "Prepared from the bounded request.",
+} as const;
+
+test("provider-neutral candidate is untrusted and becomes only a validated draft", async () => {
+  assert.deepEqual(parseAtlasActionCandidate(VALID_CANDIDATE), VALID_CANDIDATE);
+  const resolution = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    { snapshot: INTENT_STATE, now: INTENT_NOW, provider: providerResult(VALID_CANDIDATE) }
+  );
+  assert.equal(resolution.source, "provider-candidate");
+  assert.equal(resolution.outcome.status, "proposal");
+  if (resolution.outcome.status === "proposal") {
+    assert.deepEqual(resolution.outcome.draft.payload, VALID_CANDIDATE.payload);
+    assert.equal("risk" in resolution.outcome.draft, false);
+    assert.equal("requiresApproval" in resolution.outcome.draft, false);
+  }
+});
+
+test("provider candidates reject malformed, forged, extra, forbidden, and executable content", () => {
+  for (const output of [
+    "not-json",
+    { ...VALID_CANDIDATE, approved: true },
+    { ...VALID_CANDIDATE, executed: true },
+    { ...VALID_CANDIDATE, risk: "READ_ONLY" },
+    { ...VALID_CANDIDATE, requiresApproval: false },
+    { ...VALID_CANDIDATE, actionType: "task.delete" },
+    { ...VALID_CANDIDATE, payload: { title: "run powershell command" } },
+    { ...VALID_CANDIDATE, payload: { title: "open https://example.com" } },
+  ]) {
+    assert.throws(() => parseAtlasActionCandidate(output));
+  }
+});
+
+test("unknown references and invalid dates or enums fail candidate validation", () => {
+  assert.throws(() => parseAtlasActionCandidate({
+    ...VALID_CANDIDATE,
+    actionType: "task.complete",
+    payload: { taskId: "unknown" },
+  }));
+  assert.throws(() => parseAtlasActionCandidate({
+    ...VALID_CANDIDATE,
+    payload: { title: "study SAT", dueDate: "2026-02-30" },
+  }));
+  assert.throws(() => parseAtlasActionCandidate({
+    ...VALID_CANDIDATE,
+    payload: { title: "study SAT", priority: "urgent" },
+  }));
+
+  const unknownReference = parseAtlasActionCandidate({
+    ...VALID_CANDIDATE,
+    actionType: "task.complete",
+    payload: { taskId: 999 },
+  });
+  const proposal = createAtlasActionProposal({
+    type: unknownReference.actionType,
+    title: "Complete referenced task",
+    payload: unknownReference.payload,
+  }, { id: ID, createdAt: NOW });
+  assert.equal(
+    getAtlasActionReferenceProblem(proposal, EMPTY),
+    "The referenced task no longer exists."
+  );
+});
+
+test("candidate disagreement asks for clarification instead of guessing", async () => {
+  const resolution = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    {
+      snapshot: INTENT_STATE,
+      now: INTENT_NOW,
+      provider: providerResult({
+        ...VALID_CANDIDATE,
+        payload: { ...VALID_CANDIDATE.payload, title: "different task" },
+      }),
+    }
+  );
+  assert.equal(resolution.source, "provider-rejected");
+  assert.equal(resolution.outcome.status, "clarification");
+});
+
+test("provider unavailability preserves deterministic fallback", async () => {
+  const unavailable: AtlasActionCandidateProvider = {
+    id: "unavailable",
+    generate: async () => ({ status: "unavailable" }),
+  };
+  const resolution = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    { snapshot: INTENT_STATE, now: INTENT_NOW, provider: unavailable }
+  );
+  assert.equal(resolution.source, "deterministic-fallback");
+  assert.equal(resolution.outcome.status, "proposal");
+});
+
+test("candidate providers receive no mutation handles and cannot mutate the live snapshot", async () => {
+  const before = JSON.stringify(INTENT_STATE);
+  const mutatingProvider: AtlasActionCandidateProvider = {
+    id: "mutating-provider",
+    generate: async (request) => {
+      (request.snapshot.tasks as Array<{ id: number; title: string; completed: boolean }>).push({
+        id: 999,
+        title: "provider-only mutation",
+        completed: false,
+      });
+      assert.equal("execute" in request, false);
+      assert.equal("approve" in request, false);
+      return { status: "unavailable" };
+    },
+  };
+  const resolution = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    { snapshot: INTENT_STATE, now: INTENT_NOW, provider: mutatingProvider }
+  );
+  assert.equal(resolution.source, "deterministic-fallback");
+  assert.equal(JSON.stringify(INTENT_STATE), before);
+});
+
+test("unsafe provider output is rejected with zero mutation authority", async () => {
+  let mutations = 0;
+  const unsafe = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    {
+      snapshot: INTENT_STATE,
+      now: INTENT_NOW,
+      provider: providerResult({ ...VALID_CANDIDATE, approved: true }),
+    }
+  );
+  if (unsafe.outcome.status === "proposal") mutations += 1;
+  assert.equal(unsafe.source, "provider-rejected");
+  assert.equal(unsafe.outcome.status, "forbidden");
+  assert.equal(mutations, 0);
+});
+
+test("deterministic mock proves the provider-candidate path without hosted credentials", async () => {
+  const resolution = await resolveAtlasActionRequestWithProvider(
+    "Create a high priority task tomorrow to study SAT",
+    {
+      snapshot: INTENT_STATE,
+      now: INTENT_NOW,
+      provider: new DeterministicMockAtlasActionCandidateProvider(),
+    }
+  );
+  assert.equal(resolution.source, "provider-candidate");
+  assert.equal(resolution.outcome.status, "proposal");
 });

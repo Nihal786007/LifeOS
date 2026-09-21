@@ -235,11 +235,13 @@ export default function AtlasInteractionPage({
             className="mt-6"
             onSubmit={(event) => {
               event.preventDefault();
-              if (actions.interpret(question)) {
-                setQuestion("");
-                return;
-              }
-              void ask(question);
+              void (async () => {
+                if (await actions.interpret(question)) {
+                  setQuestion("");
+                  return;
+                }
+                await ask(question);
+              })();
             }}
           >
             <label
@@ -252,7 +254,7 @@ export default function AtlasInteractionPage({
               id="atlas-question"
               value={question}
               maxLength={500}
-              disabled={isLoading}
+              disabled={isLoading || actions.status === "preparing"}
               onChange={(event) =>
                 setQuestion(event.target.value)
               }
@@ -281,6 +283,7 @@ export default function AtlasInteractionPage({
                   type="submit"
                   disabled={
                     isLoading ||
+                    actions.status === "preparing" ||
                     !memory.ready ||
                     question.trim().length === 0
                   }

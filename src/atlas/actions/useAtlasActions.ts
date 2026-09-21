@@ -9,7 +9,6 @@ import { useWeeklyPlanning } from "../../context/WeeklyPlanningContext";
 import { ExecutionHistoryService } from "../../services/ExecutionHistoryService";
 import {
   continueAtlasActionClarification,
-  interpretAtlasActionRequest,
 } from "./actionIntent.ts";
 import type { AtlasActionClarification } from "./actionIntent.ts";
 import { AtlasActionExecutor, getAtlasActionReferenceProblem } from "./actionExecutor.ts";
@@ -18,6 +17,11 @@ import {
   createLifeOSActionAdapter,
 } from "./lifeOSActionAdapter.ts";
 import { createAtlasActionProposal } from "./proposal.ts";
+import {
+  DeterministicMockAtlasActionCandidateProvider,
+  resolveAtlasActionRequestWithProvider,
+} from "./candidate.ts";
+import type { AtlasActionCandidateProvider } from "./candidate.ts";
 import type {
   AtlasActionApproval,
   AtlasActionExecutionResult,
@@ -25,7 +29,10 @@ import type {
   AtlasActionProposalDraft,
 } from "./types.ts";
 
-export type AtlasActionControllerStatus = "idle" | "pending" | "executing" | "result";
+export type AtlasActionControllerStatus = "idle" | "preparing" | "pending" | "executing" | "result";
+
+const DEFAULT_CANDIDATE_PROVIDER =
+  new DeterministicMockAtlasActionCandidateProvider();
 
 function createAuditId(): number {
   return Date.now();
@@ -35,7 +42,9 @@ function auditNow(): string {
   return new Date().toISOString();
 }
 
-export function useAtlasActions() {
+export function useAtlasActions(
+  candidateProvider: AtlasActionCandidateProvider = DEFAULT_CANDIDATE_PROVIDER
+) {
   const planning = usePlanningExecution();
   const habitExecution = useHabitExecution();
   const { addCapture } = useApp();
@@ -99,18 +108,29 @@ export function useAtlasActions() {
     return next;
   }, [entitySnapshot]);
 
-  const interpret = useCallback((input: string): boolean => {
+  const interpret = useCallback(async (input: string): Promise<boolean> => {
+    setStatus("preparing");
     const outcome = clarification
       ? continueAtlasActionClarification(clarification, input, { snapshot: intentSnapshot, now: new Date() })
-      : interpretAtlasActionRequest(input, { snapshot: intentSnapshot, now: new Date() });
+      : (await resolveAtlasActionRequestWithProvider(input, {
+          snapshot: intentSnapshot,
+          now: new Date(),
+          provider: candidateProvider,
+        })).outcome;
     if (outcome.status === "conversation") {
       if (clarification) setClarification(null);
+      setStatus("idle");
       return false;
     }
     setResult(null);
     setProposal(null);
     if (outcome.status === "proposal") {
-      prepare(outcome.draft);
+      try {
+        prepare(outcome.draft);
+      } catch {
+        setIntentFeedback("ATLAS rejected a stale or invalid action reference. No action was prepared.");
+        setStatus("idle");
+      }
       return true;
     }
     if (outcome.status === "clarification") {
@@ -123,7 +143,7 @@ export function useAtlasActions() {
     setIntentFeedback(outcome.message);
     setStatus("idle");
     return true;
-  }, [clarification, intentSnapshot, prepare]);
+  }, [candidateProvider, clarification, intentSnapshot, prepare]);
 
   const cancel = useCallback(() => {
     if (!proposal || status !== "pending") return;

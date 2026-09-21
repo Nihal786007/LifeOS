@@ -100,13 +100,13 @@ function validated(draft: AtlasActionProposalDraft): AtlasActionIntentResult {
 
 function taskCreate(input: string, now: Date): AtlasActionIntentResult | undefined {
   if (!/^(?:please\s+)?(?:create|add|make)\b/i.test(input) || !/\btask\b/i.test(input)) return undefined;
-  const priority = /\bhigh(?:-priority)?\b/i.test(input)
-    ? "high" : /\blow(?:-priority)?\b/i.test(input) ? "low" : /\bmedium(?:-priority)?\b/i.test(input) ? "medium" : undefined;
+  const priority = /\bhigh(?:[\s-]+priority)?\b/i.test(input)
+    ? "high" : /\blow(?:[\s-]+priority)?\b/i.test(input) ? "low" : /\bmedium(?:[\s-]+priority)?\b/i.test(input) ? "medium" : undefined;
   const dueDate = relativeDate(input, now);
   const explicitDate = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
   let title = input
     .replace(/^(?:please\s+)?(?:create|add|make)\s+(?:a\s+)?/i, "")
-    .replace(/\b(?:high|medium|low)(?:-priority)?\b/ig, "")
+    .replace(/\b(?:high|medium|low)(?:[\s-]+priority)?\b/ig, "")
     .replace(/\btask\b/i, "")
     .replace(/\b(?:today|tomorrow)\b/ig, "")
     .replace(explicitDate ?? /$^/, "")
