@@ -99,19 +99,22 @@ function validated(draft: AtlasActionProposalDraft): AtlasActionIntentResult {
 }
 
 function taskCreate(input: string, now: Date): AtlasActionIntentResult | undefined {
-  if (!/^(?:please\s+)?(?:create|add|make)\b/i.test(input) || !/\btask\b/i.test(input)) return undefined;
+  const explicitTask = /^(?:please\s+)?(?:create|add|make)\b/i.test(input) && /\btask\b/i.test(input);
+  const reminder = input.match(/^(?:(today|tomorrow)\s+)?(?:please\s+)?remind\s+me\s+to\s+(.+?)(?:\s+(today|tomorrow))?$/i);
+  const personalNeed = input.match(/^(?:i\s+need\s+to|i(?:'|’)ve\s+got\s+to)\s+(.+?)(?:\s+(today|tomorrow))(?:\s+(?:morning|afternoon|evening|tonight))?$/i);
+  if (!explicitTask && !reminder && !personalNeed) return undefined;
   const priority = /\bhigh(?:[\s-]+priority)?\b/i.test(input)
     ? "high" : /\blow(?:[\s-]+priority)?\b/i.test(input) ? "low" : /\bmedium(?:[\s-]+priority)?\b/i.test(input) ? "medium" : undefined;
   const dueDate = relativeDate(input, now);
   const explicitDate = input.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
-  let title = input
-    .replace(/^(?:please\s+)?(?:create|add|make)\s+(?:a\s+)?/i, "")
-    .replace(/\b(?:high|medium|low)(?:[\s-]+priority)?\b/ig, "")
-    .replace(/\btask\b/i, "")
-    .replace(/\b(?:today|tomorrow)\b/ig, "")
-    .replace(explicitDate ?? /$^/, "")
-    .replace(/^\s*to\s+/i, "")
-    .replace(/\s+/g, " ");
+  let title = reminder?.[2] ?? personalNeed?.[1] ?? input
+      .replace(/^(?:please\s+)?(?:create|add|make)\s+(?:a\s+)?/i, "")
+      .replace(/\b(?:high|medium|low)(?:[\s-]+priority)?\b/ig, "")
+      .replace(/\btask\b/i, "")
+      .replace(/\b(?:today|tomorrow)\b/ig, "")
+      .replace(explicitDate ?? /$^/, "")
+      .replace(/^\s*to\s+/i, "")
+      .replace(/\s+/g, " ");
   title = normalize(title);
   if (!title) return clarification("task.create", input, "What should the new task be called?");
   return validated({
@@ -123,8 +126,10 @@ function taskCreate(input: string, now: Date): AtlasActionIntentResult | undefin
 }
 
 function taskComplete(input: string, snapshot: AtlasActionIntentSnapshot): AtlasActionIntentResult | undefined {
-  const match = input.match(/^(?:please\s+)?(?:mark|complete|finish)\s+(.+?)(?:\s+(?:as\s+)?(?:complete|completed|done))?$/i);
-  if (!match || (!/^\s*(?:please\s+)?mark\b/i.test(input) && !/^(?:please\s+)?(?:complete|finish)\b/i.test(input))) return undefined;
+  const direct = input.match(/^(?:please\s+)?(?:mark|complete|finish)\s+(.+?)(?:\s+(?:as\s+)?(?:complete|completed|done))?$/i);
+  const completed = input.match(/^(?:i\s+)?(?:finished|completed)\s+(.+)$/i);
+  const match = direct ?? completed;
+  if (!match) return undefined;
   const requested = normalize(match[1].replace(/\s+(?:as\s+)?(?:complete|completed|done)$/i, ""));
   const target = resolveNamed(requested, snapshot.tasks.filter((task) => !task.completed), (task) => task.title);
   if (!target || target === "ambiguous") {
@@ -169,7 +174,8 @@ function taskUpdate(input: string, snapshot: AtlasActionIntentSnapshot): AtlasAc
 }
 
 function habitCreate(input: string): AtlasActionIntentResult | undefined {
-  const match = input.match(/^(?:please\s+)?(?:start|create|add)\s+(?:a\s+)?habit\s+(?:for\s+)?(.+?)(?:\s+every\s+day)?$/i);
+  const match = input.match(/^(?:please\s+)?(?:start|create|add)\s+(?:a\s+)?habit\s+(?:for\s+)?(.+?)(?:\s+every\s+day)?$/i)
+    ?? input.match(/^(?:please\s+)?start\s+helping\s+me\s+(.+?)\s+every\s+day$/i);
   if (!match) return undefined;
   const name = normalize(match[1].replace(/\s+every\s+day$/i, ""));
   if (!name) return clarification("habit.create", input, "What should the habit be called?");
@@ -220,11 +226,11 @@ export function classifyAtlasActionIntent(input: string): AtlasActionType | "for
   const text = normalize(input);
   if (!text) return "conversation";
   if (FORBIDDEN_PATTERNS.some((pattern) => pattern.test(text))) return "forbidden";
-  if (/^(?:please\s+)?(?:create|add|make)\b.*\btask\b/i.test(text)) return "task.create";
-  if (/^(?:please\s+)?(?:mark|complete|finish)\b/i.test(text)) return "task.complete";
+  if (/^(?:please\s+)?(?:create|add|make)\b.*\btask\b/i.test(text) || /^(?:(?:today|tomorrow)\s+)?(?:please\s+)?remind\s+me\s+to\b/i.test(text) || /^(?:i\s+need\s+to|i(?:'|’)ve\s+got\s+to)\b.*\b(?:today|tomorrow)\b/i.test(text)) return "task.create";
+  if (/^(?:please\s+)?(?:mark|complete|finish)\b/i.test(text) || /^(?:i\s+)?(?:finished|completed)\b/i.test(text)) return "task.complete";
   if (/^(?:please\s+)?(?:move|schedule|reschedule)\b/i.test(text)) return "planning.task.schedule";
   if (/^(?:please\s+)?(?:set|change|make)\b.*\b(?:low|medium|high)(?:\s+priority)?$/i.test(text)) return "task.update";
-  if (/^(?:please\s+)?(?:start|create|add)\s+(?:a\s+)?habit\b/i.test(text)) return "habit.create";
+  if (/^(?:please\s+)?(?:start|create|add)\s+(?:a\s+)?habit\b/i.test(text) || /^(?:please\s+)?start\s+helping\s+me\b.*\bevery\s+day$/i.test(text)) return "habit.create";
   if (/^(?:please\s+)?rename\s+(?:my\s+)?habit\b/i.test(text)) return "habit.update";
   if (/^(?:please\s+)?remember\b/i.test(text)) return "capture.create";
   if (/\b(?:create|add|start)\b.*\bweekly focus\b/i.test(text)) return "planning.weekly_focus.create";

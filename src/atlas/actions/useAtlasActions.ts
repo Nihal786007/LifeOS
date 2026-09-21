@@ -18,10 +18,10 @@ import {
 } from "./lifeOSActionAdapter.ts";
 import { createAtlasActionProposal } from "./proposal.ts";
 import {
-  DeterministicMockAtlasActionCandidateProvider,
   resolveAtlasActionRequestWithProvider,
 } from "./candidate.ts";
 import type { AtlasActionCandidateProvider } from "./candidate.ts";
+import { OllamaAtlasActionCandidateProvider } from "../providers/ollama/ollamaAtlasActionCandidateProvider.ts";
 import type {
   AtlasActionApproval,
   AtlasActionExecutionResult,
@@ -32,7 +32,7 @@ import type {
 export type AtlasActionControllerStatus = "idle" | "preparing" | "pending" | "executing" | "result";
 
 const DEFAULT_CANDIDATE_PROVIDER =
-  new DeterministicMockAtlasActionCandidateProvider();
+  new OllamaAtlasActionCandidateProvider();
 
 function createAuditId(): number {
   return Date.now();

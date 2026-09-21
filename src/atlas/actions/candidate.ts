@@ -14,6 +14,12 @@ import type {
 
 export const ATLAS_ACTION_CANDIDATE_VERSION = "1.0.0" as const;
 export const ATLAS_ACTION_CANDIDATE_REQUEST_VERSION = "1.0.0" as const;
+export const ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT = 24 as const;
+
+export const ATLAS_ACTION_TYPES = [
+  "task.create", "task.update", "task.complete", "habit.create", "habit.update",
+  "capture.create", "planning.weekly_focus.create", "planning.task.schedule",
+] as const satisfies readonly AtlasActionType[];
 
 export interface AtlasActionCandidate {
   version: typeof ATLAS_ACTION_CANDIDATE_VERSION;
@@ -24,9 +30,23 @@ export interface AtlasActionCandidate {
 
 export interface AtlasActionCandidateRequest {
   version: typeof ATLAS_ACTION_CANDIDATE_REQUEST_VERSION;
-  input: string;
-  now: string;
-  snapshot: AtlasActionIntentSnapshot;
+  userRequest: string;
+  currentDate: string;
+  allowedActionTypes: readonly AtlasActionType[];
+  relevantEntities: AtlasActionIntentSnapshot;
+  constraints: {
+    requiresExplicitApproval: true;
+    providerHasMutationAuthority: false;
+    providerMayAssignRiskOrPermission: false;
+    forbiddenSemantics: readonly [
+      "delete",
+      "messaging",
+      "finance",
+      "account-security",
+      "shell-browser",
+      "external-action",
+    ];
+  };
 }
 
 export type AtlasActionCandidateGenerationResult =
@@ -128,8 +148,19 @@ function candidatesAgree(
   deterministic: AtlasActionProposalDraft,
   candidate: AtlasActionCandidate
 ): boolean {
+  const normalizeForAgreement = (value: unknown): unknown => {
+    if (typeof value === "string") return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("en-US");
+    if (Array.isArray(value)) return value.map(normalizeForAgreement);
+    if (isRecord(value)) {
+      return Object.fromEntries(
+        Object.entries(value).map(([key, nested]) => [key, normalizeForAgreement(nested)])
+      );
+    }
+    return value;
+  };
   return deterministic.type === candidate.actionType &&
-    canonicalJson(deterministic.payload) === canonicalJson(candidate.payload);
+    canonicalJson(normalizeForAgreement(deterministic.payload)) ===
+      canonicalJson(normalizeForAgreement(candidate.payload));
 }
 
 function disagreement(
@@ -159,6 +190,63 @@ function cloneIntentSnapshot(
   };
 }
 
+function formatLocalDate(value: Date): string {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function allowedTypesFor(
+  deterministic: AtlasActionIntentResult
+): readonly AtlasActionType[] {
+  if (deterministic.status === "proposal") return [deterministic.draft.type];
+  if (deterministic.status === "clarification") return [deterministic.clarification.intent];
+  return ATLAS_ACTION_TYPES;
+}
+
+function selectRelevantEntities(
+  snapshot: AtlasActionIntentSnapshot,
+  allowedActionTypes: readonly AtlasActionType[]
+): AtlasActionIntentSnapshot {
+  const allowed = new Set(allowedActionTypes);
+  const needsTasks = allowed.has("task.update") || allowed.has("task.complete") ||
+    allowed.has("planning.task.schedule");
+  const needsHabits = allowed.has("habit.update");
+  const needsPlanning = allowed.has("planning.weekly_focus.create") ||
+    allowed.has("planning.task.schedule");
+  return cloneIntentSnapshot({
+    tasks: needsTasks ? snapshot.tasks.slice(0, ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT) : [],
+    habits: needsHabits ? snapshot.habits.slice(0, ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT) : [],
+    monthlyOutcomes: needsPlanning ? snapshot.monthlyOutcomes.slice(0, ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT) : [],
+    weeklyFocuses: needsPlanning ? snapshot.weeklyFocuses.slice(0, ATLAS_ACTION_CANDIDATE_ENTITY_LIMIT) : [],
+  });
+}
+
+export function createAtlasActionCandidateRequest(
+  input: string,
+  deterministic: AtlasActionIntentResult,
+  snapshot: AtlasActionIntentSnapshot,
+  now: Date
+): AtlasActionCandidateRequest {
+  const allowedActionTypes = allowedTypesFor(deterministic);
+  return {
+    version: ATLAS_ACTION_CANDIDATE_REQUEST_VERSION,
+    userRequest: input,
+    currentDate: formatLocalDate(now),
+    allowedActionTypes,
+    relevantEntities: selectRelevantEntities(snapshot, allowedActionTypes),
+    constraints: {
+      requiresExplicitApproval: true,
+      providerHasMutationAuthority: false,
+      providerMayAssignRiskOrPermission: false,
+      forbiddenSemantics: [
+        "delete", "messaging", "finance", "account-security", "shell-browser", "external-action",
+      ],
+    },
+  };
+}
+
 export async function resolveAtlasActionRequestWithProvider(
   input: string,
   options: {
@@ -174,12 +262,14 @@ export async function resolveAtlasActionRequestWithProvider(
 
   let generated: AtlasActionCandidateGenerationResult;
   try {
-    generated = await options.provider.generate({
-      version: ATLAS_ACTION_CANDIDATE_REQUEST_VERSION,
-      input,
-      now: options.now.toISOString(),
-      snapshot: cloneIntentSnapshot(options.snapshot),
-    });
+    generated = await options.provider.generate(
+      createAtlasActionCandidateRequest(
+        input,
+        deterministic,
+        options.snapshot,
+        options.now
+      )
+    );
   } catch {
     return { outcome: deterministic, source: "deterministic-fallback" };
   }
@@ -195,6 +285,9 @@ export async function resolveAtlasActionRequestWithProvider(
   try {
     candidate = parseAtlasActionCandidate(generated.output);
   } catch {
+    if (deterministic.status === "clarification") {
+      return { outcome: deterministic, source: "provider-rejected" };
+    }
     return {
       outcome: {
         status: "forbidden",
@@ -217,7 +310,6 @@ export async function resolveAtlasActionRequestWithProvider(
       status: "proposal",
       draft: {
         ...deterministic.draft,
-        payload: candidate.payload,
         ...(candidate.rationale === undefined
           ? {}
           : { rationale: candidate.rationale }),
@@ -234,9 +326,9 @@ implements AtlasActionCandidateProvider {
   async generate(
     request: AtlasActionCandidateRequest
   ): Promise<AtlasActionCandidateGenerationResult> {
-    const outcome = interpretAtlasActionRequest(request.input, {
-      snapshot: request.snapshot,
-      now: new Date(request.now),
+    const outcome = interpretAtlasActionRequest(request.userRequest, {
+      snapshot: request.relevantEntities,
+      now: new Date(`${request.currentDate}T12:00:00`),
     });
     if (outcome.status !== "proposal") return { status: "none" };
     return {

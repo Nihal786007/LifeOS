@@ -426,13 +426,16 @@ test("candidate providers receive no mutation handles and cannot mutate the live
   const mutatingProvider: AtlasActionCandidateProvider = {
     id: "mutating-provider",
     generate: async (request) => {
-      (request.snapshot.tasks as Array<{ id: number; title: string; completed: boolean }>).push({
+      (request.relevantEntities.tasks as Array<{ id: number; title: string; completed: boolean }>).push({
         id: 999,
         title: "provider-only mutation",
         completed: false,
       });
       assert.equal("execute" in request, false);
       assert.equal("approve" in request, false);
+      assert.equal(request.constraints.requiresExplicitApproval, true);
+      assert.equal(request.constraints.providerHasMutationAuthority, false);
+      assert.equal(request.constraints.providerMayAssignRiskOrPermission, false);
       return { status: "unavailable" };
     },
   };
