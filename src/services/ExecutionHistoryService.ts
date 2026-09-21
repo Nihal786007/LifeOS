@@ -92,7 +92,6 @@ export class ExecutionHistoryService {
     this.initialization = undefined;
     this.mutationVersion = 0;
     this.expectedSnapshot = null;
-    this.notify();
   }
 
   static initialize(

@@ -35,6 +35,12 @@ export class AuthenticatedPowerSyncSessionManager {
   private readonly createConnector: (userId: string) => PowerSyncBackendConnector;
   private active: ActiveSession | null = null;
   private transition: Promise<void> = Promise.resolve();
+  private operationVersion = 0;
+  private pendingActivation: {
+    userId: string;
+    version: number;
+    promise: Promise<AuthenticatedPowerSyncSession>;
+  } | null = null;
 
   constructor(options: AuthenticatedPowerSyncSessionManagerOptions) {
     this.createDatabase = options.createDatabase ??
@@ -48,6 +54,17 @@ export class AuthenticatedPowerSyncSessionManager {
 
   activate(userId: string): Promise<AuthenticatedPowerSyncSession> {
     const normalized = assertAuthenticatedUserId(userId);
+    if (this.active?.userId === normalized && !this.pendingActivation) {
+      return Promise.resolve(this.active);
+    }
+    if (
+      this.pendingActivation?.userId === normalized &&
+      this.pendingActivation.version === this.operationVersion
+    ) {
+      return this.pendingActivation.promise;
+    }
+
+    const version = ++this.operationVersion;
     let resolveSession!: (session: AuthenticatedPowerSyncSession) => void;
     let rejectSession!: (error: unknown) => void;
     const result = new Promise<AuthenticatedPowerSyncSession>((resolve, reject) => {
@@ -86,10 +103,19 @@ export class AuthenticatedPowerSyncSessionManager {
       }
     });
 
+    const pending = { userId: normalized, version, promise: result };
+    this.pendingActivation = pending;
+    const clearPending = () => {
+      if (this.pendingActivation === pending) this.pendingActivation = null;
+    };
+    void result.then(clearPending, clearPending);
+
     return result;
   }
 
   deactivate(): Promise<void> {
+    this.operationVersion += 1;
+    this.pendingActivation = null;
     this.transition = this.transition.then(() => this.stopActive());
     return this.transition;
   }

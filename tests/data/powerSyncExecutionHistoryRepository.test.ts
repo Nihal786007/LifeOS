@@ -521,6 +521,22 @@ test("service hydrates once, publishes optimistically, and rejects stale watch s
   unsubscribe();
 });
 
+test("releasing a hydrated repository is silent for unmounting read-model subscribers", async () => {
+  const repository = new ControlledRepository([first]);
+  ExecutionHistoryService.configureRepository(repository);
+  await ExecutionHistoryService.initialize();
+  let notifications = 0;
+  const unsubscribe = ExecutionHistoryService.subscribe(() => {
+    notifications += 1;
+    ExecutionHistoryService.getTotalXP();
+  });
+
+  assert.doesNotThrow(() => ExecutionHistoryService.releaseRepository(repository));
+  assert.equal(notifications, 0);
+  assert.equal(ExecutionHistoryService.getPersistenceState().phase, "uninitialized");
+  unsubscribe();
+});
+
 test("migration preserves XP, blocks historical farming including zero-XP rows, and permits one new reward", async () => {
   const database = new FakePowerSyncDatabase();
   const repository = new PowerSyncExecutionHistoryRepository(

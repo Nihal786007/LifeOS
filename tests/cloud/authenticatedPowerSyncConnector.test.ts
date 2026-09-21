@@ -285,6 +285,109 @@ test("account switching hides the old session and cleans watches before disconne
   assert.equal(databases.size, 2);
 });
 
+test("repeated same-user activation owns one database, connector, and hydration path", async () => {
+  const events: string[] = [];
+  let databaseCount = 0;
+  let connectorCount = 0;
+  const manager = new AuthenticatedPowerSyncSessionManager({
+    createDatabase: async () => {
+      databaseCount += 1;
+      return {
+        init: async () => { events.push("init"); },
+        connect: async () => { events.push("connect"); },
+        waitForFirstSync: async () => { events.push("synced"); },
+        disconnect: async () => { events.push("disconnect"); },
+        close: async () => { events.push("close"); },
+      } as unknown as PowerSyncDatabase;
+    },
+    createConnector: () => {
+      connectorCount += 1;
+      return {
+        fetchCredentials: async () => null,
+        uploadData: async () => undefined,
+      };
+    },
+  });
+
+  const [first, concurrent] = await Promise.all([
+    manager.activate(USER_A),
+    manager.activate(USER_A),
+  ]);
+  const repeated = await manager.activate(USER_A);
+
+  assert.equal(first, concurrent);
+  assert.equal(first, repeated);
+  assert.equal(databaseCount, 1);
+  assert.equal(connectorCount, 1);
+  assert.deepEqual(events, ["init", "connect", "synced"]);
+
+  await manager.deactivate();
+  const reopened = await manager.activate(USER_A);
+  assert.notEqual(reopened, first);
+  assert.equal(databaseCount, 2);
+  assert.equal(connectorCount, 2);
+  assert.deepEqual(events, [
+    "init", "connect", "synced", "disconnect", "close",
+    "init", "connect", "synced",
+  ]);
+  await manager.deactivate();
+});
+
+test("development remount disposes pending hydration before reopening the same user", async () => {
+  const events: string[] = [];
+  let releaseFirstSync!: () => void;
+  const firstSync = new Promise<void>((resolve) => { releaseFirstSync = resolve; });
+  let created = 0;
+  let openDatabases = 0;
+  let maximumOpenDatabases = 0;
+  const manager = new AuthenticatedPowerSyncSessionManager({
+    createDatabase: async () => {
+      const instance = ++created;
+      return {
+        init: async () => {
+          openDatabases += 1;
+          maximumOpenDatabases = Math.max(maximumOpenDatabases, openDatabases);
+          events.push(`${instance}:init`);
+        },
+        connect: async () => { events.push(`${instance}:connect`); },
+        waitForFirstSync: async () => {
+          events.push(`${instance}:sync-start`);
+          if (instance === 1) await firstSync;
+          events.push(`${instance}:synced`);
+        },
+        disconnect: async () => { events.push(`${instance}:disconnect`); },
+        close: async () => {
+          openDatabases -= 1;
+          events.push(`${instance}:close`);
+        },
+      } as unknown as PowerSyncDatabase;
+    },
+    createConnector: () => ({
+      fetchCredentials: async () => null,
+      uploadData: async () => undefined,
+    }),
+  });
+
+  const staleHydration = manager.activate(USER_A);
+  const dispose = manager.deactivate();
+  const currentHydration = manager.activate(USER_A);
+  releaseFirstSync();
+
+  await staleHydration;
+  await dispose;
+  const current = await currentHydration;
+  assert.equal(current.userId, USER_A);
+  assert.equal(manager.current(), current);
+  assert.equal(maximumOpenDatabases, 1);
+  assert.deepEqual(events, [
+    "1:init", "1:connect", "1:sync-start", "1:synced",
+    "1:disconnect", "1:close",
+    "2:init", "2:connect", "2:sync-start", "2:synced",
+  ]);
+  await manager.deactivate();
+  assert.equal(openDatabases, 0);
+});
+
 test("PowerSync endpoint configuration is explicit and bounded", () => {
   assert.equal(
     readPowerSyncEndpoint({ VITE_POWERSYNC_URL: " https://sync.example " }),
