@@ -149,7 +149,7 @@ function Settings() {
 
   async function resetTestActivity() {
     const confirmed = confirm(
-      "Reset task, XP, and execution-history test data?\n\nYour profile, goals, habits, captures, and planning data will be preserved."
+      "Permanently reset Tasks and Execution History in this account, including synced copies? Derived XP will reset.\n\nYour profile, goals, habits, captures, ATLAS Memory, and notification settings will be preserved."
     );
 
     if (!confirmed) {
@@ -415,18 +415,20 @@ function Settings() {
                   Local activity data
                 </h2>
                 <p className="mt-1 text-sm leading-6 text-slate-500">
-                  LifeOS stores this workspace locally in your browser.
+                  LifeOS keeps this account's data available locally and syncs it to your account.
                 </p>
               </div>
             </div>
 
             <div className="mt-6 rounded-2xl border border-red-500/15 bg-red-500/[0.04] p-5">
               <h3 className="font-semibold text-white">
-                Reset task and XP test activity
+                Reset Tasks and Execution History
               </h3>
               <p className="mt-2 text-xs leading-5 text-slate-500">
-                Removes tasks and execution history after confirmation. Your profile,
-                goals, plans, habits, and captures remain intact.
+                Permanently removes Tasks and Execution History from this account,
+                including synced copies. XP is derived from the remaining history.
+                Profile, planning, habits, captures, ATLAS Memory, and notification
+                settings remain intact.
               </p>
               <Button
                 type="button"
@@ -436,8 +438,8 @@ function Settings() {
                 className="mt-5"
               >
                 {resetState.kind === "working"
-                  ? "Resetting local activity…"
-                  : "Reset local activity"}
+                  ? "Resetting account activity…"
+                  : "Reset account activity"}
               </Button>
               {resetState.kind === "error" && (
                 <p className="mt-3 text-xs text-red-300" role="alert">

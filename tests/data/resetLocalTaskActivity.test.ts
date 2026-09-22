@@ -76,6 +76,10 @@ function repositories(state: DurableState, failDomain?: "tasks" | "execution") {
       async initialize() {
         return structuredClone(state.tasks);
       },
+      async readCurrent() {
+        return structuredClone(state.tasks);
+      },
+      async waitForPersistence() {},
       async replace(tasks: Task[]) {
         if (failDomain === "tasks" && tasks.length === 0) {
           throw new Error("task clear failed");
@@ -87,6 +91,10 @@ function repositories(state: DurableState, failDomain?: "tasks" | "execution") {
       async initialize() {
         return structuredClone(state.executionRecords);
       },
+      async readCurrent() {
+        return structuredClone(state.executionRecords);
+      },
+      async waitForPersistence() {},
       async replace(records: ExecutionRecord[]) {
         state.executionRecords = structuredClone(records);
         return structuredClone(records);
@@ -168,6 +176,37 @@ test("reset is idempotent", async () => {
   });
   assert.deepEqual(state.tasks, []);
   assert.deepEqual(state.executionRecords, []);
+});
+
+test("reset reads newer canonical records instead of the cached empty initialization", async () => {
+  const state = createState();
+  state.tasks = [];
+  state.executionRecords = [];
+  const scoped = repositories(state);
+  assert.deepEqual(await scoped.taskRepository.initialize(), []);
+  assert.deepEqual(await scoped.executionHistoryRepository.initialize(), []);
+  state.tasks.push(structuredClone(task));
+  state.executionRecords.push(structuredClone(executionRecord));
+  const result = await resetLocalTaskActivity({
+    taskRepository: { ...scoped.taskRepository, initialize: async () => [] },
+    executionHistoryRepository: { ...scoped.executionHistoryRepository, initialize: async () => [] },
+  });
+  assert.deepEqual(result, { clearedTaskCount: 1, clearedExecutionRecordCount: 1 });
+  assert.deepEqual(state.tasks, []);
+  assert.deepEqual(state.executionRecords, []);
+  assert.equal(totalXP(state.executionRecords), 0);
+});
+
+test("account-scoped reset does not affect another account or unrelated domains", async () => {
+  const accountA = createState();
+  const accountB = createState();
+  accountB.executionRecords.push({ ...executionRecord, title: "Second event with the same canonical ID" });
+  const originalB = structuredClone(accountB);
+  const unrelatedA = structuredClone(accountA.unrelated);
+  await resetLocalTaskActivity(repositories(accountA));
+  assert.deepEqual(accountB, originalB);
+  assert.deepEqual(accountA.unrelated, unrelatedA);
+  assert.equal(accountB.executionRecords.length, 2);
 });
 
 test("a one-domain failure restores both original canonical snapshots", async () => {

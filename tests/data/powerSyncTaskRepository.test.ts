@@ -496,6 +496,16 @@ test("queued replacements commit in call order", async () => {
   assert.deepEqual(await reopened.initialize(), tasks);
 });
 
+test("fresh read sees Tasks added after memoized initialization", async () => {
+  const database = new FakePowerSyncDatabase();
+  const repository = new PowerSyncTaskRepository(asDatabase(database), source({ status: "missing", tasks: [] }));
+  assert.deepEqual(await repository.initialize(), []);
+  await repository.replace([tasks[0]]);
+  assert.deepEqual(await repository.initialize(), []);
+  await repository.waitForPersistence();
+  assert.deepEqual(await repository.readCurrent(), [tasks[0]]);
+});
+
 test("watch emits ordered replacements and stops after unsubscribe", async () => {
   const database = new FakePowerSyncDatabase();
   const repository = new PowerSyncTaskRepository(

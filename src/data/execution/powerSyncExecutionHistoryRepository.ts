@@ -95,6 +95,17 @@ implements AsyncExecutionHistoryRepository {
     return rowsToRecords(await loadRows(this.database));
   }
 
+  async readCurrent(): Promise<ExecutionRecord[]> {
+    await this.initialize();
+    await this.mutationQueue;
+    return rowsToRecords(await loadRows(this.database));
+  }
+
+  async waitForPersistence(): Promise<void> {
+    await this.initialize();
+    await this.mutationQueue;
+  }
+
   async replace(records: ExecutionRecord[]): Promise<ExecutionRecord[]> {
     await this.initialize();
     const snapshot = structuredClone(records);

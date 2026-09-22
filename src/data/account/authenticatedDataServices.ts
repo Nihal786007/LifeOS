@@ -16,6 +16,7 @@ import type { AsyncNotificationStateRepository, NotificationStatePersistencePhas
 import type { NotificationPersistedState } from "../notifications/notificationStateRepository";
 import { createDefaultNotificationState } from "../notifications/localStorageNotificationStateRepository";
 import { taskRowToTask, taskToDatabaseRow } from "../tasks/migrateLocalStorageTasks";
+import { tasksEqualByValue } from "../tasks/tasksEqualByValue";
 import type { TaskDatabaseRow } from "../tasks/migrateLocalStorageTasks";
 import { lifeGoalRowToLifeGoal, lifeGoalToDatabaseRow, monthlyOutcomeRowToMonthlyOutcome, monthlyOutcomeToDatabaseRow, weeklyFocusRowToWeeklyFocus, weeklyFocusToDatabaseRow } from "../planning/migrateLocalStoragePlanning";
 import type { LifeGoalDatabaseRow, MonthlyOutcomeDatabaseRow, WeeklyFocusDatabaseRow } from "../planning/migrateLocalStoragePlanning";
@@ -38,7 +39,15 @@ interface EntityTable<Row extends EntityRow> { table: string; columns: readonly 
 
 const uuid: RowFactory = () => crypto.randomUUID();
 const errorOf = (error: unknown) => error instanceof Error ? error : new Error(String(error));
-const equal = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
+
+async function waitForAuthenticatedUpload(db: PowerSyncDatabase): Promise<void> {
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if ((await db.getUploadQueueStats()).count === 0) return;
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  throw new Error("Timed out waiting for account activity changes to sync");
+}
 
 async function replaceEntities<Row extends EntityRow>(transaction: Transaction, userId: string, config: EntityTable<Row>, rows: readonly Row[], createId: RowFactory): Promise<void> {
   const canonical = new Set(rows.map(row => row.id));
@@ -70,7 +79,9 @@ class AuthTaskRepository implements AsyncTaskRepository {
   constructor(db:PowerSyncDatabase,userId:string,makeId:RowFactory){this.db=db;this.userId=userId;this.makeId=makeId;}
   initialize(onPhase?:(phase:"opening"|"migration")=>void){if(!this.initialized)this.initialized=(async()=>{onPhase?.("opening");await this.db.init();return this.load();})();return this.initialized;}
   private async load(){return (await this.db.getAll<TaskDatabaseRow>(taskTable.select)).map(taskRowToTask);}
-  async replace(tasks:Task[]){await this.initialize();const rows=tasks.map(taskToDatabaseRow);const op=this.queue.then(()=>this.db.writeTransaction(async tx=>{await replaceEntities(tx,this.userId,taskTable,rows,this.makeId);const saved=(await tx.getAll<TaskDatabaseRow>(taskTable.select)).map(taskRowToTask);if(!equal(saved,tasks))throw new Error("Authenticated Task replacement failed");}));this.queue=op.catch(()=>undefined);return op;}
+  async readCurrent(){await this.initialize();await this.queue;return this.load();}
+  async waitForPersistence(){await this.initialize();await this.queue;await waitForAuthenticatedUpload(this.db);}
+  async replace(tasks:Task[]){await this.initialize();const rows=tasks.map(taskToDatabaseRow);const op=this.queue.then(()=>this.db.writeTransaction(async tx=>{await replaceEntities(tx,this.userId,taskTable,rows,this.makeId);const saved=(await tx.getAll<TaskDatabaseRow>(taskTable.select)).map(taskRowToTask);if(!tasksEqualByValue(saved,tasks))throw new Error("Authenticated Task replacement failed");}));this.queue=op.catch(()=>undefined);return op;}
   subscribe(listener:(event:TaskRepositoryEvent)=>void){return watch(this.db,taskTable.select,rows=>listener({type:"tasks",tasks:(rows as TaskDatabaseRow[]).map(taskRowToTask)}),listener);}
 }
 
@@ -104,6 +115,8 @@ class AuthExecutionRepository implements AsyncExecutionHistoryRepository {
   constructor(db:PowerSyncDatabase,userId:string,makeId:RowFactory){this.db=db;this.userId=userId;this.makeId=makeId;}
   initialize(onPhase?:(phase:"opening"|"migration")=>void){if(!this.initialized)this.initialized=(async()=>{onPhase?.("opening");await this.db.init();return this.load();})();return this.initialized;}
   private async rows(){return this.db.getAll<ExecutionRecordDatabaseRow>(executionQuery);}private async load(){return(await this.rows()).map(executionRowToRecord);}
+  async readCurrent(){await this.initialize();await this.queue;return this.load();}
+  async waitForPersistence(){await this.initialize();await this.queue;await waitForAuthenticatedUpload(this.db);}
   private enqueue<T>(work:()=>Promise<T>){const result=this.queue.then(work);this.queue=result.then(()=>undefined,()=>undefined);return result;}
   async replace(records:ExecutionRecord[]){await this.initialize();const copy=structuredClone(records);return this.enqueue(()=>this.db.writeTransaction(async tx=>{await tx.execute("DELETE FROM execution_records");for(const [index,record] of copy.entries()){const row=executionRecordToDatabaseRow(record,index,this.makeId());await tx.execute("INSERT INTO execution_records(id,user_id,execution_id,entity_id,type,title,description,created_at,xp_awarded,icon,color,metadata_json,sort_order,extras_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[row.id,this.userId,row.execution_id,row.entity_id,row.type,row.title,row.description,row.created_at,row.xp_awarded,row.icon,row.color,row.metadata_json,row.sort_order,row.extras_json]);}return(await tx.getAll<ExecutionRecordDatabaseRow>(executionQuery)).map(executionRowToRecord);}));}
   async append(records:ExecutionRecord[]){await this.initialize();if(records.length===0)return this.load();const copy=structuredClone(records);return this.enqueue(()=>this.db.writeTransaction(async tx=>{const existing=await tx.getAll<ExecutionRecordDatabaseRow>(executionQuery);const first=existing.length?existing[0]!.sort_order-copy.length:0;for(const [index,record] of copy.entries()){const row=executionRecordToDatabaseRow(record,first+index,this.makeId());await tx.execute("INSERT INTO execution_records(id,user_id,execution_id,entity_id,type,title,description,created_at,xp_awarded,icon,color,metadata_json,sort_order,extras_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[row.id,this.userId,row.execution_id,row.entity_id,row.type,row.title,row.description,row.created_at,row.xp_awarded,row.icon,row.color,row.metadata_json,row.sort_order,row.extras_json]);}return(await tx.getAll<ExecutionRecordDatabaseRow>(executionQuery)).map(executionRowToRecord);}));}

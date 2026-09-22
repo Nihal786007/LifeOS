@@ -16,6 +16,12 @@ export interface AsyncTaskRepository {
     onPhase?: (phase: "opening" | "migration") => void
   ): Promise<Task[]>;
 
+  /** Reads the current durable collection after pending repository writes. */
+  readCurrent(): Promise<Task[]>;
+
+  /** Resolves when locally queued writes have settled (and synced writes uploaded). */
+  waitForPersistence(): Promise<void>;
+
   replace(tasks: Task[]): Promise<void>;
 
   subscribe(listener: (event: TaskRepositoryEvent) => void): () => void;

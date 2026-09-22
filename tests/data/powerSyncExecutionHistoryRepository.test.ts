@@ -446,6 +446,16 @@ test("replace preserves duplicates and clear removes execution rows only", async
   assert.equal(database.state.journal.length, 1);
 });
 
+test("fresh read sees new ledger rows after memoized empty initialization", async () => {
+  const database = new FakePowerSyncDatabase();
+  const repository = new PowerSyncExecutionHistoryRepository(asDatabase(database), source([]), rowIds());
+  assert.deepEqual(await repository.initialize(), []);
+  await repository.append([zeroXP, { ...zeroXP, title: "Same canonical ID" }]);
+  assert.deepEqual(await repository.initialize(), []);
+  await repository.waitForPersistence();
+  assert.deepEqual(await repository.readCurrent(), [zeroXP, { ...zeroXP, title: "Same canonical ID" }]);
+});
+
 test("reopen returns exact durable history and watch publishes one ordered snapshot", async () => {
   const database = new FakePowerSyncDatabase();
   const repository = new PowerSyncExecutionHistoryRepository(
@@ -480,6 +490,8 @@ class ControlledRepository implements AsyncExecutionHistoryRepository {
   }> = [];
   constructor(initial: ExecutionRecord[]) { this.initial = initial; }
   async initialize(): Promise<ExecutionRecord[]> { return structuredClone(this.initial); }
+  async readCurrent(): Promise<ExecutionRecord[]> { return structuredClone(this.initial); }
+  async waitForPersistence(): Promise<void> { /* controlled writes settle explicitly in these tests */ }
   replace(records: ExecutionRecord[]): Promise<ExecutionRecord[]> { return this.defer(records); }
   append(records: ExecutionRecord[]): Promise<ExecutionRecord[]> {
     return this.defer([...records, ...this.initial]);

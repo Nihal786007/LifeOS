@@ -9,11 +9,11 @@ import type {
 export interface LocalTaskActivityResetDependencies {
   taskRepository: Pick<
     AsyncTaskRepository,
-    "initialize" | "replace"
+    "readCurrent" | "replace" | "waitForPersistence"
   >;
   executionHistoryRepository: Pick<
     AsyncExecutionHistoryRepository,
-    "initialize" | "replace" | "clear"
+    "readCurrent" | "replace" | "clear" | "waitForPersistence"
   >;
 }
 
@@ -38,8 +38,8 @@ export async function resetLocalTaskActivity({
   executionHistoryRepository,
 }: LocalTaskActivityResetDependencies): Promise<LocalTaskActivityResetResult> {
   const [tasks, executionRecords] = await Promise.all([
-    taskRepository.initialize(),
-    executionHistoryRepository.initialize(),
+    taskRepository.readCurrent(),
+    executionHistoryRepository.readCurrent(),
   ]);
 
   if (tasks.length === 0 && executionRecords.length === 0) {
@@ -74,6 +74,18 @@ export async function resetLocalTaskActivity({
     }
 
     throw rejectionReason(clearFailure);
+  }
+
+  await Promise.all([
+    taskRepository.waitForPersistence(),
+    executionHistoryRepository.waitForPersistence(),
+  ]);
+  const [remainingTasks, remainingRecords] = await Promise.all([
+    taskRepository.readCurrent(),
+    executionHistoryRepository.readCurrent(),
+  ]);
+  if (remainingTasks.length !== 0 || remainingRecords.length !== 0) {
+    throw new Error("Task activity reset did not persist an empty account state");
   }
 
   return {

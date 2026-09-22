@@ -113,6 +113,17 @@ export class PowerSyncTaskRepository implements AsyncTaskRepository {
     return rows.map(taskRowToTask);
   }
 
+  async readCurrent(): Promise<Task[]> {
+    await this.initialize();
+    await this.mutationQueue;
+    return this.load();
+  }
+
+  async waitForPersistence(): Promise<void> {
+    await this.initialize();
+    await this.mutationQueue;
+  }
+
   async replace(tasks: Task[]): Promise<void> {
     await this.initialize();
     const rows = tasks.map(taskToDatabaseRow);

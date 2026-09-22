@@ -20,6 +20,12 @@ export interface AsyncExecutionHistoryRepository {
     onPhase?: (phase: "opening" | "migration") => void
   ): Promise<ExecutionRecord[]>;
 
+  /** Reads the current durable ledger after pending repository writes. */
+  readCurrent(): Promise<ExecutionRecord[]>;
+
+  /** Resolves when locally queued writes have settled (and synced writes uploaded). */
+  waitForPersistence(): Promise<void>;
+
   replace(records: ExecutionRecord[]): Promise<ExecutionRecord[]>;
   append(records: ExecutionRecord[]): Promise<ExecutionRecord[]>;
   remove(id: number): Promise<ExecutionRecord[]>;
