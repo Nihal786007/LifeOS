@@ -39,13 +39,12 @@ export default function Card({
       className={`
         rounded-3xl
         border
-        border-cyan-500/15
-        bg-slate-900/40
-        backdrop-blur-xl
+        border-lifeos-border
+        bg-lifeos-surface
 
         ${paddingClass}
 
-        shadow-xl
+        shadow-sm
 
         transition-all
         duration-300

@@ -1,7 +1,6 @@
 import type { InputHTMLAttributes } from "react";
 
-interface InputProps
-  extends InputHTMLAttributes<HTMLInputElement> {}
+type InputProps = InputHTMLAttributes<HTMLInputElement>;
 
 export default function Input({
   className = "",
@@ -14,12 +13,12 @@ export default function Input({
         w-full
         rounded-2xl
         border
-        border-slate-800
-        bg-slate-900
+        border-lifeos-border
+        bg-lifeos-input
         px-5
         py-4
-        text-white
-        placeholder:text-slate-500
+        text-lifeos-text
+        placeholder:text-lifeos-muted
         outline-none
         transition-all
         duration-300

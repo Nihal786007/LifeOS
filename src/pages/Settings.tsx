@@ -20,6 +20,8 @@ import { useXP } from "../context/XPContext";
 import { useDataServices } from "../data/DataServicesContext";
 import { resetLocalTaskActivity } from "../data/reset/resetLocalTaskActivity";
 import type { UserProfile } from "../shared/types";
+import { useTheme } from "../theme/themeContext";
+import type { AppearancePreference } from "../theme/appearance";
 
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -74,6 +76,7 @@ function isSupportedTimeZone(timezone: string): boolean {
 }
 
 function Settings() {
+  const { preference, setPreference } = useTheme();
   const auth = useAuth();
   const { profile, updateProfile } = useApp();
   const {
@@ -271,7 +274,7 @@ function Settings() {
                   Preferences
                 </p>
                 <h2 className="mt-1 text-xl font-bold text-white">
-                  Time and ATLAS style
+                  Appearance, time, and ATLAS style
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
                   Only preferences that are currently supported are shown.
@@ -280,6 +283,29 @@ function Settings() {
             </div>
 
             <div className="mt-7 grid gap-5 md:grid-cols-2">
+              <fieldset className="md:col-span-2">
+                <legend className="mb-2 text-sm font-semibold text-lifeos-text-secondary">
+                  Appearance
+                </legend>
+                <div className="grid grid-cols-3 gap-2 rounded-2xl border border-lifeos-border bg-lifeos-surface-secondary p-1" aria-label="Appearance">
+                  {(["system", "light", "dark"] as const satisfies readonly AppearancePreference[]).map((mode) => (
+                    <label key={mode} className="relative cursor-pointer">
+                      <input
+                        type="radio"
+                        name="appearance"
+                        value={mode}
+                        checked={preference === mode}
+                        onChange={() => setPreference(mode)}
+                        className="peer sr-only"
+                      />
+                      <span className="block rounded-xl px-3 py-3 text-center text-sm font-semibold capitalize text-lifeos-text-secondary transition hover:bg-lifeos-hover peer-checked:bg-lifeos-selected peer-checked:text-lifeos-text peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lifeos-focus">
+                        {mode}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-lifeos-muted">System follows this device’s appearance. This preference saves immediately.</p>
+              </fieldset>
               <label className="block">
                 <span className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300">
                   <FaClock className="text-slate-500" />

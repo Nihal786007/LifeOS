@@ -20,20 +20,20 @@ export default function Modal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-lifeos-overlay backdrop-blur-sm p-4">
       <Card
-        className="w-full max-w-xl border border-cyan-500/20 bg-slate-900"
+        className="w-full max-w-xl border border-lifeos-border bg-lifeos-surface"
         hover={false}
         padding="lg"
       >
         <div className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold text-white">
+            <h2 className="text-3xl font-bold text-lifeos-text">
               {title}
             </h2>
 
             {description && (
-              <p className="mt-2 text-slate-400">
+              <p className="mt-2 text-lifeos-text-secondary">
                 {description}
               </p>
             )}

@@ -13,11 +13,11 @@ export default function Button({
 }: ButtonProps) {
   const variants = {
     primary:
-      "bg-cyan-500 text-slate-950 hover:bg-cyan-400",
+      "bg-lifeos-accent text-lifeos-accent-foreground hover:opacity-90",
     secondary:
-      "bg-slate-800 text-white hover:bg-slate-700",
+      "bg-lifeos-elevated text-lifeos-text hover:bg-lifeos-hover",
     danger:
-      "bg-red-500 text-white hover:bg-red-600",
+      "bg-red-600 text-white hover:bg-red-700",
   };
 
   return (

@@ -5,11 +5,14 @@ import "./index.css";
 
 import App from "./App";
 import { AppProviders } from "./providers/AppProviders";
+import { ThemeProvider } from "./theme/ThemeProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <AppProviders>
-      <App />
-    </AppProviders>
+    <ThemeProvider>
+      <AppProviders>
+        <App />
+      </AppProviders>
+    </ThemeProvider>
   </StrictMode>
 );

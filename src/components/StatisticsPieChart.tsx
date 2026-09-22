@@ -89,19 +89,19 @@ export default function StatisticsPieChart({
           <Tooltip
             contentStyle={{
               backgroundColor:
-                "#020617",
+                "var(--lifeos-surface)",
               border:
-                "1px solid #334155",
+                "1px solid var(--lifeos-border)",
               borderRadius:
                 "12px",
             }}
             labelStyle={{
               color:
-                "#cbd5e1",
+                "var(--lifeos-text-secondary)",
             }}
           />
 
-          <Legend />
+          <Legend wrapperStyle={{ color: "var(--lifeos-chart-label)" }} />
 
         </PieChart>
       </ResponsiveContainer>

@@ -1,5 +1,90 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-lifeos-app: var(--lifeos-app);
+  --color-lifeos-surface: var(--lifeos-surface);
+  --color-lifeos-surface-secondary: var(--lifeos-surface-secondary);
+  --color-lifeos-elevated: var(--lifeos-elevated);
+  --color-lifeos-text: var(--lifeos-text);
+  --color-lifeos-text-secondary: var(--lifeos-text-secondary);
+  --color-lifeos-muted: var(--lifeos-muted);
+  --color-lifeos-border: var(--lifeos-border);
+  --color-lifeos-divider: var(--lifeos-divider);
+  --color-lifeos-input: var(--lifeos-input);
+  --color-lifeos-hover: var(--lifeos-hover);
+  --color-lifeos-selected: var(--lifeos-selected);
+  --color-lifeos-accent: var(--lifeos-accent);
+  --color-lifeos-accent-foreground: var(--lifeos-accent-foreground);
+  --color-lifeos-success: var(--lifeos-success);
+  --color-lifeos-warning: var(--lifeos-warning);
+  --color-lifeos-danger: var(--lifeos-danger);
+  --color-lifeos-focus: var(--lifeos-focus);
+  --color-lifeos-overlay: var(--lifeos-overlay);
+}
+
+:root {
+  color-scheme: dark;
+  --lifeos-app: #0b1220;
+  --lifeos-surface: #111b2c;
+  --lifeos-surface-secondary: #172337;
+  --lifeos-elevated: #1e2d43;
+  --lifeos-text: #f8fafc;
+  --lifeos-text-secondary: #cbd5e1;
+  --lifeos-muted: #94a3b8;
+  --lifeos-border: #334155;
+  --lifeos-divider: #263548;
+  --lifeos-input: #0f1a2b;
+  --lifeos-hover: #25364d;
+  --lifeos-selected: #164e63;
+  --lifeos-accent: #22d3ee;
+  --lifeos-accent-foreground: #082f49;
+  --lifeos-success: #6ee7b7;
+  --lifeos-warning: #fcd34d;
+  --lifeos-danger: #fca5a5;
+  --lifeos-focus: #22d3ee;
+  --lifeos-overlay: rgb(2 6 23 / 76%);
+  --lifeos-chart-grid: #334155;
+  --lifeos-chart-label: #cbd5e1;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --lifeos-app: #f3f5f9;
+  --lifeos-surface: #ffffff;
+  --lifeos-surface-secondary: #f8fafc;
+  --lifeos-elevated: #e9eef5;
+  --lifeos-text: #142033;
+  --lifeos-text-secondary: #334155;
+  --lifeos-muted: #475569;
+  --lifeos-border: #cbd5e1;
+  --lifeos-divider: #dbe2eb;
+  --lifeos-input: #ffffff;
+  --lifeos-hover: #e9eef5;
+  --lifeos-selected: #d6f2f7;
+  --lifeos-accent: #0e7490;
+  --lifeos-accent-foreground: #ffffff;
+  --lifeos-success: #047857;
+  --lifeos-warning: #92400e;
+  --lifeos-danger: #b91c1c;
+  --lifeos-focus: #0891b2;
+  --lifeos-overlay: rgb(15 23 42 / 55%);
+  --lifeos-chart-grid: #cbd5e1;
+  --lifeos-chart-label: #334155;
+
+  /* Compatibility bridge for dark-first legacy utilities. Surface variables
+     remain the one source of theme truth while screens adopt semantic classes. */
+  --color-slate-950: var(--lifeos-app);
+  --color-slate-900: var(--lifeos-surface);
+  --color-slate-800: var(--lifeos-elevated);
+  --color-slate-700: var(--lifeos-border);
+  --color-slate-600: var(--lifeos-muted);
+  --color-slate-500: var(--lifeos-muted);
+  --color-slate-400: var(--lifeos-text-secondary);
+  --color-slate-300: var(--lifeos-text-secondary);
+  --color-slate-200: var(--lifeos-text);
+  --color-slate-100: var(--lifeos-text);
+}
+
 html,
 body,
 #root {
@@ -10,6 +95,26 @@ body,
 
 body {
   font-family: Inter, Arial, sans-serif;
-  background: #0f172a;
-  color: white;
+  background: var(--lifeos-app);
+  color: var(--lifeos-text);
+}
+
+/* Presentation-only contrast bridge for legacy dark-first utilities. */
+:root[data-theme="light"] .text-white { color: var(--lifeos-text); }
+:root[data-theme="light"] :is(.text-cyan-200, .text-cyan-300, .text-cyan-400, .text-blue-300, .text-blue-400) { color: #0e7490; }
+:root[data-theme="light"] :is(.text-violet-300, .text-violet-400, .text-purple-300, .text-purple-400) { color: #6d28d9; }
+:root[data-theme="light"] :is(.text-emerald-300, .text-emerald-400, .text-green-300) { color: var(--lifeos-success); }
+:root[data-theme="light"] :is(.text-amber-300, .text-amber-400, .text-yellow-300) { color: var(--lifeos-warning); }
+:root[data-theme="light"] :is(.text-red-300, .text-red-400, .text-rose-300) { color: var(--lifeos-danger); }
+:root[data-theme="light"] :is(.bg-red-500, .bg-red-600, .bg-violet-500, .bg-blue-500, .bg-cyan-500).text-white { color: white; }
+:root[data-theme="light"] :is(.bg-cyan-300, .bg-cyan-400, .bg-cyan-500, .bg-amber-300, .bg-amber-400, .bg-emerald-300, .bg-green-400).text-slate-950 { color: #082f49; }
+
+:where(button, input, select, textarea, a):focus-visible {
+  outline: 2px solid var(--lifeos-focus);
+  outline-offset: 2px;
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: .55;
 }

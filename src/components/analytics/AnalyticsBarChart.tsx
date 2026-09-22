@@ -72,13 +72,13 @@ export default function AnalyticsBarChart({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke="#1e293b"
+            stroke="var(--lifeos-chart-grid)"
             vertical={false}
           />
 
           <XAxis
             dataKey="label"
-            stroke="#64748b"
+            stroke="var(--lifeos-chart-label)"
             tickLine={false}
             axisLine={false}
             fontSize={12}
@@ -91,7 +91,7 @@ export default function AnalyticsBarChart({
                 ? [0, 100]
                 : undefined
             }
-            stroke="#64748b"
+            stroke="var(--lifeos-chart-label)"
             tickLine={false}
             axisLine={false}
             fontSize={12}
@@ -100,10 +100,10 @@ export default function AnalyticsBarChart({
           <Tooltip
             contentStyle={{
               backgroundColor:
-                "#020617",
+                "var(--lifeos-surface)",
 
               border:
-                "1px solid #334155",
+                "1px solid var(--lifeos-border)",
 
               borderRadius:
                 "12px",
@@ -113,14 +113,14 @@ export default function AnalyticsBarChart({
             }}
             labelStyle={{
               color:
-                "#cbd5e1",
+                "var(--lifeos-text-secondary)",
 
               marginBottom:
                 "4px",
             }}
             itemStyle={{
               color:
-                "#e2e8f0",
+                "var(--lifeos-text)",
             }}
             formatter={(
               value

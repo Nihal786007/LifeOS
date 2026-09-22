@@ -88,7 +88,7 @@ function AppContent() {
         <AtlasLocalReasoningProbe />
       )}
 
-      <div className="flex h-dvh min-h-0 overflow-hidden bg-slate-950 text-white">
+      <div className="flex h-dvh min-h-0 overflow-hidden bg-lifeos-app text-lifeos-text">
 
       <Sidebar
         currentPage={
@@ -109,7 +109,7 @@ function AppContent() {
 
       <div className="flex min-w-0 flex-1 flex-col">
 
-      <header className="relative z-30 flex shrink-0 items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 py-3 backdrop-blur lg:hidden">
+      <header className="relative z-30 flex shrink-0 items-center justify-between border-b border-lifeos-divider bg-lifeos-surface px-4 py-3 lg:hidden">
 
         <button
           type="button"
