@@ -94,8 +94,8 @@ export default function AtlasActionProposalCard({
           </ul>
           <p className="mt-3 text-[11px] text-slate-500">{mockConnector ? "Local simulation only. No external event or message will be created or sent. Connector actions still require approval when indicated." : readOnly ? "This read-only request cannot change data." : "Nothing changes until you explicitly approve."}</p>
           <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" disabled={executing} onClick={onCancel} className="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300">Cancel</button>
-            <button type="button" disabled={executing} onClick={onApprove} className="rounded-xl bg-amber-300 px-4 py-2 text-sm font-black text-slate-950 disabled:opacity-50">
+            <button type="button" disabled={executing} onClick={onCancel} className="min-h-11 rounded-xl border border-lifeos-border bg-lifeos-surface px-4 py-2 text-sm font-semibold text-lifeos-text focus-visible:outline-2 focus-visible:outline-lifeos-focus disabled:opacity-50">Cancel</button>
+            <button type="button" disabled={executing} onClick={onApprove} className="min-h-11 rounded-xl bg-amber-300 px-4 py-2 text-sm font-black text-slate-950 focus-visible:outline-2 focus-visible:outline-lifeos-focus disabled:opacity-50">
               {executing ? "Applying…" : mockConnector ? readOnly ? "Run mock read" : "Approve simulation" : readOnly ? "Run read" : "Approve"}
             </button>
           </div>

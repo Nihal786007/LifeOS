@@ -100,7 +100,7 @@ export default function NotificationCenter({
         aria-controls="lifeos-notification-panel"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-900/95 text-slate-300 shadow-lg shadow-black/20 transition hover:border-cyan-400/40 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+        className="lifeos-icon-button relative"
       >
         <FaBell aria-hidden="true" />
         {unreadCount > 0 && (
@@ -127,20 +127,20 @@ export default function NotificationCenter({
             role="dialog"
             aria-modal="true"
             aria-labelledby="lifeos-notification-title"
-            className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] top-20 z-50 flex flex-col overflow-hidden rounded-3xl border border-slate-700/80 bg-slate-950/98 shadow-2xl shadow-black/60 sm:left-auto sm:right-4 sm:w-[26rem] lg:bottom-auto lg:right-6 lg:top-20 lg:max-h-[calc(100dvh-6.5rem)]"
+            className="lifeos-surface-panel fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] top-20 z-50 flex flex-col overflow-hidden sm:left-auto sm:right-4 sm:w-[26rem] lg:bottom-auto lg:right-6 lg:top-20 lg:max-h-[calc(100dvh-6.5rem)]"
           >
-            <header className="flex shrink-0 items-start justify-between gap-4 border-b border-slate-800 px-5 py-4">
+            <header className="flex shrink-0 items-start justify-between gap-4 border-b border-lifeos-border px-5 py-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-cyan-400">
+                <p className="lifeos-page-eyebrow">
                   LifeOS
                 </p>
                 <h2
                   id="lifeos-notification-title"
-                  className="mt-1 text-lg font-black text-white"
+                  className="mt-1 text-lg font-black text-lifeos-text"
                 >
                   Notifications
                 </h2>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="mt-1 text-xs text-lifeos-text-secondary">
                   Derived from your current LifeOS state.
                 </p>
               </div>
@@ -151,7 +151,7 @@ export default function NotificationCenter({
                   aria-label="Notification preferences"
                   aria-pressed={settingsOpen}
                   onClick={() => setSettingsOpen((current) => !current)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 text-slate-400 transition hover:border-cyan-400/30 hover:text-cyan-300"
+                  className="lifeos-icon-button !min-h-9 !min-w-9"
                 >
                   <FaGear aria-hidden="true" />
                 </button>
@@ -159,7 +159,7 @@ export default function NotificationCenter({
                   type="button"
                   aria-label="Close notifications"
                   onClick={() => setOpen(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 text-slate-400 transition hover:border-slate-600 hover:text-white"
+                  className="lifeos-icon-button !min-h-9 !min-w-9"
                 >
                   <FaXmark aria-hidden="true" />
                 </button>
@@ -167,7 +167,7 @@ export default function NotificationCenter({
             </header>
 
             {settingsOpen && (
-              <div className="shrink-0 border-b border-slate-800 bg-slate-900/55 px-5 py-4">
+              <div className="shrink-0 border-b border-lifeos-border bg-lifeos-surface-secondary px-5 py-4">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
                   Show categories
                 </p>
@@ -176,7 +176,7 @@ export default function NotificationCenter({
                     (category) => (
                       <label
                         key={category}
-                        className="flex min-h-10 cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-950/60 px-3 py-2 text-xs font-semibold text-slate-300"
+                        className="flex min-h-10 cursor-pointer items-center justify-between gap-3 rounded-xl border border-lifeos-border bg-lifeos-surface px-3 py-2 text-xs font-semibold text-lifeos-text-secondary"
                       >
                         {CATEGORY_LABELS[category]}
                         <input

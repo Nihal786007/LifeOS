@@ -126,8 +126,8 @@ export default function Sidebar({
         onClick={onClose}
         className={`fixed inset-0 z-[60] bg-lifeos-overlay backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
           mobileOpen
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
+            ? "visible pointer-events-auto opacity-100"
+            : "invisible pointer-events-none opacity-0"
         }`}
       />
 
@@ -136,8 +136,8 @@ export default function Sidebar({
       aria-label="Primary navigation"
       className={`fixed inset-y-0 left-0 z-[70] flex h-dvh w-[min(18rem,calc(100vw-2rem))] shrink-0 flex-col border-r border-lifeos-divider bg-lifeos-surface shadow-2xl shadow-black/20 transition-transform duration-300 ease-out lg:static lg:z-auto lg:h-full lg:w-72 lg:translate-x-0 lg:shadow-none ${
         mobileOpen
-          ? "translate-x-0"
-          : "-translate-x-full"
+          ? "visible translate-x-0"
+          : "invisible -translate-x-full lg:visible"
       }`}
     >
 

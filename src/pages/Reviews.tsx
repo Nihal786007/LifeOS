@@ -348,23 +348,23 @@ export default function Reviews() {
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-7 pb-10">
-      <header className="overflow-hidden rounded-[2rem] border border-cyan-400/15 bg-gradient-to-br from-slate-900 via-slate-950 to-violet-950/25 p-6 sm:p-8 lg:p-9">
+      <header className="lifeos-page-header overflow-hidden">
         <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
+            <p className="lifeos-page-eyebrow">
               Plan · Execute · Review · Adjust
             </p>
 
-            <h1 className="mt-3 text-4xl font-black text-white sm:text-5xl">
+            <h1 className="lifeos-page-title">
               Reviews
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+            <p className="lifeos-page-description">
               A concise read-only view of what LifeOS has actually recorded.
             </p>
           </div>
 
-          <div className="inline-flex w-full rounded-2xl border border-slate-800 bg-slate-950/70 p-1 sm:w-auto">
+          <div className="inline-flex w-full rounded-xl border border-lifeos-border bg-lifeos-surface p-1 sm:w-auto">
             {PERIOD_OPTIONS.map(
               (option) => (
                 <button
@@ -380,8 +380,8 @@ export default function Reviews() {
                   }}
                   className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition sm:flex-none ${
                     period === option.id
-                      ? "bg-cyan-500/15 text-cyan-300 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                      : "text-slate-400 hover:bg-slate-900 hover:text-white"
+                      ? "bg-lifeos-selected text-lifeos-text shadow-[inset_0_0_0_1px_var(--lifeos-accent)]"
+                      : "text-lifeos-text-secondary hover:bg-lifeos-hover hover:text-lifeos-text"
                   }`}
                 >
                   {option.label}
@@ -392,7 +392,7 @@ export default function Reviews() {
         </div>
       </header>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+      <section className="lifeos-surface-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
             {period} review
@@ -424,7 +424,7 @@ export default function Reviews() {
                   )
               )
             }
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+            className="lifeos-icon-button"
           >
             <FaChevronLeft />
           </button>
@@ -436,7 +436,7 @@ export default function Reviews() {
                 today
               )
             }
-            className="flex h-10 items-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-semibold text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300"
+            className="lifeos-icon-button gap-2 px-4 text-sm font-semibold"
           >
             <FaRotateLeft />
             Current
@@ -458,7 +458,7 @@ export default function Reviews() {
                   )
               )
             }
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-700 bg-slate-950 text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 disabled:cursor-not-allowed disabled:opacity-35"
+            className="lifeos-icon-button disabled:cursor-not-allowed disabled:opacity-35"
           >
             <FaChevronRight />
           </button>

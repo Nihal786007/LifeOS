@@ -98,9 +98,7 @@ export default function AtlasInteractionPage({
 
   return (
     <div className="mx-auto max-w-7xl space-y-7 pb-12">
-      <header className="relative overflow-hidden rounded-[2rem] border border-cyan-400/15 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/40 p-8 shadow-2xl shadow-cyan-950/20">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-1/3 h-32 w-64 bg-blue-600/10 blur-3xl" />
+      <header className="lifeos-page-header relative overflow-hidden">
 
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="flex items-start gap-5">
@@ -110,7 +108,7 @@ export default function AtlasInteractionPage({
 
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-4xl font-black tracking-tight text-white">
+                <h1 className="lifeos-page-title !mt-0">
                   Ask ATLAS
                 </h1>
                 <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-300">
@@ -118,7 +116,7 @@ export default function AtlasInteractionPage({
                 </span>
               </div>
 
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+              <p className="lifeos-page-description">
                 Grounded intelligence that can prepare reviewable actions from your goals,
                 plans, tasks, habits, execution history, and
                 verified ATLAS evidence.
@@ -126,13 +124,13 @@ export default function AtlasInteractionPage({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-slate-700/70 bg-slate-950/60 px-4 py-3 backdrop-blur">
+          <div className="flex items-center gap-3 rounded-xl border border-lifeos-border bg-lifeos-surface px-4 py-3">
             <FaShieldHalved className="text-cyan-300" />
             <div>
-              <p className="text-xs font-semibold text-slate-200">
+              <p className="text-xs font-semibold text-lifeos-text">
                 Permission-controlled actions
               </p>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-lifeos-text-secondary">
                 No mutation without explicit approval
               </p>
             </div>
@@ -142,7 +140,7 @@ export default function AtlasInteractionPage({
 
       <div className="grid gap-7 xl:grid-cols-[0.9fr_1.3fr]">
         <section className="space-y-5">
-          <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-black/10">
+          <div className="lifeos-surface-panel p-6">
             <div className="flex items-center justify-between gap-4">
               <SectionLabel>Daily brief</SectionLabel>
               <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
@@ -166,7 +164,7 @@ export default function AtlasInteractionPage({
             </div>
           </div>
 
-          <div className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6">
+          <div className="lifeos-surface-panel p-6">
             <div className="flex items-center gap-3">
               <FaListOl className="text-cyan-300" />
               <h2 className="font-bold text-white">
@@ -216,7 +214,7 @@ export default function AtlasInteractionPage({
           <AtlasMemoryPanel memory={memory} />
         </section>
 
-        <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6 shadow-2xl shadow-black/15 lg:p-7">
+        <section className="lifeos-surface-panel p-6 lg:p-7">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-500/10 text-blue-300">
               <FaBolt />
@@ -259,7 +257,7 @@ export default function AtlasInteractionPage({
                 setQuestion(event.target.value)
               }
               placeholder="Ask a question or request a LifeOS action…"
-              className="min-h-32 w-full resize-none rounded-2xl border border-slate-700 bg-slate-950/80 p-5 text-sm leading-6 text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-cyan-400/50 focus:ring-4 focus:ring-cyan-400/5 disabled:cursor-not-allowed disabled:opacity-70"
+              className="lifeos-field min-h-32 w-full resize-none p-4 text-sm leading-6 disabled:cursor-not-allowed disabled:opacity-70"
             />
 
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

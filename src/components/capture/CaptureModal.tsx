@@ -115,7 +115,7 @@ export default function CaptureModal({
         flex
         items-center
         justify-center
-        bg-black/70
+        bg-lifeos-overlay
         p-4
         backdrop-blur-sm
       "
@@ -123,15 +123,13 @@ export default function CaptureModal({
       <Card
         className="
           flex
-          h-[90vh]
+          max-h-[calc(100dvh-2rem)]
           w-full
           max-w-2xl
           flex-col
           border
-          border-cyan-500/20
-          bg-slate-900
-          shadow-2xl
-          shadow-cyan-500/20
+          border-lifeos-border
+          bg-lifeos-surface
         "
       >
         {/* ======================================
@@ -141,7 +139,7 @@ export default function CaptureModal({
         <div
           className="
             border-b
-            border-slate-800
+            border-lifeos-border
             p-6
           "
         >
@@ -178,7 +176,7 @@ export default function CaptureModal({
                 className="
                   mt-1
                   text-sm
-                  text-slate-400
+                  text-lifeos-text-secondary
                 "
               >
                 Save a thought, note, or idea to your LifeOS inbox.
@@ -214,19 +212,7 @@ export default function CaptureModal({
               )
             }
             placeholder="What's on your mind?"
-            className="
-              w-full
-              resize-none
-              rounded-2xl
-              border
-              border-slate-700
-              bg-slate-950
-              p-5
-              text-white
-              outline-none
-              transition
-              focus:border-cyan-500
-            "
+            className="lifeos-field w-full resize-none p-4"
           />
 
           {error && (

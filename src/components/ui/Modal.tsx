@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 import Card from "./Card";
 
@@ -17,18 +17,19 @@ export default function Modal({
   children,
   footer,
 }: ModalProps) {
+  const titleId = useId();
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-lifeos-overlay backdrop-blur-sm p-4">
       <Card
-        className="w-full max-w-xl border border-lifeos-border bg-lifeos-surface"
+        className="max-h-[calc(100dvh-2rem)] w-full max-w-xl overflow-y-auto border border-lifeos-border bg-lifeos-surface"
         hover={false}
         padding="lg"
       >
-        <div className="space-y-6">
+        <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="space-y-6">
           <div>
-            <h2 className="text-3xl font-bold text-lifeos-text">
+            <h2 id={titleId} className="text-2xl font-bold text-lifeos-text">
               {title}
             </h2>
 

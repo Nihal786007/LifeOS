@@ -330,7 +330,7 @@ function Settings() {
                   ATLAS personality
                 </span>
                 <select
-                  className="w-full rounded-2xl border border-slate-800 bg-slate-900 px-5 py-4 text-white outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+                  className="lifeos-field w-full"
                   value={draft.atlasPersonality}
                   onChange={(event) =>
                     updateDraft(

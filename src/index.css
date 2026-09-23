@@ -45,6 +45,9 @@
   --lifeos-overlay: rgb(2 6 23 / 76%);
   --lifeos-chart-grid: #334155;
   --lifeos-chart-label: #cbd5e1;
+  --lifeos-radius-surface: 1.5rem;
+  --lifeos-radius-control: .75rem;
+  --lifeos-shadow-surface: 0 12px 32px rgb(2 6 23 / 10%);
 }
 
 :root[data-theme="light"] {
@@ -70,6 +73,7 @@
   --lifeos-overlay: rgb(15 23 42 / 55%);
   --lifeos-chart-grid: #cbd5e1;
   --lifeos-chart-label: #334155;
+  --lifeos-shadow-surface: 0 10px 28px rgb(15 23 42 / 6%);
 
   /* Compatibility bridge for dark-first legacy utilities. Surface variables
      remain the one source of theme truth while screens adopt semantic classes. */
@@ -98,6 +102,20 @@ body {
   background: var(--lifeos-app);
   color: var(--lifeos-text);
 }
+
+.lifeos-page-header { border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-surface); background: var(--lifeos-surface-secondary); padding: clamp(1.5rem, 3vw, 2.25rem); box-shadow: var(--lifeos-shadow-surface); }
+.lifeos-page-eyebrow { color: var(--lifeos-accent); font-size: .75rem; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+.lifeos-page-title { margin-top: .6rem; color: var(--lifeos-text); font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 800; line-height: 1.12; letter-spacing: -.025em; }
+.lifeos-page-description { margin-top: .8rem; max-width: 44rem; color: var(--lifeos-text-secondary); font-size: .95rem; line-height: 1.6; }
+.lifeos-surface-panel { border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-surface); background: var(--lifeos-surface); box-shadow: var(--lifeos-shadow-surface); }
+.lifeos-field { min-height: 2.75rem; border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-control); background: var(--lifeos-input); color: var(--lifeos-text); padding: .65rem 1rem; transition: border-color .15s, box-shadow .15s; }
+.lifeos-field::placeholder { color: var(--lifeos-muted); }
+.lifeos-field:hover:not(:disabled) { border-color: var(--lifeos-accent); }
+.lifeos-field:focus-visible { border-color: var(--lifeos-focus); outline: 2px solid var(--lifeos-focus); outline-offset: 2px; }
+.lifeos-icon-button { display: inline-flex; min-width: 2.75rem; min-height: 2.75rem; align-items: center; justify-content: center; border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-control); background: var(--lifeos-surface); color: var(--lifeos-text-secondary); transition: background-color .15s, color .15s, border-color .15s; }
+.lifeos-icon-button:hover:not(:disabled) { background: var(--lifeos-hover); color: var(--lifeos-text); }
+.lifeos-empty-state { border: 1px dashed var(--lifeos-border); border-radius: var(--lifeos-radius-control); background: var(--lifeos-surface-secondary); color: var(--lifeos-text-secondary); padding: 1.25rem; text-align: center; }
+.lifeos-status-pill { display: inline-flex; align-items: center; gap: .35rem; border: 1px solid currentColor; border-radius: 999px; padding: .25rem .65rem; font-size: .6875rem; font-weight: 700; line-height: 1.25; }
 
 /* Presentation-only contrast bridge for legacy dark-first utilities. */
 :root[data-theme="light"] .text-white { color: var(--lifeos-text); }

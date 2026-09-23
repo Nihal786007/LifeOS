@@ -27,14 +27,14 @@ const PLANNING_LAYERS = [
 export default function Planning({ onNavigate }: PlanningProps) {
   return (
     <div className="mx-auto max-w-[1500px] space-y-7 pb-10">
-      <header className="rounded-[2rem] border border-cyan-400/15 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/25 p-7 lg:p-9">
+      <header className="lifeos-page-header">
         <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
+            <p className="lifeos-page-eyebrow">
               Life architecture
             </p>
-            <h1 className="mt-3 text-4xl font-black text-white">Planning</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
+            <h1 className="lifeos-page-title">Planning</h1>
+            <p className="lifeos-page-description">
               Connect long-term direction to the concrete work that moves it
               forward.
             </p>
@@ -44,7 +44,7 @@ export default function Planning({ onNavigate }: PlanningProps) {
             <button
               type="button"
               onClick={() => onNavigate("calendar")}
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-slate-300 transition hover:border-cyan-400/30 hover:text-cyan-200"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-lifeos-border bg-lifeos-elevated px-4 py-2.5 text-sm font-semibold text-lifeos-text transition hover:bg-lifeos-hover focus-visible:outline-2 focus-visible:outline-lifeos-focus"
             >
               <FaCalendarDays />
               Open Calendar
@@ -52,7 +52,7 @@ export default function Planning({ onNavigate }: PlanningProps) {
             <button
               type="button"
               onClick={() => onNavigate("tasks")}
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-lifeos-accent px-4 py-2.5 text-sm font-bold text-lifeos-accent-foreground transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-lifeos-focus"
             >
               <FaListCheck />
               Open Tasks
@@ -67,12 +67,12 @@ export default function Planning({ onNavigate }: PlanningProps) {
             return (
               <div
                 key={layer.label}
-                className="flex items-center gap-2 rounded-xl border border-slate-800/80 bg-slate-950/45 px-3 py-3"
+                className="flex items-center gap-2 rounded-xl border border-lifeos-border bg-lifeos-surface px-3 py-3"
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-xs text-cyan-300">
                   <Icon />
                 </span>
-                <span className="min-w-0 truncate text-xs font-semibold text-slate-300">
+                <span className="min-w-0 truncate text-xs font-semibold text-lifeos-text-secondary">
                   {layer.label}
                 </span>
                 {index < PLANNING_LAYERS.length - 1 && (
@@ -86,7 +86,7 @@ export default function Planning({ onNavigate }: PlanningProps) {
 
       <PlanningSummary />
 
-      <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/75 p-5 sm:p-6">
+      <section className="lifeos-surface-panel p-5 sm:p-6">
         <div className="mb-6 flex items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
             <FaBullseye />
@@ -106,7 +106,7 @@ export default function Planning({ onNavigate }: PlanningProps) {
         <LifeGoalPlanner />
       </section>
 
-      <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/75 p-5 sm:p-6">
+      <section className="lifeos-surface-panel p-5 sm:p-6">
         <div className="mb-6 flex items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-violet-300">
             <FaUser />

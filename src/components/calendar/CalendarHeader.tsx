@@ -26,14 +26,14 @@ export default function CalendarHeader({
   });
 
   return (
-    <header className="rounded-[2rem] border border-cyan-400/15 bg-gradient-to-br from-slate-900 via-slate-950 to-cyan-950/25 p-7 lg:p-9">
+    <header className="lifeos-page-header">
       <div className="flex flex-col gap-7 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
+          <p className="lifeos-page-eyebrow">
             Task calendar
           </p>
-          <h1 className="mt-3 text-4xl font-black text-white">{monthLabel}</h1>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-slate-400">
+          <h1 className="lifeos-page-title">{monthLabel}</h1>
+          <p className="lifeos-page-description">
             See what is due today, inspect any date, and look ahead without
             creating another task system.
           </p>
@@ -43,18 +43,18 @@ export default function CalendarHeader({
           <button
             type="button"
             onClick={onToday}
-            className="inline-flex items-center gap-2 rounded-xl border border-cyan-400/20 bg-cyan-400/10 px-4 py-2.5 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-400/15"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-lifeos-border bg-lifeos-elevated px-4 py-2.5 text-sm font-semibold text-lifeos-text transition hover:bg-lifeos-hover focus-visible:outline-2 focus-visible:outline-lifeos-focus"
           >
             <FaCalendarDay />
             Today
           </button>
 
-          <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950/60 p-1">
+          <div className="flex items-center rounded-xl border border-lifeos-border bg-lifeos-surface p-1">
             <button
               type="button"
               onClick={onPreviousMonth}
               aria-label="Previous month"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              className="lifeos-icon-button !min-h-9 !min-w-9 !border-0"
             >
               <FaChevronLeft />
             </button>
@@ -62,7 +62,7 @@ export default function CalendarHeader({
               type="button"
               onClick={onNextMonth}
               aria-label="Next month"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-800 hover:text-white"
+              className="lifeos-icon-button !min-h-9 !min-w-9 !border-0"
             >
               <FaChevronRight />
             </button>
@@ -71,7 +71,7 @@ export default function CalendarHeader({
           <button
             type="button"
             onClick={onOpenTasks}
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-4 py-2.5 text-sm font-bold text-slate-950 transition hover:bg-cyan-300"
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-lifeos-accent px-4 py-2.5 text-sm font-bold text-lifeos-accent-foreground transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-lifeos-focus"
           >
             <FaListCheck />
             Open Tasks

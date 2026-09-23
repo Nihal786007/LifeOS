@@ -23,7 +23,7 @@ interface CardProps {
 export default function Card({
   children,
   className = "",
-  hover = true,
+  hover = false,
   glow = false,
   padding = "md",
 }: CardProps) {
@@ -37,21 +37,21 @@ export default function Card({
   return (
     <div
       className={`
-        rounded-3xl
+        rounded-2xl
         border
         border-lifeos-border
         bg-lifeos-surface
 
         ${paddingClass}
 
-        shadow-sm
+        shadow-[var(--lifeos-shadow-surface)]
 
         transition-all
-        duration-300
+        duration-150
 
         ${
           hover
-            ? "hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-2xl hover:shadow-cyan-500/10"
+            ? "hover:border-lifeos-accent hover:bg-lifeos-surface-secondary"
             : ""
         }
 
