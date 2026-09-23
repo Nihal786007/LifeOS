@@ -17,7 +17,7 @@ import CaptureFab from "./components/capture/CaptureFab";
 import CaptureModal from "./components/capture/CaptureModal";
 import NotificationCenter from "./components/notifications/NotificationCenter";
 
-import Dashboard from "./pages/Dashboard";
+import DailyCommandCenter from "./dashboard/DailyCommandCenter";
 import Planning from "./pages/Planning";
 import Tasks from "./pages/Tasks";
 import Calendar from "./pages/Calendar";
@@ -172,9 +172,10 @@ function AppContent() {
 
         {currentPage ===
           "dashboard" && (
-          <Dashboard
+          <DailyCommandCenter
             orchestrator={atlasOrchestrator}
             onNavigate={setCurrentPage}
+            onOpenCapture={() => setCaptureOpen(true)}
           />
         )}
 
