@@ -43,7 +43,25 @@ function recordsMatch(
   left: readonly ExecutionRecord[],
   right: readonly ExecutionRecord[]
 ): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  return left.length === right.length && left.every((record, index) =>
+    valuesMatch(record, right[index]));
+}
+
+function valuesMatch(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return Array.isArray(left) && Array.isArray(right) &&
+      left.length === right.length && left.every((value, index) => valuesMatch(value, right[index]));
+  }
+  if (typeof left !== "object" || left === null || typeof right !== "object" || right === null) {
+    return false;
+  }
+  const leftRecord = left as Record<string, unknown>;
+  const rightRecord = right as Record<string, unknown>;
+  const leftKeys = Object.keys(leftRecord).sort();
+  const rightKeys = Object.keys(rightRecord).sort();
+  return leftKeys.length === rightKeys.length &&
+    leftKeys.every((key, index) => key === rightKeys[index] && valuesMatch(leftRecord[key], rightRecord[key]));
 }
 
 export class ExecutionHistoryService {
@@ -175,6 +193,44 @@ export class ExecutionHistoryService {
       repository.append(added);
     }
     return this.getAll();
+  }
+
+  static async appendConfirmed(records: ExecutionRecord[]): Promise<ExecutionRecord[]> {
+    this.requireHydrated();
+    if (records.length === 0) return this.getAll();
+
+    const previous = this.getAll();
+    const added = cloneRecords(records);
+    const expected = [...added, ...previous];
+    const version = ++this.mutationVersion;
+    this.applyOptimistic(expected);
+
+    try {
+      const repository = this.getRepository();
+      const persisted = isAsyncRepository(repository)
+        ? await repository.append(added)
+        : repository.append(added);
+
+      if (version !== this.mutationVersion) {
+        throw new Error("Execution History confirmation was superseded by another mutation");
+      }
+      if (!recordsMatch(persisted, expected)) {
+        throw new Error("Execution History persistence returned an unexpected snapshot");
+      }
+
+      this.expectedSnapshot = null;
+      this.records = cloneRecords(persisted);
+      this.persistenceError = null;
+      return this.getAll();
+    } catch (error) {
+      if (version === this.mutationVersion) {
+        this.expectedSnapshot = null;
+        this.records = previous;
+        this.persistenceError = error instanceof Error ? error : new Error(String(error));
+        this.notify();
+      }
+      throw error;
+    }
   }
 
   static remove(id: number): ExecutionRecord[] {

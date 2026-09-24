@@ -11,6 +11,7 @@ import {
   FaFlagCheckered,
   FaListCheck,
   FaPlus,
+  FaPlay,
   FaTriangleExclamation,
 } from "react-icons/fa6";
 
@@ -30,6 +31,7 @@ interface DailyCommandCenterProps {
   orchestrator: AtlasAIOrchestrator;
   onNavigate: (destination: DashboardDestination) => void;
   onOpenCapture: () => void;
+  onStartFocus: (taskId?: number) => void;
 }
 
 const PRIORITY_STYLE = {
@@ -57,7 +59,7 @@ function TaskContext({ task }: { task: DailyTaskItem }) {
   );
 }
 
-export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCapture }: DailyCommandCenterProps) {
+export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCapture, onStartFocus }: DailyCommandCenterProps) {
   const canonicalState = useAtlasCanonicalState();
   const planningExecution = usePlanningExecution();
   const habitExecution = useHabitExecution();
@@ -93,6 +95,9 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
             <p className="text-[10px] font-black uppercase tracking-[0.18em] text-lifeos-accent">Primary focus</p>
             <p className="mt-2 text-lg font-bold text-lifeos-text">{brief.primaryFocus.title}</p>
             <p className="mt-1 text-xs leading-5 text-lifeos-text-secondary">{brief.primaryFocus.reasons[0]}</p>
+            {daily.priorities[0] && (
+              <Button className="mt-4" onClick={() => onStartFocus(daily.priorities[0].id)}><FaPlay /> Start Focus</Button>
+            )}
           </div>
         </div>
       </header>
@@ -234,6 +239,7 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
             <p className="lifeos-page-eyebrow">Quick actions</p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Button onClick={() => onNavigate("tasks")}><FaPlus /> Task</Button>
+              <Button variant="secondary" onClick={() => onStartFocus(daily.priorities[0]?.id)}><FaPlay /> Focus</Button>
               <Button variant="secondary" onClick={onOpenCapture}><FaBolt /> Capture</Button>
               <Button variant="secondary" onClick={() => onNavigate("planning")}><FaFlagCheckered /> Planner</Button>
               <Button variant="secondary" onClick={() => onNavigate("atlas")}><FaBrain /> Ask ATLAS</Button>

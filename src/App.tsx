@@ -26,6 +26,8 @@ import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 import Atlas from "./pages/Atlas";
 import Reviews from "./pages/Reviews";
+import FocusMode from "./focus/FocusMode";
+import { useFocusSession } from "./focus/useFocusSession";
 
 import {
   createAtlasAIOrchestrator,
@@ -70,6 +72,13 @@ function AppContent() {
     setNavigationOpen,
   ] = useState(false);
 
+  const [
+    focusRequestedTaskId,
+    setFocusRequestedTaskId,
+  ] = useState<number | undefined>();
+
+  const focusController = useFocusSession();
+
   const {
     addCapture,
   } = useApp();
@@ -81,6 +90,27 @@ function AppContent() {
       behavior: "auto",
     });
   }, [currentPage]);
+
+  function openFocus(taskId?: number) {
+    setFocusRequestedTaskId(taskId);
+    setNavigationOpen(false);
+    setCurrentPage("focus");
+  }
+
+  if (currentPage === "focus" || focusController.session || focusController.outcome) {
+    return (
+      <FocusMode
+        orchestrator={atlasOrchestrator}
+        controller={focusController}
+        initialTaskId={focusRequestedTaskId}
+        onContinue={() => setCurrentPage("focus")}
+        onExit={() => {
+          setFocusRequestedTaskId(undefined);
+          setCurrentPage("dashboard");
+        }}
+      />
+    );
+  }
 
   return (
     <>
@@ -176,6 +206,7 @@ function AppContent() {
             orchestrator={atlasOrchestrator}
             onNavigate={setCurrentPage}
             onOpenCapture={() => setCaptureOpen(true)}
+            onStartFocus={openFocus}
           />
         )}
 
