@@ -2,6 +2,7 @@ import type { AtlasActionRisk } from "../actions/types.ts";
 
 export type AtlasConnectorId =
   | "calendar"
+  | "google-calendar"
   | "email"
   | "messaging"
   | "finance"
@@ -14,6 +15,9 @@ export type AtlasConnectorId =
 export type AtlasConnectorCapability =
   | "calendar.read"
   | "calendar.event.create"
+  | "calendar.accounts.read"
+  | "calendar.calendars.read"
+  | "calendar.events.read"
   | "email.read"
   | "email.draft"
   | "email.send"

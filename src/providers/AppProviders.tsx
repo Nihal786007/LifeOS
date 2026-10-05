@@ -54,6 +54,7 @@ import {
 import { AuthProvider } from "../auth/AuthContext";
 import AuthDataBoundary from "../components/auth/AuthDataBoundary";
 import { AccountDataProvider, useAccountData } from "../data/account/AccountDataContext";
+import { GoogleCalendarProvider } from "../connectors/googleCalendar/GoogleCalendarContext";
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -89,9 +90,11 @@ function AuthenticatedCanonicalProviders({ children }: AppProvidersProps) {
                       <XPProvider>
                         <HabitProvider>
                           <HabitExecutionProvider>
-                            <PlanningExecutionProvider>
-                              {children}
-                            </PlanningExecutionProvider>
+                              <PlanningExecutionProvider>
+                                <GoogleCalendarProvider>
+                                  {children}
+                                </GoogleCalendarProvider>
+                              </PlanningExecutionProvider>
                           </HabitExecutionProvider>
                         </HabitProvider>
                       </XPProvider>

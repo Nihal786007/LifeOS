@@ -5,6 +5,7 @@ import {
 import {
   FaBrain,
   FaBriefcase,
+  FaCalendarAlt,
   FaCheckCircle,
   FaClock,
   FaDatabase,
@@ -21,6 +22,7 @@ import { useDataServices } from "../data/DataServicesContext";
 import { resetLocalTaskActivity } from "../data/reset/resetLocalTaskActivity";
 import type { UserProfile } from "../shared/types";
 import { useTheme } from "../theme/themeContext";
+import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
 import type { AppearancePreference } from "../theme/appearance";
 
 import Button from "../components/ui/Button";
@@ -78,6 +80,7 @@ function isSupportedTimeZone(timezone: string): boolean {
 function Settings() {
   const { preference, setPreference } = useTheme();
   const auth = useAuth();
+  const googleCalendar = useGoogleCalendar();
   const { profile, updateProfile } = useApp();
   const {
     taskRepository,
@@ -187,6 +190,11 @@ function Settings() {
     }
   }
 
+  async function disconnectGoogleCalendar() {
+    if (!confirm("Disconnect Google Calendar from LifeOS? This removes LifeOS authorization and cached events. It does not delete events from Google.")) return;
+    await googleCalendar.disconnect();
+  }
+
   return (
     <div className="mx-auto max-w-[1400px] space-y-7 pb-10">
       <PageHero
@@ -209,6 +217,27 @@ function Settings() {
 
       <div className="grid gap-7 xl:grid-cols-[1.2fr_0.8fr]">
         <div className="space-y-7">
+          <Card className="border-slate-800 bg-slate-900/70">
+            <div className="flex items-start gap-4">
+              <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-300"><FaCalendarAlt size={20} /></div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">Connected Apps</p>
+                <h2 className="mt-1 text-xl font-bold text-white">Google Calendar</h2>
+                <p className="mt-1 text-sm text-slate-500">Read-only calendars and upcoming events. Google events remain separate from LifeOS Tasks.</p>
+              </div>
+            </div>
+            <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-lifeos-border bg-lifeos-surface-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-bold text-lifeos-text">{googleCalendar.connection.state === "connected" ? "Connected" : googleCalendar.connection.state === "connecting" ? "Checking connection…" : "Not connected"}</p>
+                {googleCalendar.connection.accountLabel && <p className="mt-1 text-sm text-lifeos-text-secondary">{googleCalendar.connection.accountLabel}</p>}
+                {googleCalendar.connection.safeError && <p role="alert" className="mt-1 text-xs text-lifeos-danger">{googleCalendar.connection.safeError}</p>}
+              </div>
+              {googleCalendar.connection.state === "connected"
+                ? <Button variant="secondary" onClick={() => void disconnectGoogleCalendar()}>Disconnect</Button>
+                : <Button disabled={googleCalendar.connection.state === "connecting"} onClick={() => void googleCalendar.connect()}>{googleCalendar.connection.state === "connecting" ? "Connecting…" : "Connect"}</Button>}
+            </div>
+          </Card>
+
           <Card className="border-slate-800 bg-slate-900/70">
             <div className="flex items-start gap-4">
               <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-300">

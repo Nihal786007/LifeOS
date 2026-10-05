@@ -6,6 +6,8 @@ import {
 import CalendarGrid from "../components/calendar/CalendarGrid";
 import CalendarHeader from "../components/calendar/CalendarHeader";
 import DayPanel from "../components/calendar/DayPanel";
+import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
+import { eventOccursOnLocalDate } from "../connectors/googleCalendar/mapping";
 import { useTasks } from "../context/TaskContext";
 
 interface CalendarProps {
@@ -26,6 +28,7 @@ function startOfMonth(date: Date): Date {
 
 export default function Calendar({ onNavigate }: CalendarProps) {
   const { tasks } = useTasks();
+  const googleCalendar = useGoogleCalendar();
   const initialDate = useMemo(() => new Date(), []);
   const [currentDate, setCurrentDate] = useState(() =>
     startOfMonth(initialDate)
@@ -65,6 +68,10 @@ export default function Calendar({ onNavigate }: CalendarProps) {
     () => tasks.filter((task) => task.dueDate === selectedDateString),
     [tasks, selectedDateString]
   );
+  const eventsForSelectedDate = useMemo(
+    () => googleCalendar.readModel.events.filter((event) => eventOccursOnLocalDate(event, selectedDateString)),
+    [googleCalendar.readModel.events, selectedDateString]
+  );
 
   return (
     <div className="mx-auto max-w-[1500px] space-y-7 pb-10">
@@ -82,10 +89,13 @@ export default function Calendar({ onNavigate }: CalendarProps) {
           selectedDate={selectedDate}
           onSelectDate={selectDate}
           tasks={tasks}
+          externalEvents={googleCalendar.readModel.events}
         />
         <DayPanel
           selectedDate={selectedDate}
           tasks={tasksForSelectedDate}
+          externalEvents={eventsForSelectedDate}
+          externalConnection={googleCalendar.connection.state}
           onOpenTasks={() => onNavigate("tasks")}
         />
       </div>

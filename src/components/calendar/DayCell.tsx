@@ -12,6 +12,7 @@ interface DayCellProps {
   isSelected: boolean;
   taskCount: number;
   taskStatus: CalendarTaskStatus;
+  externalEventCount: number;
   onClick: () => void;
 }
 
@@ -30,6 +31,7 @@ export default function DayCell({
   isSelected,
   taskCount,
   taskStatus,
+  externalEventCount,
   onClick,
 }: DayCellProps) {
   const taskLabel = taskCount === 1 ? "1 task" : `${taskCount} tasks`;
@@ -39,7 +41,7 @@ export default function DayCell({
       type="button"
       onClick={onClick}
       aria-pressed={isSelected}
-      aria-label={`${day}, ${taskCount > 0 ? taskLabel : "no tasks"}${
+      aria-label={`${day}, ${taskCount > 0 ? taskLabel : "no tasks"}, ${externalEventCount} Google ${externalEventCount === 1 ? "event" : "events"}${
         isToday ? ", today" : ""
       }`}
       className={`
@@ -87,6 +89,7 @@ export default function DayCell({
           <span className="hidden sm:inline">{taskLabel}</span>
         </span>
       )}
+      {externalEventCount > 0 && <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full bg-blue-400 sm:bottom-3 sm:right-3" aria-hidden="true" />}
     </button>
   );
 }

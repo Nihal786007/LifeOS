@@ -20,6 +20,8 @@ import { useAtlasCanonicalState } from "../atlas/state/useAtlasCanonicalState";
 import Button from "../components/ui/Button";
 import { useHabitExecution } from "../context/HabitExecutionContext";
 import { usePlanningExecution } from "../context/PlanningExecutionContext";
+import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
+import { eventOccursOnLocalDate } from "../connectors/googleCalendar/mapping";
 import {
   buildDailyCommandCenter,
   type DailyTaskItem,
@@ -63,6 +65,7 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
   const canonicalState = useAtlasCanonicalState();
   const planningExecution = usePlanningExecution();
   const habitExecution = useHabitExecution();
+  const googleCalendar = useGoogleCalendar();
   const deterministic = useMemo(
     () => orchestrator.buildDeterministicPackage(canonicalState),
     [canonicalState, orchestrator]
@@ -70,6 +73,10 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
   const daily = useMemo(
     () => buildDailyCommandCenter(canonicalState, deterministic.intelligenceReport.priorities.rankedTasks),
     [canonicalState, deterministic.intelligenceReport.priorities.rankedTasks]
+  );
+  const todaysEvents = useMemo(
+    () => googleCalendar.readModel.events.filter((event) => eventOccursOnLocalDate(event, daily.dateKey)),
+    [daily.dateKey, googleCalendar.readModel.events]
   );
   const brief = deterministic.dailyBrief;
   const importantRisk = brief.keyRisks[0];
@@ -119,6 +126,13 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
           ))}
         </div>
       </section>
+
+      {googleCalendar.connection.state === "connected" && (
+        <section className="lifeos-surface-panel p-5 sm:p-6" aria-labelledby="today-schedule-heading">
+          <div className="flex items-center justify-between gap-4"><div><p className="lifeos-page-eyebrow">External calendar</p><h2 id="today-schedule-heading" className="mt-1 text-lg font-bold text-lifeos-text">Today’s schedule</h2></div><span className="lifeos-status-pill text-blue-300">Google · read-only</span></div>
+          {todaysEvents.length === 0 ? <p className="lifeos-empty-state mt-4">No Google Calendar events today.</p> : <div className="mt-4 space-y-2">{todaysEvents.slice(0, 6).map((event) => <div key={`${event.calendarId}:${event.externalId}`} className="flex items-start gap-4 rounded-xl bg-lifeos-surface-secondary px-4 py-3"><span className="w-16 shrink-0 text-xs font-black text-blue-300">{event.start.kind === "date" ? "All day" : new Date(event.start.dateTime).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span><div className="min-w-0"><p className="truncate text-sm font-semibold text-lifeos-text">{event.title}</p><p className="mt-1 text-xs text-lifeos-muted">{event.calendarName}</p></div></div>)}</div>}
+        </section>
+      )}
 
       {daily.priorities.length > 0 && (
         <section aria-labelledby="top-priorities-heading">

@@ -12,6 +12,9 @@ import type {
 export const ATLAS_CONNECTOR_CAPABILITIES: readonly AtlasConnectorCapabilityDefinition[] = [
   { connectorId: "calendar", capability: "calendar.read", operation: "read", permissionTier: "READ_ONLY", approvalRequired: false, enabledByDefault: true },
   { connectorId: "calendar", capability: "calendar.event.create", operation: "write", permissionTier: "CONFIRM_REQUIRED", approvalRequired: true, enabledByDefault: true },
+  { connectorId: "google-calendar", capability: "calendar.accounts.read", operation: "read", permissionTier: "READ_ONLY", approvalRequired: false, enabledByDefault: true },
+  { connectorId: "google-calendar", capability: "calendar.calendars.read", operation: "read", permissionTier: "READ_ONLY", approvalRequired: false, enabledByDefault: true },
+  { connectorId: "google-calendar", capability: "calendar.events.read", operation: "read", permissionTier: "READ_ONLY", approvalRequired: false, enabledByDefault: true },
   { connectorId: "email", capability: "email.read", operation: "read", permissionTier: "READ_ONLY", approvalRequired: false, enabledByDefault: false },
   { connectorId: "email", capability: "email.draft", operation: "write", permissionTier: "LOW_RISK_WRITE", approvalRequired: true, enabledByDefault: false },
   { connectorId: "email", capability: "email.send", operation: "write", permissionTier: "CONFIRM_REQUIRED", approvalRequired: true, enabledByDefault: false },

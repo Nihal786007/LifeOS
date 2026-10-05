@@ -1,5 +1,7 @@
 import { generateMonth } from "../../calendar/calendar";
 import type { Task } from "../../shared/types";
+import type { ExternalCalendarEvent } from "../../connectors/googleCalendar/types";
+import { eventOccursOnLocalDate } from "../../connectors/googleCalendar/mapping";
 
 import DayCell from "./DayCell";
 import type { CalendarTaskStatus } from "./DayCell";
@@ -9,6 +11,7 @@ interface CalendarGridProps {
   selectedDate: Date;
   onSelectDate: (date: Date) => void;
   tasks: Task[];
+  externalEvents: readonly ExternalCalendarEvent[];
 }
 
 const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -52,6 +55,7 @@ export default function CalendarGrid({
   selectedDate,
   onSelectDate,
   tasks,
+  externalEvents,
 }: CalendarGridProps) {
   const days = generateMonth(currentDate);
   const today = formatLocalDate(new Date());
@@ -75,6 +79,7 @@ export default function CalendarGrid({
             {days.map((day) => {
               const dateKey = formatLocalDate(day.date);
               const dayTasks = tasks.filter((task) => task.dueDate === dateKey);
+              const dayEvents = externalEvents.filter((event) => eventOccursOnLocalDate(event, dateKey));
 
               return (
                 <DayCell
@@ -85,6 +90,7 @@ export default function CalendarGrid({
                   isSelected={dateKey === formatLocalDate(selectedDate)}
                   taskCount={dayTasks.length}
                   taskStatus={getTaskStatus(dayTasks, day.date, today)}
+                  externalEventCount={dayEvents.length}
                   onClick={() => onSelectDate(day.date)}
                 />
               );
@@ -98,6 +104,7 @@ export default function CalendarGrid({
         <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-cyan-400" />Active</span>
         <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-amber-400" />Mixed</span>
         <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-400" />Completed</span>
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-blue-400" />Google event</span>
       </div>
     </section>
   );

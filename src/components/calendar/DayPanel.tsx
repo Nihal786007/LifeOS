@@ -4,13 +4,17 @@ import {
   FaCheck,
   FaClock,
   FaListCheck,
+  FaLocationDot,
 } from "react-icons/fa6";
 
 import type { Task } from "../../shared/types";
+import type { ExternalCalendarEvent, GoogleCalendarConnectionState } from "../../connectors/googleCalendar/types";
 
 interface DayPanelProps {
   selectedDate: Date;
   tasks: Task[];
+  externalEvents: readonly ExternalCalendarEvent[];
+  externalConnection: GoogleCalendarConnectionState;
   onOpenTasks: () => void;
 }
 
@@ -73,6 +77,8 @@ function getTaskStatus(task: Task, selectedDate: Date): TaskDateStatus {
 export default function DayPanel({
   selectedDate,
   tasks,
+  externalEvents,
+  externalConnection,
   onOpenTasks,
 }: DayPanelProps) {
   const fullDate = selectedDate.toLocaleDateString(undefined, {
@@ -95,6 +101,9 @@ export default function DayPanel({
   });
 
   const openTaskCount = tasks.filter((task) => !task.completed).length;
+  const eventTime = (event: ExternalCalendarEvent) => event.start.kind === "date"
+    ? "All day"
+    : new Date(event.start.dateTime).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
   return (
     <aside className="self-start rounded-[1.75rem] border border-slate-800 bg-slate-900/75 p-5 xl:sticky xl:top-0">
@@ -120,6 +129,16 @@ export default function DayPanel({
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
           <FaCalendarCheck />
         </div>
+      </div>
+
+      <div className="mt-5 border-b border-slate-800 pb-5">
+        <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-bold text-slate-200">Google Calendar</h3><span className="text-[10px] font-black uppercase tracking-wider text-blue-300">External · read-only</span></div>
+        {externalConnection !== "connected" ? <p className="mt-3 text-xs text-slate-500">Connect Google Calendar in Settings to see external events.</p>
+          : externalEvents.length === 0 ? <p className="mt-3 text-xs text-slate-500">No Google events for this day.</p>
+          : <div className="mt-3 space-y-2">{externalEvents.map((event) => <article key={`${event.calendarId}:${event.externalId}`} className="rounded-xl border border-blue-400/15 bg-blue-400/5 p-3">
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-200">{event.title}</p><p className="mt-1 text-xs text-blue-200">{eventTime(event)} · {event.calendarName}</p></div><span className="shrink-0 rounded-md bg-blue-400/10 px-2 py-1 text-[9px] font-bold uppercase text-blue-300">Google</span></div>
+              {event.location && <p className="mt-2 flex items-center gap-2 truncate text-xs text-slate-500"><FaLocationDot />{event.location}</p>}
+            </article>)}</div>}
       </div>
 
       <div className="mt-5 space-y-3">
