@@ -6,6 +6,7 @@ import {
 import CalendarGrid from "../components/calendar/CalendarGrid";
 import CalendarHeader from "../components/calendar/CalendarHeader";
 import DayPanel from "../components/calendar/DayPanel";
+import CreateGoogleCalendarEvent from "../components/calendar/CreateGoogleCalendarEvent";
 import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
 import { eventOccursOnLocalDate } from "../connectors/googleCalendar/mapping";
 import { useTasks } from "../context/TaskContext";
@@ -82,6 +83,8 @@ export default function Calendar({ onNavigate }: CalendarProps) {
         onToday={goToToday}
         onOpenTasks={() => onNavigate("tasks")}
       />
+
+      <CreateGoogleCalendarEvent />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
         <CalendarGrid

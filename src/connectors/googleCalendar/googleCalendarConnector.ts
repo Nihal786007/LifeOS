@@ -3,7 +3,7 @@ import type { GoogleCalendarConnectionState, GoogleCalendarResponse, GoogleCalen
 
 export class GoogleCalendarConnector implements AtlasConnector {
   readonly id = "google-calendar" as const;
-  readonly capabilities = ["calendar.accounts.read", "calendar.calendars.read", "calendar.events.read"] as const;
+  readonly capabilities = ["calendar.accounts.read", "calendar.calendars.read", "calendar.events.read", "calendar.events.create"] as const;
   private state: GoogleCalendarConnectionState = "disconnected";
   private readonly transport: GoogleCalendarTransport;
 
@@ -22,7 +22,9 @@ export class GoogleCalendarConnector implements AtlasConnector {
     if (!this.capabilities.includes(request.capability as typeof this.capabilities[number])) {
       return { status: "failed", requestId: request.requestId, safeError: "The connector capability is unsupported." };
     }
-    const response: GoogleCalendarResponse = await this.transport.request(request.capability === "calendar.events.read"
+    const response: GoogleCalendarResponse = await this.transport.request(request.capability === "calendar.events.create"
+      ? { ...(request.payload as import("./types.ts").GoogleCalendarWriteCommand & { action: "create" }), action: "create" }
+      : request.capability === "calendar.events.read"
       ? { action: "read", ...(request.payload as { windowStart: string; windowEnd: string; timezone: string }) }
       : { action: "status" });
     if (response.status === "connected") return { status: "success", requestId: request.requestId, data: response };

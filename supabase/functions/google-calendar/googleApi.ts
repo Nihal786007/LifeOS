@@ -5,6 +5,7 @@ export const GOOGLE_CALENDAR_SCOPES = [
   "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
   "https://www.googleapis.com/auth/calendar.events.readonly",
 ] as const;
+export const GOOGLE_CALENDAR_WRITE_SCOPE = "https://www.googleapis.com/auth/calendar.events.owned";
 export const GOOGLE_AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
 export const GOOGLE_TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 export const GOOGLE_REVOKE_ENDPOINT = "https://oauth2.googleapis.com/revoke";
@@ -23,12 +24,12 @@ function required(value: unknown, label: string): string {
   return value.trim();
 }
 
-export function buildGoogleAuthorizationUrl(input: { clientId: string; redirectUri: string; state: string; codeChallenge: string }): string {
+export function buildGoogleAuthorizationUrl(input: { clientId: string; redirectUri: string; state: string; codeChallenge: string; requestWrite?: boolean }): string {
   const url = new URL(GOOGLE_AUTHORIZATION_ENDPOINT);
   url.searchParams.set("client_id", input.clientId);
   url.searchParams.set("redirect_uri", input.redirectUri);
   url.searchParams.set("response_type", "code");
-  url.searchParams.set("scope", GOOGLE_CALENDAR_SCOPES.join(" "));
+  url.searchParams.set("scope", [...GOOGLE_CALENDAR_SCOPES, ...(input.requestWrite ? [GOOGLE_CALENDAR_WRITE_SCOPE] : [])].join(" "));
   url.searchParams.set("access_type", "offline");
   url.searchParams.set("prompt", "consent");
   url.searchParams.set("include_granted_scopes", "true");
@@ -51,15 +52,15 @@ export async function exchangeGoogleCode(fetcher: typeof fetch, input: { clientI
   const accessToken = required(data.access_token, "token_response");
   const expiresIn = typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 3_600;
   const refreshToken = typeof data.refresh_token === "string" && data.refresh_token.trim() ? data.refresh_token.trim() : undefined;
-  const scopes = typeof data.scope === "string" ? data.scope.split(/\s+/).filter(Boolean) : [...GOOGLE_CALENDAR_SCOPES];
+  const scopes = typeof data.scope === "string" ? data.scope.split(/\s+/).filter(Boolean) : [];
   return { accessToken, ...(refreshToken ? { refreshToken } : {}), expiresAt: new Date((input.now ?? Date.now)() + expiresIn * 1_000).toISOString(), scopes };
 }
 
-export async function refreshGoogleToken(fetcher: typeof fetch, input: { clientId: string; clientSecret: string; refreshToken: string; now?: () => number }): Promise<GoogleTokens> {
+export async function refreshGoogleToken(fetcher: typeof fetch, input: { clientId: string; clientSecret: string; refreshToken: string; previousScopes?: string[]; now?: () => number }): Promise<GoogleTokens> {
   const data = await jsonFetch(fetcher, GOOGLE_TOKEN_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: input.clientId, client_secret: input.clientSecret, refresh_token: input.refreshToken, grant_type: "refresh_token" }) });
   const accessToken = required(data.access_token, "token_response");
   const expiresIn = typeof data.expires_in === "number" && data.expires_in > 0 ? data.expires_in : 3_600;
-  const scopes = typeof data.scope === "string" ? data.scope.split(/\s+/).filter(Boolean) : [...GOOGLE_CALENDAR_SCOPES];
+  const scopes = typeof data.scope === "string" ? data.scope.split(/\s+/).filter(Boolean) : [...(input.previousScopes ?? [])];
   return { accessToken, refreshToken: input.refreshToken, expiresAt: new Date((input.now ?? Date.now)() + expiresIn * 1_000).toISOString(), scopes };
 }
 

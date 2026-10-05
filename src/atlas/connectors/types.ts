@@ -18,6 +18,7 @@ export type AtlasConnectorCapability =
   | "calendar.accounts.read"
   | "calendar.calendars.read"
   | "calendar.events.read"
+  | "calendar.events.create"
   | "email.read"
   | "email.draft"
   | "email.send"

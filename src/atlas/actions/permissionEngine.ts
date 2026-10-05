@@ -36,7 +36,7 @@ export class AtlasPermissionEngine {
       };
     }
 
-    const capability = getConnectorCapabilityForAction(actionType as AtlasActionType);
+    const capability = actionType === "calendar.events.create" ? "calendar.events.create" : getConnectorCapabilityForAction(actionType as AtlasActionType);
     const connectorPolicy = capability ? getConnectorCapabilityDefinition(capability) : undefined;
     if (connectorPolicy) {
       if (connectorPolicy.permissionTier === "FORBIDDEN" || !connectorPolicy.enabledByDefault) {

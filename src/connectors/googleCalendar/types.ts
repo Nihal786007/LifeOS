@@ -1,3 +1,4 @@
+import { parseCalendarEventPayload, type CalendarEventPayload, type CalendarEventProposal } from "../calendar/eventProposal.ts";
 export const GOOGLE_CALENDAR_PROVIDER = "google-calendar" as const;
 
 export type ExternalCalendarProvider = typeof GOOGLE_CALENDAR_PROVIDER;
@@ -9,6 +10,7 @@ export interface ExternalCalendar {
   primary: boolean;
   selected: boolean;
   timezone?: string;
+  accessRole?: "owner" | "writer" | "reader" | "freeBusyReader";
 }
 
 export type ExternalCalendarEventTime =
@@ -42,6 +44,7 @@ export interface GoogleCalendarConnection {
   state: GoogleCalendarConnectionState;
   accountLabel?: string;
   safeError?: string;
+  canCreate?: boolean;
 }
 
 export interface GoogleCalendarReadModel {
@@ -54,19 +57,22 @@ export interface GoogleCalendarReadModel {
 
 export type GoogleCalendarCommand =
   | { action: "status" }
-  | { action: "begin"; redirectUri: string }
+  | { action: "begin"; redirectUri: string; requestWrite?: boolean }
   | { action: "complete"; code: string; state: string; redirectUri: string }
   | { action: "read"; windowStart: string; windowEnd: string; timezone: string }
   | { action: "disconnect" };
+export type GoogleCalendarWriteCommand =
+  | { action: "prepare"; payload: CalendarEventPayload }
+  | { action: "create"; approvalId: string; fingerprint: string; payload: CalendarEventPayload; approved: true };
 
 export type GoogleCalendarResponse =
   | { status: "disconnected" }
   | { status: "authorization-required"; authorizationUrl: string }
-  | { status: "connected"; accountLabel: string; calendars?: ExternalCalendar[]; events?: ExternalCalendarEvent[]; fetchedAt?: string; windowStart?: string; windowEnd?: string }
+  | { status: "connected"; accountLabel: string; canCreate?: boolean; proposal?: CalendarEventProposal; createdEvent?: ExternalCalendarEvent; auditRowId?: string; calendars?: ExternalCalendar[]; events?: ExternalCalendarEvent[]; fetchedAt?: string; windowStart?: string; windowEnd?: string }
   | { status: "expired" | "revoked" | "provider-failure"; safeError: string };
 
 export interface GoogleCalendarTransport {
-  request(command: GoogleCalendarCommand, signal?: AbortSignal): Promise<GoogleCalendarResponse>;
+  request(command: GoogleCalendarCommand | GoogleCalendarWriteCommand, signal?: AbortSignal): Promise<GoogleCalendarResponse>;
 }
 
 export type GoogleCalendarCallback =
@@ -95,13 +101,14 @@ function hasExactKeys(value: Record<string, unknown>, required: readonly string[
 }
 
 function isCalendar(value: unknown): value is ExternalCalendar {
-  if (!isRecord(value) || !hasExactKeys(value, ["provider", "externalId", "name", "primary", "selected"], ["timezone"])) return false;
+  if (!isRecord(value) || !hasExactKeys(value, ["provider", "externalId", "name", "primary", "selected"], ["timezone", "accessRole"])) return false;
   return value.provider === GOOGLE_CALENDAR_PROVIDER
     && typeof value.externalId === "string"
     && typeof value.name === "string"
     && typeof value.primary === "boolean"
     && typeof value.selected === "boolean"
-    && (value.timezone === undefined || typeof value.timezone === "string");
+    && (value.timezone === undefined || typeof value.timezone === "string")
+    && (value.accessRole === undefined || ["owner", "writer", "reader", "freeBusyReader"].includes(String(value.accessRole)));
 }
 
 function isEventTime(value: unknown): value is ExternalCalendarEventTime {
@@ -137,11 +144,20 @@ export function parseGoogleCalendarResponse(value: unknown): GoogleCalendarRespo
     return value as GoogleCalendarResponse;
   }
   if (value.status === "connected"
-    && hasExactKeys(value, ["status", "accountLabel"], ["calendars", "events", "fetchedAt", "windowStart", "windowEnd"])
+    && hasExactKeys(value, ["status", "accountLabel"], ["calendars", "events", "fetchedAt", "windowStart", "windowEnd", "canCreate", "proposal", "createdEvent", "auditRowId"])
     && typeof value.accountLabel === "string"
     && (value.calendars === undefined || (Array.isArray(value.calendars) && value.calendars.every(isCalendar)))
     && (value.events === undefined || (Array.isArray(value.events) && value.events.every(isCalendarEvent)))
-    && [value.fetchedAt, value.windowStart, value.windowEnd].every((item) => item === undefined || typeof item === "string")) {
+    && [value.fetchedAt, value.windowStart, value.windowEnd].every((item) => item === undefined || typeof item === "string")
+    && (value.canCreate === undefined || typeof value.canCreate === "boolean")
+    && (value.createdEvent === undefined || isCalendarEvent(value.createdEvent))
+    && (value.auditRowId === undefined || (typeof value.auditRowId === "string" && /^[0-9a-f-]{36}$/.test(value.auditRowId)))) {
+    if (value.proposal !== undefined) {
+      const proposal = value.proposal;
+      if (!isRecord(proposal) || !hasExactKeys(proposal, ["version", "approvalId", "fingerprint", "payload", "calendarName", "permission"]) || proposal.version !== "1.0.0" || proposal.permission !== "CONFIRM_REQUIRED" || typeof proposal.calendarName !== "string" || typeof proposal.approvalId !== "string" || !/^[0-9a-f-]{36}$/.test(proposal.approvalId) || typeof proposal.fingerprint !== "string" || !/^[0-9a-f]{64}$/.test(proposal.fingerprint)) throw new Error("Invalid Calendar proposal.");
+      parseCalendarEventPayload(proposal.payload);
+    }
+    if ((value.createdEvent === undefined) !== (value.auditRowId === undefined)) throw new Error("Invalid Calendar creation receipt.");
     return value as unknown as GoogleCalendarResponse;
   }
   throw new Error("Google Calendar returned an invalid response.");

@@ -44,6 +44,7 @@ export function mapGoogleCalendar(value: unknown): ExternalCalendar | null {
     primary: source.primary === true,
     selected: source.selected !== false,
     ...(timezone ? { timezone } : {}),
+    ...(["owner", "writer", "reader", "freeBusyReader"].includes(String(source.accessRole)) ? { accessRole: source.accessRole as ExternalCalendar["accessRole"] } : {}),
   };
 }
 
