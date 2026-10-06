@@ -1,57 +1,27 @@
-LifeOS v0.2 — Core Foundation
+# LifeOS roadmap
 
-✅ Planning foundation
-✅ Execution foundation
-✅ Progress foundation
-✅ Execution history foundation
-✅ XP foundation
-✅ Achievement foundation
+Direction, not a release-date commitment. [README](README.md) describes the working product.
 
+## Working foundation
 
-CURRENT
+- Canonical planning, Tasks, Habits, execution/XP, captures, profile, and notifications.
+- Supabase Auth/RLS, account-isolated PowerSync, explicit adoption/recovery, offline/reconnect foundations.
+- Responsive web shell and Light / Dark / System appearance.
+- Focus Mode, factual Reviews, and Reality Mirror attention ledger.
+- Deterministic ATLAS, explicit Memory, provider boundaries, permissioned actions.
+- Google Calendar reads and explicitly approved event creation.
 
-1. XP Automation
-2. Execution-event correctness
-3. Green build + Git
+## Planned — not shipping
 
+| Direction | Next question |
+| --- | --- |
+| Review Intelligence | How can richer reflection remain grounded in available history? |
+| Focus insights/history | How can sessions be explored without overclaiming coverage? |
+| Decision / Opportunity Cost engines | Which trusted inputs and explainable rules justify useful comparisons? |
+| Hosted ATLAS | Finish synthetic provider evaluation before production selection and cost policy. |
+| Additional real connectors | Extend least privilege and exact approval; mocks are not real integrations. |
+| Public web release | Establish deployment, privacy, recovery, and operational readiness. |
+| Mobile packaging | Evaluate Capacitor after web/release readiness; no native app ships today. |
+| Voice | Preserve evidence, permission, and approval boundaries in a future interaction layer. |
 
-NEXT — CORE MODEL
-
-4. Universal Task architecture
-5. Smart Goal Timeline
-6. Goals Planner evolution
-7. Personal Planner evolution
-
-
-HABITS 2.0
-
-8. Habit data model
-9. Habit occurrence history
-10. Weekly spreadsheet tracker
-11. Monthly spreadsheet tracker
-12. Habit archive
-13. Goal-connected habits
-
-
-INTELLIGENCE DATA LAYER
-
-14. Analytics Engine
-15. Life Calendar / Timeline
-16. Achievements automation
-17. Notifications
-
-
-PRODUCT EXPERIENCE
-
-18. Dashboard upgrade
-19. Profile / Personalization
-20. Search
-
-
-ATLAS
-
-21. ATLAS data access layer
-22. Plan My Day
-23. Smart Suggestions
-24. Coaching
-25. User-controlled memory
+Preserve canonical models, repository ownership, execution/XP semantics, account isolation, and ATLAS factual authority.

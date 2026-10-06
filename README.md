@@ -1,349 +1,149 @@
-# 🚀 LifeOS
+# LifeOS
 
-> **LifeOS is an AI-powered Personal Operating System designed to transform long-term dreams into consistent daily action.**
+A personal operating system for planning, execution, reflection, and intelligent life management.
 
-LifeOS is more than a productivity app. It connects your biggest life goals to monthly planning, weekly execution, and daily tasks, creating a complete system for personal growth.
+**Plan what matters. Focus on it. See where your attention actually went. Improve the next week.**
 
-Built with **React**, **TypeScript**, **Vite**, and **Tailwind CSS**, LifeOS focuses on clean architecture, beautiful UI, intelligent planning, and future AI assistance through **ATLAS**.
+LifeOS connects goals, tasks, habits, focus sessions, reviews, and external calendar context in one responsive web application. Its intelligence is grounded in trusted application state; proposed actions stay behind explicit approval.
 
----
+[Product](#what-works-today) · [Architecture](ARCHITECTURE.md) · [Setup](docs/SETUP.md) · [Roadmap](ROADMAP.md)
 
-# 🌍 Vision
+![Daily Command Center in light mode](docs/images/lifeos-dashboard-light.jpg)
 
-Most productivity apps manage tasks.
+*Primary focus, trusted daily summaries, calendar context, and quick navigation.*
 
-**LifeOS manages lives.**
+## What works today
 
-Instead of isolated to-do lists, LifeOS builds a complete execution system where every action contributes toward meaningful long-term goals.
+| Area | Implemented experience |
+| --- | --- |
+| Planning & execution | Life Goals → Monthly Outcomes → Weekly Focus → Tasks; personal planning; execution history and ledger-derived XP. |
+| Focus | Task-linked Focus Mode, pause-aware timestamps, reload recovery, and a separate choice to complete the task. |
+| Habits & reflection | Scheduled habits, completion history, derived streaks; factual Daily, Weekly, and Monthly Reviews. |
+| Reality Mirror | User-declared priorities compared with recorded Focus durations; weekly balance and expandable evidence. |
+| ATLAS | Deterministic Daily Brief, priorities, risks and signals; grounded questions; explicit Memory; permissioned action proposals. |
+| Calendar | Canonical task dates plus separate Google events; OAuth reads and explicitly approved event creation. |
+| System | Supabase Auth, account-scoped PowerSync persistence, offline/reconnect foundations, notifications, captures, Light / Dark / System appearance. |
 
-```
-Dream
-      ↓
-Life Goal
-      ↓
-Monthly Target
-      ↓
-Weekly Target
-      ↓
-Today's Tasks
-      ↓
-Timeline
-      ↓
-Analytics
-      ↓
-ATLAS Intelligence
-```
+### See the interface
 
-Every completed task becomes progress toward something bigger.
+Real light-mode captures of an empty workspace, not populated demo data. All images are 992 × 640 crops excluding account/profile chrome.
 
----
+<details>
+<summary>Focus Mode — entry state</summary>
 
-# 🚧 Project Status
+![Focus Mode waiting for an active task](docs/images/lifeos-focus-mode-light.jpg)
 
-**Current Version:** v0.7.0
+Focus starts from an active task. This is the no-task state, not a fabricated running session.
 
-🟢 Active Development
+</details>
 
-### Latest Milestone
+<details>
+<summary>Reality Mirror — setup state</summary>
 
-- ✅ Progress Engine
-- ✅ Cascading Completion
-- ✅ Cascading Delete
-- ✅ Green Build
+![Reality Mirror setup and recorded attention](docs/images/lifeos-reality-mirror-light.jpg)
 
-### Next Milestone
+Recorded focus is not a claim about every hour of someone's life.
 
-🏆 XP & Level System
+</details>
 
----
+<details>
+<summary>Calendar — Google Calendar integration</summary>
 
-# ✨ Current Features
+![Calendar with separate Google context](docs/images/lifeos-calendar-google-light.jpg)
 
-## 🎯 Goal Planning
+External events remain separate from canonical Tasks. The visible day has no events.
 
-- ✅ Life Goals
-- ✅ Monthly Targets
-- ✅ Weekly Targets
-- ✅ Daily Tasks
-- ✅ Goal Progress Tracking
-- ✅ Local Storage Persistence
+</details>
 
----
+<details>
+<summary>Ask ATLAS — grounded interaction</summary>
 
-## ⚙️ Automation Engine
+![Ask ATLAS with deterministic brief](docs/images/lifeos-ask-atlas-light.jpg)
 
-LifeOS automatically keeps planning synchronized.
+Deterministic summaries need no language model. Natural-language answers need a configured provider.
 
-- ✅ Automatic Weekly Progress Calculation
-- ✅ Automatic Monthly Progress Calculation
-- ✅ Automatic Life Goal Progress Calculation
-- ✅ Cascading Completion
-- ✅ Cascading Delete
+</details>
 
-No manual progress updates are required.
+## Why LifeOS is different
 
----
+- **Canonical domain ownership.** Trusted engines and repository boundaries own behavior and persistence; React consumes their state.
+- **Attention, not just checkboxes.** Reality Mirror compares intended priorities with recorded Focus time, with explicit coverage limitations.
+- **Evidence before commentary.** ATLAS builds a deterministic Fact Core and reconstructs citations from validated references. Models never become factual authority.
+- **Approval before action.** Untrusted candidates pass schema, reference, and permission checks before a proposal can be approved and executed.
+- **No hidden connector mutations.** Reading Google events does not create Tasks or award XP. Writes require exact approval. Mock messaging and finance remain simulations.
 
-## 📅 Planning System
+## Architecture at a glance
 
-Create a complete planning hierarchy.
+```text
+React UI → domain contexts → trusted mutation/execution engines
+                              ↓
+                       typed repositories
+                              ↓
+                  per-user PowerSync database
+                              ↕
+                   Supabase Postgres + RLS
 
-- Life Goals
-- Monthly Planning
-- Weekly Planning
-- Daily Task Planning
-
-Tasks can be:
-
-- Linked to Weekly Targets
-- Standalone daily tasks
-
-making LifeOS flexible for students, professionals, creators, and anyone managing daily life.
-
----
-
-## 📊 Dashboard
-
-- Productivity Overview
-- Progress Widgets
-- Daily Insights
-- Clean Modern UI
-
----
-
-## 🔥 Habits
-
-(Currently Basic)
-
-- Habit Tracking
-- Daily Completion
-- Streak System
-
-A complete spreadsheet-style Habit Engine is planned.
-
----
-
-## 📝 Quick Capture
-
-Capture ideas instantly before they disappear.
-
-Perfect for:
-
-- Ideas
-- Notes
-- Thoughts
-- Inspiration
-
----
-
-## 💾 Persistence
-
-All planning data is stored locally using Local Storage.
-
-Refreshing the application never loses your work.
-
----
-
-# 🏗 Architecture
-
-LifeOS follows a modular architecture where every system is isolated and easy to maintain.
-
-```
-Life Goal
-      ↓
-Monthly Target
-      ↓
-Weekly Target
-      ↓
-Task
-
-      ↓
-
-Progress Engine
-
-      ↓
-
-Automatic Progress Calculation
+Canonical state → reasoning context → deterministic Fact Core
+                                       ↓
+                        provider commentary + references
+                                       ↓
+                            strict validation
+                                       ↓
+                        deterministic answer + citations
 ```
 
-Future engines include:
+Actions use a separate permission → proposal → explicit approval → trusted executor path. Memory is contextual and non-citable. Hosted Gemini, Qwen, and Mistral adapters exist, but comparison and production selection are unfinished. Hosted AI is not required for deterministic functionality.
 
-- XP Engine
-- Analytics Engine
-- Habit Engine
-- Timeline Engine
-- Notification Engine
-- ATLAS AI Engine
+See [architecture and safety boundaries](ARCHITECTURE.md).
 
----
+## Google Calendar security
 
-# 🤖 ATLAS (Under Development)
+Authorization Code + PKCE, exact redirect allowlisting, server-side token exchange/refresh, and encrypted token storage protect the connection. Read scopes and event-creation permission are separate. Writes require an approved exact payload and duplicate-prevention bookkeeping. Google events stay separate from Tasks; credentials and tokens stay out of browser configuration.
 
-ATLAS is the intelligent assistant powering LifeOS.
+## Technology
 
-Future capabilities include:
+| Layer | Stack |
+| --- | --- |
+| Frontend | React 19, TypeScript 6, Vite 8 |
+| Presentation | Tailwind CSS 4, semantic tokens, Framer Motion, Recharts |
+| State | Context-based domain providers and pure engines |
+| Auth / backend | Supabase Auth, Postgres RLS, Edge Functions |
+| Database / sync | PowerSync Web, account-scoped SQLite databases |
+| Tests | Node test runner, separate TypeScript test project, fake storage/transport |
 
-- Intelligent Daily Planning
-- Smart Task Recommendations
-- Weekly Reviews
-- Monthly Reviews
-- Productivity Analytics
-- Goal Suggestions
-- Smart Notifications
-- Daily Briefings
-- AI Coaching
-- Long-term Progress Analysis
+## Run locally
 
-ATLAS is designed to become your personal productivity partner rather than simply another chatbot.
+Use Node.js 24 and npm:
 
----
-
-# 🛠 Tech Stack
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- Context API
-- Local Storage
-
----
-
-# 📂 Project Structure
-
-```
-src/
-
-├── assets/
-├── components/
-├── context/
-├── engines/
-├── hooks/
-├── pages/
-├── shared/
-
-├── App.tsx
-├── main.tsx
-└── index.css
-```
-
-The project follows a modular architecture, making every feature easy to maintain and scale.
-
----
-
-# 🚀 Installation
-
-Clone the repository
-
-```bash
-git clone https://github.com/Nihal786007/LifeOS.git
-```
-
-Go into the project
-
-```bash
-cd LifeOS
-```
-
-Install dependencies
-
-```bash
+```sh
 npm install
-```
-
-Run the development server
-
-```bash
 npm run dev
 ```
 
-Build for production
+**The normal app is authentication-gated.** Opening a workspace requires configured Supabase Auth and PowerSync infrastructure. Without those prerequisites you can build and run deterministic tests, but there is no guest demo mode.
 
-```bash
+See [setup](docs/SETUP.md) for client configuration, backend prerequisites, and optional Google Calendar / ATLAS setup. Never put server secrets in `VITE_*`.
+
+## Quality and verification
+
+Deterministic coverage spans intelligence, permissions, connectors, planning, habits, execution/XP, persistence, account isolation, focus, reviews, and notifications. The preceding checkpoint verified the full deterministic suite, clean test-project typecheck, production build, and focused lint. This checkpoint changes documentation and images only.
+
+```sh
+npx tsc -p tests/tsconfig.json --noEmit
+npm run test:atlas
+npm run test:hosted-atlas
+npm run test:google-calendar
+npm run test:focus
+npm run test:reality-mirror
 npm run build
 ```
 
----
+Additional suites are in [package.json](package.json). Live infrastructure tests are separate from offline verification. There is no CI badge; focused lint does not imply repository-wide lint debt is resolved.
 
-# 🗺 Development Roadmap
+## Status and direction
 
-## ✅ Completed
+LifeOS is a personal project under active development. Data correctness, understandable UX, and explicit authority boundaries take priority over feature speed.
 
-- Dashboard
-- Life Goals
-- Monthly Targets
-- Weekly Targets
-- Daily Tasks
-- Goal Progress Tracking
-- Habit Tracking (Basic)
-- Quick Capture
-- Local Storage Persistence
-- Modular Context Architecture
-- Progress Engine
-- Cascading Completion
-- Cascading Delete
+Richer reviews/focus insights, additional connectors, hosted ATLAS after provider selection, voice, and mobile packaging are **planned**, not shipping capabilities. See the [roadmap](ROADMAP.md).
 
----
-
-## 🚧 Currently Building
-
-- XP & Level System
-- Statistics Dashboard
-- Habit Engine
-
----
-
-## 🔜 Planned
-
-- Timeline
-- Calendar Integration
-- Focus Mode
-- Smart Notifications
-- Cloud Synchronization
-- Mobile Version
-- Data Backup
-- ATLAS AI
-- Advanced Productivity Insights
-
----
-
-# 💡 Design Philosophy
-
-LifeOS is built around one simple idea:
-
-> **Every daily action should move you closer to your biggest life goals.**
-
-Instead of overwhelming users with endless productivity features, LifeOS connects planning, execution, tracking, and intelligent automation into one seamless experience.
-
----
-
-# 🚀 Long-Term Vision
-
-LifeOS is being developed as a complete Personal Operating System.
-
-The goal is to help:
-
-- Students
-- Professionals
-- Entrepreneurs
-- Creators
-- Families
-- Lifelong Learners
-
-plan, execute, and achieve meaningful goals through intelligent software.
-
----
-
-# 👨‍💻 Author
-
-## Nihal Arfain Ahmed
-
-Building **LifeOS** as a next-generation AI-powered Personal Operating System with the vision of helping millions of people transform their dreams into daily action.
-
----
-
-# ⭐ Support
-
-If you like this project, consider giving it a ⭐ on GitHub.
-
-It motivates future development and helps more people discover LifeOS.
+For contributions, open a focused proposal first. Preserve domain ownership, add deterministic coverage, and never submit credentials or private screenshots. No license is currently declared; repository visibility alone does not establish usage rights.
