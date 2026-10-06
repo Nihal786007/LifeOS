@@ -288,8 +288,8 @@ test("live authenticated users are isolated across all LifeOS cloud tables", asy
     }
 
     for (const table of TABLES) {
-      const idsA = rowsA[table].map((row) => row.id);
-      const idsB = rowsB[table].map((row) => row.id);
+      const idsA: string[] = rowsA[table].map((row) => row.id);
+      const idsB: string[] = rowsB[table].map((row) => row.id);
 
       const ownA = await clientA.from(table).select("id").in("id", idsA);
       const ownB = await clientB.from(table).select("id").in("id", idsB);

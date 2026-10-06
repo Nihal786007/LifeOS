@@ -28,9 +28,9 @@ const SNAPSHOT: AtlasActionIntentSnapshot = {
     { id: 11, title: "Submit chemistry report", completed: false },
     { id: 12, title: "Review SAT vocabulary", completed: false },
   ],
-  habits: [{ id: 21, name: "Read nightly" }],
+  habits: [{ id: 21, name: "Read nightly", archived: false }],
   monthlyOutcomes: [{ id: 31, title: "Finish SAT preparation" }],
-  weeklyFocuses: [{ id: 41, title: "Practice algebra", monthlyTargetId: 31 }],
+  weeklyFocuses: [{ id: 41, title: "Practice algebra" }],
 };
 
 class MockTransport implements OllamaTransport {
@@ -146,6 +146,8 @@ test("case-only provider wording agrees while deterministic payload remains cano
   assert.equal(resolution.source, "provider-candidate");
   assert.equal(resolution.outcome.status, "proposal");
   if (resolution.outcome.status === "proposal") {
+    assert.ok(resolution.outcome.draft.payload && typeof resolution.outcome.draft.payload === "object");
+    assert.ok("title" in resolution.outcome.draft.payload);
     assert.equal(resolution.outcome.draft.payload.title, "study SAT");
   }
 });

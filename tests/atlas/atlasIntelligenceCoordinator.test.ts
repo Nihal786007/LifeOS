@@ -21,7 +21,6 @@ const FIXED_SNAPSHOT: AtlasCanonicalState = {
       dueDate: "2026-08-30",
       weeklyTargetId: 301,
       completed: false,
-      xp: 20,
       createdAt: "2026-08-01T09:00:00.000Z",
     },
     {
@@ -30,7 +29,6 @@ const FIXED_SNAPSHOT: AtlasCanonicalState = {
       priority: "medium",
       dueDate: "2026-08-31",
       completed: false,
-      xp: 10,
       createdAt: "2026-08-30T09:00:00.000Z",
     },
     {
@@ -38,7 +36,6 @@ const FIXED_SNAPSHOT: AtlasCanonicalState = {
       title: "Organize reference notes",
       priority: "low",
       completed: false,
-      xp: 5,
       createdAt: "2026-08-30T10:00:00.000Z",
     },
   ],

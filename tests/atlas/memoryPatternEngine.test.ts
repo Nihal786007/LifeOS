@@ -68,7 +68,6 @@ const STATE: AtlasCanonicalState = {
       dueDate: "2026-08-10",
       completed: true,
       completedAt: "2026-08-12T12:00:00.000Z",
-      xp: 10,
       createdAt: "2026-08-01T12:00:00.000Z",
     },
     {
@@ -78,7 +77,6 @@ const STATE: AtlasCanonicalState = {
       dueDate: "2026-08-15",
       completed: true,
       completedAt: "2026-08-16T12:00:00.000Z",
-      xp: 10,
       createdAt: "2026-08-02T12:00:00.000Z",
     },
     {
@@ -87,7 +85,6 @@ const STATE: AtlasCanonicalState = {
       priority: "high",
       dueDate: "2026-08-20",
       completed: false,
-      xp: 20,
       createdAt: "2026-08-03T12:00:00.000Z",
     },
     {
@@ -97,7 +94,6 @@ const STATE: AtlasCanonicalState = {
       dueDate: "2026-08-25",
       completed: true,
       completedAt: "2026-08-25T12:00:00.000Z",
-      xp: 5,
       createdAt: "2026-08-04T12:00:00.000Z",
     },
   ],

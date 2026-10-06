@@ -384,7 +384,7 @@ class MemoryStorage implements NotificationStateStorage {
   }
 }
 
-function createNotificationStore(storage: MemoryStorage): NotificationStore {
+function createNotificationStore(storage: MemoryStorage): InstanceType<typeof NotificationStore> {
   return new NotificationStore(
     new LocalStorageNotificationStateRepository(storage)
   );

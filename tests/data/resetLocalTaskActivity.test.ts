@@ -187,10 +187,11 @@ test("reset reads newer canonical records instead of the cached empty initializa
   assert.deepEqual(await scoped.executionHistoryRepository.initialize(), []);
   state.tasks.push(structuredClone(task));
   state.executionRecords.push(structuredClone(executionRecord));
-  const result = await resetLocalTaskActivity({
+  const cachedRepositories = {
     taskRepository: { ...scoped.taskRepository, initialize: async () => [] },
     executionHistoryRepository: { ...scoped.executionHistoryRepository, initialize: async () => [] },
-  });
+  };
+  const result = await resetLocalTaskActivity(cachedRepositories);
   assert.deepEqual(result, { clearedTaskCount: 1, clearedExecutionRecordCount: 1 });
   assert.deepEqual(state.tasks, []);
   assert.deepEqual(state.executionRecords, []);

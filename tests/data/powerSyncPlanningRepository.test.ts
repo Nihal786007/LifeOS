@@ -499,9 +499,9 @@ function sources(
   status: "missing" | "valid" = "valid"
 ) {
   return {
-    lifeGoals: snapshotSource({ status, records: status === "valid" ? state.lifeGoals : [] }),
-    monthlyOutcomes: snapshotSource({ status, records: status === "valid" ? state.monthlyOutcomes : [] }),
-    weeklyFocuses: snapshotSource({ status, records: status === "valid" ? state.weeklyFocuses : [] }),
+    lifeGoals: snapshotSource<LifeGoal>(status === "valid" ? { status, records: state.lifeGoals } : { status, records: [] }),
+    monthlyOutcomes: snapshotSource<MonthlyTarget>(status === "valid" ? { status, records: state.monthlyOutcomes } : { status, records: [] }),
+    weeklyFocuses: snapshotSource<WeeklyTarget>(status === "valid" ? { status, records: state.weeklyFocuses } : { status, records: [] }),
   };
 }
 

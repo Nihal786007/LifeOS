@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import type { PowerSyncDatabase, QueryResult, Transaction } from "@powersync/web";
+import { queryResultFromMapped } from "@powersync/web";
 
 import {
   DEFAULT_NOTIFICATION_PREFERENCES,
@@ -102,7 +103,7 @@ class FakeDatabase {
         this.getOptionalFrom<R>(draft, sql, parameters),
       execute: async (sql: string, parameters: unknown[] = []) => {
         this.executeAgainst(draft, sql, parameters);
-        return { rows: { _array: [] } } as QueryResult;
+        return queryResultFromMapped({}, []);
       },
     } as unknown as Transaction;
 

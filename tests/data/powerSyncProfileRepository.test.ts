@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import type { QueryResult, Transaction } from "@powersync/web";
+import { queryResultFromMapped } from "@powersync/web";
 import type { UserProfile } from "../../src/shared/types.ts";
 import type { ProfileSourceSnapshot } from "../../src/data/profileCapture/localStorageProfileCaptureRepositories.ts";
 
@@ -40,7 +41,7 @@ class FakeDatabase {
     const transaction = {
       getAll: <R>(sql: string) => this.getAllFrom<R>(draft, sql),
       getOptional: <R>(sql: string, parameters?: unknown[]) => this.getOptionalFrom<R>(draft, sql, parameters),
-      execute: async (sql: string, parameters?: unknown[]) => { this.executeAgainst(draft, sql, parameters ?? []); return { rows: { _array: [] } } as QueryResult; },
+      execute: async (sql: string, parameters?: unknown[]) => { this.executeAgainst(draft, sql, parameters ?? []); return queryResultFromMapped({}, []); },
     } as unknown as Transaction;
     const result = await callback(transaction); this.state.profiles = draft.profiles; this.state.journal = draft.journal; this.emit(); return result;
   }

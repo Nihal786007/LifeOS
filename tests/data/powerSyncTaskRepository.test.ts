@@ -365,7 +365,7 @@ test("migration preserves all canonical fields, relationships, and exact order",
 });
 
 test("unknown compatible task fields survive through extras JSON", async () => {
-  const compatible = [{ ...tasks[0], sourceLabel: "legacy-compatible" }] as Task[];
+  const compatible: Array<Task & { sourceLabel: string }> = [{ ...tasks[0], sourceLabel: "legacy-compatible" }];
   const repository = new PowerSyncTaskRepository(
     asDatabase(new FakePowerSyncDatabase()),
     source({ status: "valid", tasks: compatible })

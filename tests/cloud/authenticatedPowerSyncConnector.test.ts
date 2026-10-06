@@ -21,6 +21,22 @@ const USER_A = "11111111-1111-4111-8111-111111111111";
 const USER_B = "22222222-2222-4222-8222-222222222222";
 const ROW_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
+// Schema.toJSON() intentionally returns unknown; narrow the fields asserted here.
+function assertSchemaTables(value: unknown): asserts value is {
+  tables: Array<{ name: string; local_only?: boolean; columns: Array<{ name: string }> }>;
+} {
+  assert.ok(value && typeof value === "object" && "tables" in value);
+  assert.ok(Array.isArray(value.tables));
+  for (const table of value.tables as unknown[]) {
+    assert.ok(table && typeof table === "object" && "name" in table && typeof table.name === "string");
+    assert.ok(!("local_only" in table) || table.local_only === undefined || typeof table.local_only === "boolean");
+    assert.ok("columns" in table && Array.isArray(table.columns));
+    for (const column of table.columns as unknown[]) {
+      assert.ok(column && typeof column === "object" && "name" in column && typeof column.name === "string");
+    }
+  }
+}
+
 interface RecordedMutation {
   table: string;
   action: string;
@@ -112,6 +128,7 @@ function fakeCrudDatabase(operations: CrudEntry[]) {
 
 test("authenticated schema contains exactly 11 synced tables and bounded local metadata", () => {
   const json = authenticatedLifeOSPowerSyncSchema.toJSON();
+  assertSchemaTables(json);
   const synced = json.tables.filter((table) => !table.local_only);
   const local = json.tables.filter((table) => table.local_only);
   assert.equal(synced.length, 11);

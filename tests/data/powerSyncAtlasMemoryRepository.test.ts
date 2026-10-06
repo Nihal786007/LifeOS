@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import test from "node:test";
 import type { QueryResult, Transaction } from "@powersync/web";
+import { queryResultFromMapped } from "@powersync/web";
 import type { AtlasMemoryItem } from "../../src/atlas/memory/types.ts";
 import type { AtlasMemorySourceSnapshot } from "../../src/data/atlasMemory/localStorageAtlasMemoryRepository.ts";
 
@@ -18,7 +19,7 @@ class FakeDatabase {
   state:State; operations:string[]=[]; initCalls=0; failInsert=false; watchers=new Set<Queue<QueryResult>>();
   constructor(state:State={memory:[],journal:[]}){this.state=state;}
   async init(){this.initCalls+=1;} async getAll<T>(sql:string){return this.all<T>(this.state,sql);} async getOptional<T>(sql:string,p:unknown[]=[]){return this.optional<T>(this.state,sql,p);}
-  async writeTransaction<T>(cb:(t:Transaction)=>Promise<T>):Promise<T>{const draft=structuredClone(this.state);const t={getAll:<R>(s:string)=>this.all<R>(draft,s),getOptional:<R>(s:string,p?:unknown[])=>this.optional<R>(draft,s,p),execute:async(s:string,p?:unknown[])=>{this.exec(draft,s,p??[]);return{rows:{_array:[]}} as QueryResult;}} as unknown as Transaction;const result=await cb(t);this.state.memory=draft.memory;this.state.journal=draft.journal;this.emit();return result;}
+  async writeTransaction<T>(cb:(t:Transaction)=>Promise<T>):Promise<T>{const draft=structuredClone(this.state);const t={getAll:<R>(s:string)=>this.all<R>(draft,s),getOptional:<R>(s:string,p?:unknown[])=>this.optional<R>(draft,s,p??[]),execute:async(s:string,p?:unknown[])=>{this.exec(draft,s,p??[]);return queryResultFromMapped({},[]);}} as unknown as Transaction;const result=await cb(t);this.state.memory=draft.memory;this.state.journal=draft.journal;this.emit();return result;}
   watch(_s:string,_p:unknown[],o:{signal:AbortSignal}):AsyncIterable<QueryResult>{const q=new Queue<QueryResult>();this.watchers.add(q);q.push(this.result());o.signal.addEventListener("abort",()=>{this.watchers.delete(q);q.close();},{once:true});return q;}
   private async all<T>(state:State,sql:string):Promise<T[]>{return(sql.includes("atlas_memory_items")?[...state.memory].sort((a,b)=>a.sort_order-b.sort_order||a.id.localeCompare(b.id)):[]) as T[];}
   private async optional<T>(state:State,sql:string,p:unknown[]):Promise<T|null>{return sql.includes("migration_journal")?(state.journal.find(r=>r.id===p[0])??null) as T|null:null;}
