@@ -57,6 +57,7 @@ import type {
 } from "../shared/execution";
 
 import Card from "../components/ui/Card";
+import RealityMirror from "../insights/RealityMirror";
 
 const PERIOD_OPTIONS: Array<{
   id: ReviewPeriod;
@@ -210,7 +211,7 @@ function isSameReviewPeriod(
   );
 }
 
-export default function Reviews() {
+export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => void}) {
   const {
     tasks,
   } = useTasks();
@@ -391,6 +392,8 @@ export default function Reviews() {
           </div>
         </div>
       </header>
+
+      <RealityMirror state={{ tasks, lifeGoals, monthlyTargets: monthlyPlans, weeklyTargets, executionRecords }} onCreateLifeGoal={onCreateLifeGoal} />
 
       <section className="lifeos-surface-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>

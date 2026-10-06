@@ -248,7 +248,7 @@ function AppContent() {
 
         {currentPage ===
           "reviews" && (
-          <Reviews />
+          <Reviews onCreateLifeGoal={() => setCurrentPage("planning")} />
         )}
 
         {currentPage ===
