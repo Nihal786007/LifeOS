@@ -1,134 +1,56 @@
-import {
-  FaCopy,
-  FaTrash,
-} from "react-icons/fa";
-
-import Card from "../ui/Card";
-
+import { useState } from "react";
+import { FaBolt, FaCopy, FaTrash } from "react-icons/fa";
 import { useApp } from "../../context/AppContext";
 
 export default function RecentCaptures() {
-  const {
-    captures,
-    deleteCapture,
-  } = useApp();
+  const { captures, capturePersistence, deleteCapture } = useApp();
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [deleting, setDeleting] = useState<number | null>(null);
+  const recent = [...captures].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const loading = ["uninitialized", "opening", "migration"].includes(capturePersistence.phase);
 
-  function formatTime(date: string) {
-    const now = new Date();
-    const created = new Date(date);
-
-    const diff = Math.floor(
-      (now.getTime() - created.getTime()) /
-        1000
-    );
-
-    if (diff < 60) return "Just now";
-
-    if (diff < 3600)
-      return `${Math.floor(
-        diff / 60
-      )} min ago`;
-
-    if (diff < 86400)
-      return `${Math.floor(
-        diff / 3600
-      )} hr ago`;
-
-    return created.toLocaleDateString();
+  async function copy(text: string) {
+    setError("");
+    try { await navigator.clipboard.writeText(text); setStatus("Thought copied."); }
+    catch { setError("Could not copy. You can select the thought and copy it manually."); }
   }
 
-  function copy(text: string) {
-    navigator.clipboard.writeText(text);
+  async function remove(id: number) {
+    if (!window.confirm("Permanently delete this captured thought from your account?")) return;
+    setDeleting(id); setError("");
+    try { await deleteCapture(id); setStatus("Thought deleted."); }
+    catch { setError("Could not delete this thought. Please try again."); }
+    finally { setDeleting(null); }
   }
 
   return (
-    <Card>
-
-      <h2 className="mb-6 flex items-center gap-3 text-2xl font-bold">
-
-        ⚡ Recent Captures
-
-      </h2>
-
-      {captures.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-700 p-8 text-center">
-
-          <div className="text-5xl">
-            ⚡
-          </div>
-
-          <h3 className="mt-4 text-lg font-bold">
-
-            Nothing captured yet
-
-          </h3>
-
-          <p className="mt-2 text-slate-400">
-
-            Your captured ideas will
-            appear here.
-
-          </p>
-
+    <section className="lifeos-surface-panel p-5 sm:p-6" aria-labelledby="capture-inbox-heading">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="lifeos-page-eyebrow">Saved thoughts</p>
+          <h2 id="capture-inbox-heading" className="mt-1 text-lg font-bold text-lifeos-text">Capture inbox</h2>
+          <p className="mt-2 text-sm text-lifeos-text-secondary">Pick up the ideas you saved without interrupting your work.</p>
         </div>
-      ) : (
-        <div className="space-y-4">
-
-          {captures.map((capture) => (
-            <div
-              key={capture.id}
-              className="rounded-2xl border border-slate-700 bg-slate-900 p-5 transition hover:border-cyan-500"
-            >
-              <p className="leading-7 text-white">
-
-                {capture.text}
-
-              </p>
-
-              <div className="mt-5 flex items-center justify-between">
-
-                <span className="text-sm text-slate-500">
-
-                  {formatTime(
-                    capture.createdAt
-                  )}
-
-                </span>
-
-                <div className="flex gap-3">
-
-                  <button
-                    onClick={() =>
-                      copy(
-                        capture.text
-                      )
-                    }
-                    className="rounded-lg bg-slate-800 p-3 transition hover:bg-cyan-600"
-                  >
-                    <FaCopy />
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      deleteCapture(
-                        capture.id
-                      )
-                    }
-                    className="rounded-lg bg-red-600 p-3 transition hover:bg-red-500"
-                  >
-                    <FaTrash />
-                  </button>
-
-                </div>
-
+        <FaBolt className="shrink-0 text-lifeos-accent" aria-hidden="true" />
+      </div>
+      {loading ? <p role="status" className="mt-4 text-sm text-lifeos-muted">Loading captured thoughts…</p>
+        : capturePersistence.phase === "error" ? <p role="alert" className="mt-4 text-sm text-lifeos-danger">{capturePersistence.error ?? "Captured thoughts could not load."}</p>
+        : recent.length === 0 ? <p className="lifeos-empty-state mt-4">Nothing captured yet. Use Quick Capture to save a thought, note, or idea.</p>
+        : <ul className="mt-4 space-y-3">
+          {recent.map((capture) => <li key={capture.id} className="rounded-xl border border-lifeos-border bg-lifeos-surface-secondary p-4">
+            <p className="whitespace-pre-wrap break-words text-sm leading-6 text-lifeos-text">{capture.text}</p>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <time dateTime={capture.createdAt} className="text-xs text-lifeos-muted">{new Date(capture.createdAt).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</time>
+              <div className="flex gap-2">
+                <button type="button" aria-label={`Copy thought: ${capture.text}`} onClick={() => void copy(capture.text)} className="lifeos-icon-button"><FaCopy aria-hidden="true" /></button>
+                <button type="button" aria-label={`Delete thought: ${capture.text}`} disabled={deleting === capture.id} onClick={() => void remove(capture.id)} className="lifeos-icon-button text-lifeos-danger disabled:opacity-50"><FaTrash aria-hidden="true" /></button>
               </div>
-
             </div>
-          ))}
-
-        </div>
-      )}
-
-    </Card>
+          </li>)}
+        </ul>}
+      <p role="status" className="mt-3 text-xs text-lifeos-muted">{status}</p>
+      {error && <p role="alert" className="mt-3 text-sm text-lifeos-danger">{error}</p>}
+    </section>
   );
 }

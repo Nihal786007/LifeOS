@@ -18,6 +18,7 @@ import {
 import type { AtlasAIOrchestrator } from "../atlas/orchestration/AtlasAIOrchestrator";
 import { useAtlasCanonicalState } from "../atlas/state/useAtlasCanonicalState";
 import Button from "../components/ui/Button";
+import RecentCaptures from "../components/capture/RecentCaptures";
 import { useHabitExecution } from "../context/HabitExecutionContext";
 import { usePlanningExecution } from "../context/PlanningExecutionContext";
 import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
@@ -261,6 +262,8 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
           </article>
         </div>
       </section>
+
+      <RecentCaptures />
 
       {daily.tasks.length > 0 && <p className="flex items-center gap-2 text-xs text-lifeos-muted"><FaClockRotateLeft /> Tasks have dates, not time slots. LifeOS shows an ordered Today list instead of inventing a schedule.</p>}
     </div>
