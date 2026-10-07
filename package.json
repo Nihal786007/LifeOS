@@ -36,7 +36,8 @@
     "test:hosted-atlas": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/atlas/hostedAtlasProvider.test.ts tests/atlas/atlasBenchmark.test.ts tests/cloud/hostedAtlasFunction.test.ts tests/cloud/geminiAtlasAdapter.test.ts tests/cloud/qwenAtlasAdapter.test.ts tests/cloud/mistralAtlasAdapter.test.ts tests/cloud/hostedAtlasRuntimeConfig.test.ts",
     "test:notifications": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/notifications/notifications.test.ts",
     "test:dashboard": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/dashboard/dailyCommandCenter.test.ts",
-    "test:reviews": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/reviewEngine.test.ts",
+    "test:review-intelligence": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/weeklyReviewIntelligence.test.ts",
+    "test:reviews": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/reviewEngine.test.ts tests/reviews/weeklyReviewIntelligence.test.ts",
     "lint": "eslint .",
     "preview": "vite preview"
   },

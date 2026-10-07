@@ -5,7 +5,7 @@ import { readAttentionPreferences, saveAttentionPreferences } from "./attentionP
 
 function duration(ms: number) { const minutes = Math.floor(ms/60_000); return `${Math.floor(minutes/60)}h ${minutes%60}m`; }
 function areaName(id: string, label: string) { return id === UNCATEGORIZED ? "Other focus" : label; }
-function AccountMirror({state,accountId,onCreateLifeGoal}: {state: AttentionSource;accountId: string;onCreateLifeGoal?: () => void}) {
+function AccountMirror({state,accountId,onCreateLifeGoal,onAllocationChange}: {state: AttentionSource;accountId: string;onCreateLifeGoal?: () => void;onAllocationChange?: (value: IntendedAllocation) => void}) {
   const [allocation,setAllocation] = useState(()=>readAttentionPreferences(window.localStorage,accountId));
   const [draft,setDraft] = useState<Record<string,string>>(()=>Object.fromEntries(allocation?.shares.map(s=>[s.categoryId,String(s.percent)])??[]));
   const [feedback,setFeedback] = useState("");
@@ -35,7 +35,7 @@ function AccountMirror({state,accountId,onCreateLifeGoal}: {state: AttentionSour
     const value: IntendedAllocation = {version:1,updatedAt:new Date().toISOString(),shares:categories.map(c=>({categoryId:c.id,percent:draft[c.id]?.trim()?Number(draft[c.id]):0}))};
     const error = validateAllocation(value,categories);
     if (error) {setFeedback("Choose how much focus each area should receive. Your shares must add up to 100%.");return;}
-    try {saveAttentionPreferences(window.localStorage,accountId,value);setAllocation(value);setFeedback("What matters most is saved for this account on this device.");}
+    try {saveAttentionPreferences(window.localStorage,accountId,value);setAllocation(value);onAllocationChange?.(value);setFeedback("What matters most is saved for this account on this device.");}
     catch {setFeedback("Your priorities could not be saved. Your previous choices are unchanged.");}
   }
   return <section aria-labelledby="reality-mirror-title" className="lifeos-surface-panel p-4 sm:p-6 space-y-4">
@@ -74,7 +74,7 @@ function AccountMirror({state,accountId,onCreateLifeGoal}: {state: AttentionSour
     </details>
   </section>;
 }
-export default function RealityMirror({state,onCreateLifeGoal}: {state: AttentionSource;onCreateLifeGoal?: () => void}) {
+export default function RealityMirror({state,onCreateLifeGoal,onAllocationChange}: {state: AttentionSource;onCreateLifeGoal?: () => void;onAllocationChange?: (value: IntendedAllocation) => void}) {
   const {identity} = useAuth();
-  return identity ? <AccountMirror key={identity.userId} accountId={identity.userId} state={state} onCreateLifeGoal={onCreateLifeGoal}/> : null;
+  return identity ? <AccountMirror key={identity.userId} accountId={identity.userId} state={state} onCreateLifeGoal={onCreateLifeGoal} onAllocationChange={onAllocationChange}/> : null;
 }

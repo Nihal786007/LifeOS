@@ -58,6 +58,7 @@ import type {
 
 import Card from "../components/ui/Card";
 import RealityMirror from "../insights/RealityMirror";
+import WeeklyReviewPanel from "../reviews/WeeklyReviewPanel";
 
 const PERIOD_OPTIONS: Array<{
   id: ReviewPeriod;
@@ -393,7 +394,7 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
         </div>
       </header>
 
-      <RealityMirror state={{ tasks, lifeGoals, monthlyTargets: monthlyPlans, weeklyTargets, executionRecords }} onCreateLifeGoal={onCreateLifeGoal} />
+      {period !== "weekly" && <RealityMirror state={{ tasks, lifeGoals, monthlyTargets: monthlyPlans, weeklyTargets, executionRecords }} onCreateLifeGoal={onCreateLifeGoal} />}
 
       <section className="lifeos-surface-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
@@ -468,6 +469,7 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
         </div>
       </section>
 
+      {period === "weekly" ? <WeeklyReviewPanel state={sourceState} referenceDate={referenceDate} now={today} onCreateLifeGoal={onCreateLifeGoal} /> : <>
       {!hasActivity && (
         <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 px-6 py-5 text-sm leading-6 text-slate-400">
           Nothing has been recorded for this period yet. Your review will fill in as you execute.
@@ -671,6 +673,7 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
           </div>
         </Card>
       </section>
+      </>}
     </div>
   );
 }
