@@ -106,6 +106,11 @@ export default function Sidebar({
       label: "Settings",
       icon: <FaGear />,
     },
+    {
+      id: "decisions",
+      label: "Decisions",
+      icon: <FaListCheck />,
+    },
   ];
 
   function navigateTo(

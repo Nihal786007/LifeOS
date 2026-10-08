@@ -26,6 +26,7 @@ import Habits from "./pages/Habits";
 import Settings from "./pages/Settings";
 import Atlas from "./pages/Atlas";
 import Reviews from "./pages/Reviews";
+import Decisions from "./pages/Decisions";
 import FocusMode from "./focus/FocusMode";
 import { useFocusSession } from "./focus/useFocusSession";
 
@@ -46,6 +47,7 @@ const PAGE_TITLES: Record<string, string> = {
   statistics: "Analytics",
   habits: "Habits",
   reviews: "Reviews",
+  decisions: "Decisions",
   settings: "Settings",
 };
 
@@ -255,6 +257,7 @@ function AppContent() {
           "settings" && (
           <Settings />
         )}
+        {currentPage === "decisions" && <Decisions />}
 
       </main>
 
