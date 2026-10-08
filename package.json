@@ -38,6 +38,7 @@
     "test:dashboard": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/dashboard/dailyCommandCenter.test.ts",
     "test:review-intelligence": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/weeklyReviewIntelligence.test.ts",
     "test:decisions": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/decisions/decisionEngine.test.ts",
+    "test:opportunity-cost": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/decisions/opportunityCostEngine.test.ts",
     "test:reviews": "node --experimental-strip-types --experimental-specifier-resolution=node --test tests/reviews/reviewEngine.test.ts tests/reviews/weeklyReviewIntelligence.test.ts",
     "lint": "eslint .",
     "preview": "vite preview"

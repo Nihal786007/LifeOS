@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Button from "../components/ui/Button";
+import OpportunityCostSection from "../components/decisions/OpportunityCostSection";
 import { useAuth } from "../auth/AuthContext";
 import { useAtlasCanonicalState } from "../atlas/state/useAtlasCanonicalState";
 import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
@@ -43,6 +44,7 @@ function AccountDecisions({ accountId }: { accountId: string }) {
       <h1 className="mt-2 text-3xl font-bold text-lifeos-text">Decisions</h1>
       <p className="mt-2 text-sm leading-6 text-lifeos-text-secondary">Compare your options using what LifeOS has recorded. You keep the final say.</p>
     </header>
+    <OpportunityCostSection accountId={accountId} />
     <form className="lifeos-surface-panel space-y-5 p-5 sm:p-6" onSubmit={event => { event.preventDefault(); setNow(new Date()); setSubmitted(true); }}>
       <h2 className="text-lg font-semibold text-lifeos-text">Compare options</h2>
       <label className="block text-sm text-lifeos-text-secondary">What are you comparing?
