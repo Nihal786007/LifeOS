@@ -15,7 +15,9 @@ import Button from "../components/ui/Button";
 import { useApp } from "../context/AppContext";
 import { usePlanningExecution } from "../context/PlanningExecutionContext";
 import { TaskRelationshipEngine } from "../engines/TaskRelationshipEngine";
-import { captureFocusThought, completeFocusedTask, FOCUS_COMPLETION_EVENT } from "./focusAudit";
+import { captureFocusThought, completeFocusedTask } from "./focusAudit";
+import FocusHistory from "./FocusHistory";
+import { buildFocusInsights } from "./focusInsights";
 import type { FocusSessionController } from "./useFocusSession";
 
 interface FocusModeProps {
@@ -60,14 +62,8 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
     .find((task) => task && !task.completed && task.id !== (controller.task?.id ?? controller.outcome?.executionRecord.entityId)),
   [controller.outcome?.executionRecord.entityId, controller.task?.id, priorities, state.tasks]);
   const focusMinutesToday = useMemo(() => {
-    const today = new Date().toLocaleDateString("en-CA");
-    const duration = state.executionHistory.reduce((total, record) => {
-      if (record.type !== "system" || record.metadata?.eventKind !== FOCUS_COMPLETION_EVENT) return total;
-      if (new Date(record.createdAt).toLocaleDateString("en-CA") !== today) return total;
-      return total + (typeof record.metadata.durationMs === "number" ? record.metadata.durationMs : 0);
-    }, 0);
-    return Math.round(duration / 60_000);
-  }, [state.executionHistory]);
+    return Math.floor(buildFocusInsights({tasks:[...state.tasks],lifeGoals:[...state.lifeGoals],monthlyTargets:[...state.monthlyTargets],weeklyTargets:[...state.weeklyTargets],executionRecords:state.executionHistory},"today",new Date(),Intl.DateTimeFormat().resolvedOptions().timeZone).totalMs/60_000);
+  }, [state]);
   const tasksCompletedToday = useMemo(() => {
     const today = new Date().toLocaleDateString("en-CA");
     return state.tasks.filter((task) => task.completedAt && new Date(task.completedAt).toLocaleDateString("en-CA") === today).length;
@@ -163,6 +159,7 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
             {nextTask && <button type="button" onClick={() => { onContinue(); setSelectedTaskId(nextTask.id); controller.clearOutcome(); }} className="mt-6 text-sm font-semibold text-lifeos-accent hover:underline">Next suggested task: {nextTask.title}</button>}
           </section>
         )}
+        {!controller.session&&<FocusHistory state={{tasks:[...state.tasks],lifeGoals:[...state.lifeGoals],monthlyTargets:[...state.monthlyTargets],weeklyTargets:[...state.weeklyTargets],executionRecords:state.executionHistory}}/>}
       </div>
 
       {confirmEnd && (

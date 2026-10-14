@@ -1,7 +1,6 @@
 import type { ExecutionRecord } from "../shared/execution";
 import type { TaskRelationshipState } from "../engines/TaskRelationshipEngine";
-import { TaskRelationshipEngine } from "../engines/TaskRelationshipEngine.ts";
-import { isFocusCompletionRecord } from "../focus/focusAudit.ts";
+import { selectFocusEvidence } from "../focus/focusEvidence.ts";
 
 export const UNCATEGORIZED = "uncategorized";
 export interface AttentionCategory { id: string; label: string }
@@ -56,32 +55,7 @@ export function buildAttentionReport(state: AttentionSource, allocation: Intende
   const week = attentionWeek(now);
   const categories = attentionCategories(state);
   const active = new Set(categories.map(c=>c.id));
-  const groups = new Map<string, AttentionEntry[]>();
-  let excluded = 0;
-  state.executionRecords.forEach((record,recordIndex)=>{
-    if (!isFocusCompletionRecord(record) || record.metadata?.source !== "focus_mode") return;
-    const m = record.metadata!;
-    const start = typeof m.startedAt === "string" ? Date.parse(m.startedAt) : NaN;
-    const end = typeof m.endedAt === "string" ? Date.parse(m.endedAt) : NaN;
-    if (Number.isFinite(end) && (end <= week.start.getTime() || start >= week.end.getTime())) return;
-    if (!Number.isFinite(start) || !Number.isFinite(end) || start < week.start.getTime() || end > week.end.getTime() || end > now.getTime() || end <= start || !Number.isSafeInteger(m.durationMs) || Number(m.durationMs) <= 0 || Number(m.durationMs) > end-start || !Number.isSafeInteger(m.taskId) || m.taskId !== record.entityId || typeof m.focusSessionId !== "string" || !m.focusSessionId || Date.parse(record.createdAt) !== end) { excluded++; return; }
-    const relationship = TaskRelationshipEngine.resolve(state, Number(m.taskId));
-    const goalId = relationship?.lifeGoal?.id;
-    const candidate = goalId === undefined ? UNCATEGORIZED : `goal:${goalId}`;
-    const entry: AttentionEntry = { sessionId: m.focusSessionId, executionId: record.id, recordIndex, taskId: Number(m.taskId), categoryId: active.has(candidate)?candidate:UNCATEGORIZED, durationMs: Number(m.durationMs), startedAt: String(m.startedAt), endedAt: String(m.endedAt) };
-    groups.set(entry.sessionId,[...(groups.get(entry.sessionId)??[]),entry]);
-  });
-  const candidates: AttentionEntry[] = [];
-  for (const group of groups.values()) {
-    const first = group[0];
-    if (group.some(e=>e.taskId!==first.taskId || e.durationMs!==first.durationMs || e.startedAt!==first.startedAt || e.endedAt!==first.endedAt)) { excluded += group.length; continue; }
-    candidates.push(first); // Independent execution IDs do not define session identity.
-  }
-  // Overlapping sessions cannot be apportioned with pause totals alone. Omit
-  // both rather than count simultaneous tracked time twice or guess a split.
-  const ledger = candidates.filter((entry,i)=>!candidates.some((other,j)=>i!==j && Date.parse(entry.startedAt)<Date.parse(other.endedAt) && Date.parse(other.startedAt)<Date.parse(entry.endedAt)))
-    .sort((a,b)=>a.startedAt.localeCompare(b.startedAt)||a.sessionId.localeCompare(b.sessionId));
-  excluded += candidates.length-ledger.length;
+  const { ledger, excluded } = selectFocusEvidence(state, active, week.start.getTime(), week.end.getTime(), now.getTime());
   const totalMs = ledger.reduce((sum,e)=>sum+e.durationMs,0);
   const allocationError = validateAllocation(allocation,categories);
   const rows = categories.map(c=>{
