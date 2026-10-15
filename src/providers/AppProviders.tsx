@@ -77,10 +77,10 @@ export function AppProviders({
 }
 
 function AuthenticatedCanonicalProviders({ children }: AppProvidersProps) {
-  const { services } = useAccountData();
-  if (!services) throw new Error("Authenticated data services are unavailable");
+  const { services, ownerUserId } = useAccountData();
+  if (!services || !ownerUserId) throw new Error("Authenticated data services are unavailable");
   return (
-        <DataServicesProvider services={services}>
+        <DataServicesProvider key={ownerUserId} services={services}>
           <AppProvider>
             <TaskProvider>
               <PlanningStateProvider>

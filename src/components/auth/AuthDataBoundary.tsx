@@ -32,7 +32,15 @@ export default function AuthDataBoundary({ children }: AuthDataBoundaryProps) {
 
   if (access === "show-auth") return <AuthScreen />;
 
-  if (account.phase === "ready") return <>{children}</>;
+  const userId = auth.identity?.userId;
+  if (!userId?.trim()) return <AuthScreen />;
+
+  // Async disconnect/hydration must never authorize a previous owner's UI.
+  if (account.ownerUserId !== userId) {
+    return <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-sm text-slate-400" role="status">Checking your account data…</main>;
+  }
+
+  if (account.phase === "ready" && account.services) return <>{children}</>;
 
   if (account.phase === "checking" || account.phase === "preparing") {
     return <main className="flex min-h-dvh items-center justify-center bg-slate-950 px-6 text-sm text-slate-400" role="status">{account.phase === "checking" ? "Checking your account data…" : "Preparing your secure LifeOS workspace…"}</main>;
