@@ -147,7 +147,20 @@ class AuthCaptureRepository implements AsyncCaptureRepository {
   constructor(db:PowerSyncDatabase,userId:string,makeId:RowFactory){this.db=db;this.userId=userId;this.makeId=makeId;}
   initialize(onPhase?:(phase:"opening"|"migration")=>void){if(!this.initialized)this.initialized=(async()=>{onPhase?.("opening");await this.db.init();return this.load();})();return this.initialized;}
   private async load(){return(await this.db.getAll<CaptureRow>(captureQuery)).map(captureFrom);}
-  async insert(capture:Capture){await this.initialize();if(!Number.isSafeInteger(capture.id)||capture.id<0)throw new Error("Invalid Capture ID");await this.db.writeTransaction(async tx=>{const minimum=await tx.getOptional<{minimum:number|null}>("SELECT MIN(sort_order) AS minimum FROM captures");await tx.execute("INSERT INTO captures(id,user_id,entity_id,text,created_at,sort_order,extras_json) VALUES(?,?,?,?,?,?,?)",[this.makeId(),this.userId,String(capture.id),capture.text,capture.createdAt,minimum?.minimum==null?0:minimum.minimum-1,captureExtras(capture)]);});}
+  async insert(capture:Capture){
+    await this.initialize();
+    if(!Number.isSafeInteger(capture.id)||capture.id<0)throw new Error("Invalid Capture ID");
+    await this.db.writeTransaction(async tx=>{
+      // This ordinal preserves repository/adoption order, not creation time or custom UI order.
+      // Prepend without negative keys (the cloud requires sort_order >= 0), preserving all
+      // existing relative order and UUIDs. A failed insert rolls the reindex back atomically.
+      const existing=await tx.getAll<{id:string}>("SELECT id FROM captures ORDER BY sort_order ASC, entity_id DESC");
+      for(let index=0;index<existing.length;index++){
+        await tx.execute("UPDATE captures SET sort_order = ? WHERE id = ?",[index+1,existing[index].id]);
+      }
+      await tx.execute("INSERT INTO captures(id,user_id,entity_id,text,created_at,sort_order,extras_json) VALUES(?,?,?,?,?,?,?)",[this.makeId(),this.userId,String(capture.id),capture.text,capture.createdAt,0,captureExtras(capture)]);
+    });
+  }
   async delete(id:number){await this.initialize();await this.db.execute("DELETE FROM captures WHERE entity_id = ?",[String(id)]);}
   subscribe(listener:(event:CaptureRepositoryEvent)=>void){return watch(this.db,captureQuery,rows=>listener({type:"captures",captures:(rows as CaptureRow[]).map(captureFrom)}),listener);}
 }
