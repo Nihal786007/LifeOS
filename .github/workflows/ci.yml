@@ -1,0 +1,115 @@
+name: LifeOS — CI
+
+on:
+  push:
+    branches: [security/google-calendar-disconnect-v3]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lifeos-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Synthetic tests, build and security checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    env:
+      CI: 'true'
+      DENO_DIR: ${{ runner.temp }}/lifeos-deno
+    steps:
+      - name: Check out the triggering commit
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6, reviewed 2026-10-20
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up validated Node.js
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6, reviewed 2026-10-20
+        with:
+          node-version: '24.18.0'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Check tracked source for credential formats and private artifacts
+        run: node scripts/ci/security-check.mjs source
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Verify package manifests remain unchanged
+        run: git diff --exit-code -- package.json package-lock.json
+
+      - name: Test CI security checks
+        run: node --test scripts/ci/security-check.test.mjs
+
+      - name: Typecheck application and Node configuration
+        run: npx --no-install tsc -b
+
+      - name: Typecheck tests
+        run: npx --no-install tsc --noEmit -p tests/tsconfig.json
+
+      - name: Run all deterministic tests (840, including 129 Calendar security cases)
+        run: |
+          mapfile -d '' test_files < <(git ls-files -z 'tests/**/*.test.ts')
+          test "${#test_files[@]}" -gt 0
+          node --experimental-strip-types --experimental-specifier-resolution=node \
+            --test --test-reporter=tap "${test_files[@]}" | tee "$RUNNER_TEMP/lifeos-tests.tap"
+          # Review/update this baseline deliberately when adding or removing tests.
+          grep -qx '# tests 840' "$RUNNER_TEMP/lifeos-tests.tap"
+          grep -qx '# pass 840' "$RUNNER_TEMP/lifeos-tests.tap"
+          grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-tests.tap"
+
+      - name: Check both native Deno entrypoints (no server started)
+        run: >-
+          npx --yes --package=deno@2.9.6 deno check
+          --no-config --no-lock --node-modules-dir=none
+          supabase/functions/google-calendar/index.ts
+          supabase/functions/google-calendar/maintenance-entry.ts
+
+      - name: Lint the established security-checkpoint scope
+        run: >-
+          npx --no-install eslint
+          src/atlas/actions/types.ts
+          src/connectors/googleCalendar/GoogleCalendarContext.tsx
+          src/connectors/googleCalendar/types.ts
+          src/connectors/googleCalendar/disconnectOutcome.ts
+          src/pages/Settings.tsx
+          supabase/functions/google-calendar/index.ts
+          supabase/functions/google-calendar/createEvent.ts
+          supabase/functions/google-calendar/googleApi.ts
+          supabase/functions/google-calendar/disconnect.ts
+          supabase/functions/google-calendar/maintenance.ts
+          supabase/functions/google-calendar/maintenance-entry.ts
+          tests/connectors/googleCalendarDisconnect.test.ts
+          tests/connectors/googleCalendarMaintenance.test.ts
+          tests/connectors/googleCalendarRpc.test.ts
+
+      - name: Syntax-check CI helpers
+        run: |
+          node --check scripts/ci/security-check.mjs
+          node --check scripts/ci/security-check.test.mjs
+
+      - name: Build production client (no deployment)
+        run: npm run build
+
+      - name: Check client bundle for server-secret and private-tool markers
+        run: node scripts/ci/security-check.mjs bundle
+
+      - name: Check changed-file whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          if [[ -n "$BASE_SHA" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git diff --check "$BASE_SHA" "$HEAD_SHA"
+          else
+            git show --format= --check "$HEAD_SHA"
+          fi
