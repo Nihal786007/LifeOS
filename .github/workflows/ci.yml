@@ -23,7 +23,6 @@ jobs:
         shell: bash
     env:
       CI: 'true'
-      DENO_DIR: ${{ runner.temp }}/lifeos-deno
     steps:
       - name: Check out the triggering commit
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6, reviewed 2026-10-20
@@ -68,6 +67,8 @@ jobs:
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-tests.tap"
 
       - name: Check both native Deno entrypoints (no server started)
+        env:
+          DENO_DIR: ${{ runner.temp }}/lifeos-deno
         run: >-
           npx --yes --package=deno@2.9.6 deno check
           --no-config --no-lock --node-modules-dir=none
