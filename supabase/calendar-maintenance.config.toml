@@ -1,0 +1,6 @@
+# Explicit future maintenance deployment profile; NOT loaded by normal deployment.
+# Copy to a separately approved deployment workspace as supabase/config.toml.
+# Deploy only google-calendar there, never all functions.
+[functions.google-calendar]
+verify_jwt = true
+entrypoint = "./functions/google-calendar/maintenance-entry.ts"

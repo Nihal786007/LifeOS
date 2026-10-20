@@ -23,6 +23,7 @@ import { resetLocalTaskActivity } from "../data/reset/resetLocalTaskActivity";
 import type { UserProfile } from "../shared/types";
 import { useTheme } from "../theme/themeContext";
 import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
+import { disconnectMessage, GOOGLE_CONNECTIONS_RECOVERY_URL } from "../connectors/googleCalendar/disconnectOutcome";
 import type { AppearancePreference } from "../theme/appearance";
 
 import Button from "../components/ui/Button";
@@ -191,7 +192,7 @@ function Settings() {
   }
 
   async function disconnectGoogleCalendar() {
-    if (!confirm("Disconnect Google Calendar from LifeOS? This removes LifeOS authorization and cached events. It does not delete events from Google.")) return;
+    if (!confirm("Disconnect Google Calendar from LifeOS? LifeOS will remove its stored connection and try to revoke Google authorization. Calendar access will stop and you may need to authorize again. No Google events will be deleted.")) return;
     await googleCalendar.disconnect();
   }
 
@@ -228,11 +229,15 @@ function Settings() {
             </div>
             <div className="mt-6 flex flex-col gap-4 rounded-2xl border border-lifeos-border bg-lifeos-surface-secondary p-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-bold text-lifeos-text">{googleCalendar.connection.state === "connected" ? "Connected" : googleCalendar.connection.state === "connecting" ? "Checking connection…" : "Not connected"}</p>
+                <p className="font-bold text-lifeos-text">{googleCalendar.connection.disconnectOutcome?.localAccessRemoved === false ? "Disconnect incomplete" : googleCalendar.connection.state === "connected" ? "Connected" : googleCalendar.connection.state === "connecting" ? "Checking connection…" : googleCalendar.connection.state === "network-failure" || googleCalendar.connection.state === "provider-failure" ? "Connection unverified" : "Not connected"}</p>
                 {googleCalendar.connection.accountLabel && <p className="mt-1 text-sm text-lifeos-text-secondary">{googleCalendar.connection.accountLabel}</p>}
                 {googleCalendar.connection.safeError && <p role="alert" className="mt-1 text-xs text-lifeos-danger">{googleCalendar.connection.safeError}</p>}
+                {googleCalendar.connection.disconnectOutcome && <div role="status" aria-live="polite" className="mt-2 max-w-prose space-y-2 text-sm text-lifeos-text-secondary">
+                  <p>{disconnectMessage(googleCalendar.connection.disconnectOutcome)}</p>
+                  <a className="inline-block rounded underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-lifeos-accent" href={GOOGLE_CONNECTIONS_RECOVERY_URL} target="_blank" rel="noopener noreferrer">Review Google Account access</a>
+                </div>}
               </div>
-              {googleCalendar.connection.state === "connected"
+              {googleCalendar.connection.state === "connected" || googleCalendar.connection.state === "network-failure" || googleCalendar.connection.disconnectOutcome?.reason === "in_progress" || googleCalendar.connection.disconnectOutcome?.localAccessRemoved === false
                 ? <Button variant="secondary" onClick={() => void disconnectGoogleCalendar()}>Disconnect</Button>
                 : <Button disabled={googleCalendar.connection.state === "connecting"} onClick={() => void googleCalendar.connect()}>{googleCalendar.connection.state === "connecting" ? "Connecting…" : "Connect"}</Button>}
             </div>

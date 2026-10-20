@@ -72,6 +72,7 @@ export function GoogleCalendarProvider({ children, client = supabaseClient }: { 
   const [recoveryProposal, setRecoveryProposal] = useState<CalendarEventProposal | null>(null);
   const generation = useRef(0);
   const pendingApprovals = useRef(new Set<string>());
+  const disconnectPending = useRef(false);
   const transport = useMemo(() => client ? new SupabaseGoogleCalendarTransport(client) : null, [client]);
   const connector = useMemo(() => transport ? new GoogleCalendarConnector(transport) : null, [transport]);
   const registry = useMemo(() => connector ? new AtlasConnectorRegistry([connector]) : null, [connector]);
@@ -79,7 +80,7 @@ export function GoogleCalendarProvider({ children, client = supabaseClient }: { 
   const applyResponse = useCallback((response: GoogleCalendarResponse) => {
     if (response.status !== "connected") {
       const nextConnection: GoogleCalendarConnection = response.status === "disconnected"
-        ? { state: "disconnected" }
+        ? { state: response.disconnectOutcome?.localAccessRemoved === false ? "provider-failure" : "disconnected", disconnectOutcome: response.disconnectOutcome }
         : response.status === "authorization-required"
           ? { state: "disconnected", safeError: "Google Calendar authorization is required." }
           : { state: response.status, safeError: response.safeError };
@@ -97,7 +98,7 @@ export function GoogleCalendarProvider({ children, client = supabaseClient }: { 
   }, [connector]);
 
   const refresh = useCallback(async () => {
-    if (!registry || !connector) return;
+    if (!registry || !connector || disconnectPending.current) return;
     const run = generation.current;
     try {
       connector.setConnectionState("connected");
@@ -149,29 +150,38 @@ export function GoogleCalendarProvider({ children, client = supabaseClient }: { 
   }, [applyResponse, connector, refresh, transport, userId]);
 
   const connect = useCallback(async (requestWrite = false) => {
-    if (!transport) return;
+    if (!transport || disconnectPending.current) return;
+    const run = ++generation.current;
     setConnection({ state: "connecting" });
     try {
       const redirectUri = `${location.origin}/google-calendar-callback`;
       const response = await transport.request({ action: "begin", redirectUri, requestWrite });
+      if (run !== generation.current) return;
       if (response.status !== "authorization-required") throw new Error("Google authorization could not start.");
       location.assign(response.authorizationUrl);
     } catch (error) {
+      if (run !== generation.current) return;
       setConnection({ state: "provider-failure", safeError: error instanceof Error ? error.message : "Google authorization could not start." });
     }
   }, [transport]);
 
   const disconnect = useCallback(async () => {
-    if (!transport) return;
-    generation.current += 1;
+    if (!transport || disconnectPending.current) return;
+    disconnectPending.current = true;
+    const run = ++generation.current;
+    // Retire the displayed read model and permissions before waiting on the network.
+    setReadModel(EMPTY_READ_MODEL);
+    setRecoveryProposal(null);
+    connector?.setConnectionState("disconnected");
     setConnection({ state: "connecting" });
     try {
       const response = await transport.request({ action: "disconnect" });
+      if (run !== generation.current) return;
       applyResponse(response);
     } catch {
-      setConnection({ state: "network-failure", safeError: "Google Calendar could not be disconnected safely." });
-    }
-  }, [applyResponse, transport]);
+      if (run === generation.current) setConnection({ state: "network-failure", safeError: "Disconnection could not be confirmed. Review Google Account access or try Disconnect again." });
+    } finally { disconnectPending.current = false; }
+  }, [applyResponse, connector, transport]);
 
   const prepareEvent = useCallback(async (payload: CalendarEventPayload) => {
     if (!transport || !userId) throw new Error("Sign in and connect Google Calendar first.");

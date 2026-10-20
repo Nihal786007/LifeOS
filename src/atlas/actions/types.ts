@@ -1,9 +1,9 @@
-import type { CreateTaskInput, TaskPriority, UpdateTaskInput } from "../../shared/types";
+import type { CreateTaskInput, TaskPriority, UpdateTaskInput } from "../../shared/types.ts";
 import type {
   CreateHabitInput,
   HabitWeekday,
   UpdateHabitInput,
-} from "../../shared/habits";
+} from "../../shared/habits.ts";
 
 export const ATLAS_ACTION_PROPOSAL_VERSION = "1.0.0" as const;
 export const ATLAS_ACTION_APPROVAL_VERSION = "1.1.0" as const;
