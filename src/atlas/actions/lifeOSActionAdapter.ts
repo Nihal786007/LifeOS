@@ -78,7 +78,8 @@ export function createLifeOSActionAdapter(
 }
 
 export interface AtlasActionAuditDependencies {
-  append(records: ExecutionRecord[]): void;
+  append(records: ExecutionRecord[]): unknown;
+  confirmation?: "repository";
   createId(): number;
   now(): string;
 }
@@ -87,9 +88,9 @@ export function createAtlasActionAuditWriter(
   dependencies: AtlasActionAuditDependencies
 ): AtlasActionAuditWriter {
   return {
-    async record(entry: AtlasActionAuditEntry): Promise<readonly number[]> {
+    async record(entry: AtlasActionAuditEntry) {
       const id = dependencies.createId();
-      dependencies.append([{
+      await dependencies.append([{
         id,
         type: "system",
         entityId: id,
@@ -108,7 +109,8 @@ export function createAtlasActionAuditWriter(
           resultStatus: entry.resultStatus,
         },
       }]);
-      return [id];
+      return dependencies.confirmation === "repository"
+        ? { recordIds: [id], persistence: "confirmed" as const } : [id];
     },
   };
 }

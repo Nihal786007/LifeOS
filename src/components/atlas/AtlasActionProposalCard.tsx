@@ -1,9 +1,10 @@
-import { FaCircleCheck, FaShieldHalved, FaXmark } from "react-icons/fa6";
+import { FaCircleCheck, FaShieldHalved, FaTriangleExclamation, FaXmark } from "react-icons/fa6";
 import type {
   AtlasActionExecutionResult,
   AtlasActionProposal,
 } from "../../atlas/actions/types";
 import { getConnectorCapabilityForAction } from "../../atlas/connectors/registry";
+import { atlasOutcomeMessage } from "../../atlas/actions/actionOutcome";
 
 interface Props {
   proposal: AtlasActionProposal | null;
@@ -59,17 +60,20 @@ export default function AtlasActionProposalCard({
 }: Props) {
   if (result) {
     const executed = result.status === "executed";
+    const outcomeMessage = result.outcome ? atlasOutcomeMessage(result.outcome) : null;
+    const attention = result.status === "unknown" ||
+      (result.outcome?.operation.status === "succeeded" && result.outcome.audit.status !== "confirmed");
     const mockConnector = proposal && getConnectorCapabilityForAction(proposal.type);
     return (
-      <div className={`rounded-2xl border p-5 ${executed ? "border-emerald-400/20 bg-emerald-400/[0.04]" : "border-slate-700 bg-slate-950/50"}`}>
+      <div className={`rounded-2xl border p-5 ${attention ? "border-amber-300/20 bg-amber-300/[0.04]" : executed ? "border-emerald-400/20 bg-emerald-400/[0.04]" : "border-slate-700 bg-slate-950/50"}`}>
         <div className="flex items-start gap-3">
-          {executed ? <FaCircleCheck className="mt-1 text-emerald-300" /> : <FaXmark className="mt-1 text-slate-400" />}
+          {attention ? <FaTriangleExclamation className="mt-1 text-amber-300" /> : executed ? <FaCircleCheck className="mt-1 text-emerald-300" /> : <FaXmark className="mt-1 text-slate-400" />}
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-slate-100">
-              {executed ? mockConnector ? "Mock connector simulation completed" : "Approved action completed" : result.status === "failed" ? "Action could not be completed" : "Action not applied"}
+              {outcomeMessage ? mockConnector && executed ? `Mock simulation · ${outcomeMessage.title}` : outcomeMessage.title : executed ? mockConnector ? "Mock connector simulation completed" : "Approved action completed" : result.status === "unknown" ? "Action outcome unknown" : result.status === "failed" ? "Action could not be completed" : "Action not applied"}
             </p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              {result.status === "rejected" ? result.reason : result.status === "failed" ? result.safeError : mockConnector ? "No external event or message was created or sent. This was a local simulation only." : "LifeOS applied this through its trusted mutation boundary."}
+              {outcomeMessage ? `${outcomeMessage.detail}${mockConnector ? " This is a local mock simulation; no external event or message was created or sent." : ""}` : result.status === "rejected" ? result.reason : result.status === "failed" || result.status === "unknown" ? result.safeError : mockConnector ? "No external event or message was created or sent. This was a local simulation only." : "LifeOS applied this through its trusted mutation boundary."}
             </p>
           </div>
           <button type="button" onClick={onDismissResult} className="text-xs font-semibold text-cyan-300">Dismiss</button>

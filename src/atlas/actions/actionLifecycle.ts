@@ -1,5 +1,7 @@
 import { AtlasActionExecutor, getAtlasActionReferenceProblem } from "./actionExecutor.ts";
 import { createAtlasProposalFingerprint } from "./proposal.ts";
+import { createAtlasAttempt, notStartedResult } from "./actionOutcome.ts";
+import type { AtlasNotStartedCategory } from "./actionOutcome.ts";
 import type {
   AtlasActionAdapter, AtlasActionApproval, AtlasActionAuditWriter,
   AtlasActionEntitySnapshot, AtlasActionExecutionResult, AtlasActionProposal,
@@ -86,6 +88,12 @@ export class AtlasActionLifecycle {
     return this.operations.size > 0;
   }
 
+  outcomeFor(actionId: string) { return this.executor.getOutcome(actionId); }
+
+  rejectBeforeStart(proposal: AtlasActionProposal, category: AtlasNotStartedCategory, reason: string) {
+    return notStartedResult(createAtlasAttempt(proposal, this.ownerUserId), category, reason);
+  }
+
   isProposalCurrent(proposal: AtlasActionProposal): boolean {
     return this.pending !== null && this.isCurrent(this.pending.ticket) &&
       this.pending.id === proposal.id && this.pending.fingerprint === createAtlasProposalFingerprint(proposal);
@@ -108,7 +116,8 @@ export class AtlasActionLifecycle {
     if (!pending || !operation || !this.isCurrent(pending.ticket) ||
         pending.id !== proposal.id || pending.fingerprint !== createAtlasProposalFingerprint(proposal) ||
         this.submitted.has(proposal.id)) {
-      return { status: "rejected", actionId: proposal.id, reason: "This action is stale or has already been submitted. Prepare it again." };
+      return this.rejectBeforeStart(proposal, this.submitted.has(proposal.id) ? "duplicate-submission" : "proposal-stale",
+        "This action is stale or has already been submitted. Prepare it again.");
     }
     // Synchronous latch: a second click cannot race React's state update.
     this.submitted.add(proposal.id);
@@ -117,6 +126,7 @@ export class AtlasActionLifecycle {
       return await this.executor.executeApprovedAction({
         proposal, approval, snapshot: operation.snapshot,
         executionScope: {
+          ownerUserId: operation.ownerUserId,
           isCurrent: () => this.isCurrent(pending.ticket) && this.bindings === operation,
           readSnapshot: () => operation.snapshot,
         },

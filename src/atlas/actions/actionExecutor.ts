@@ -1,6 +1,8 @@
 import { AtlasPermissionEngine } from "./permissionEngine.ts";
 import { createAtlasProposalFingerprint } from "./proposal.ts";
 import { getConnectorCapabilityDefinition, getConnectorCapabilityForAction } from "../connectors/registry.ts";
+import { createAtlasAttempt, notStartedResult } from "./actionOutcome.ts";
+import type { AtlasActionOutcome, AtlasNotStartedCategory, AtlasSuccessAudit } from "./actionOutcome.ts";
 import type {
   AtlasActionApproval,
   AtlasActionAuditWriter,
@@ -55,8 +57,13 @@ export function getAtlasActionReferenceProblem(
 export class AtlasActionExecutor {
   private readonly adapter: AtlasActionAdapter;
   private readonly auditWriter?: AtlasActionAuditWriter;
-  private readonly executingActionIds = new Set<string>();
-  private readonly executedActionIds = new Set<string>();
+  private readonly submittedActionIds = new Set<string>();
+  private readonly outcomes = new Map<string, AtlasActionOutcome>();
+
+  getOutcome(actionId: string): AtlasActionOutcome | null {
+    const value = this.outcomes.get(actionId);
+    return value ? structuredClone(value) : null;
+  }
 
   constructor(
     adapter: AtlasActionAdapter,
@@ -71,71 +78,124 @@ export class AtlasActionExecutor {
     approval?: AtlasActionApproval;
     snapshot: AtlasActionEntitySnapshot;
     executionScope?: {
+      ownerUserId?: string;
       isCurrent(): boolean;
       readSnapshot(): AtlasActionEntitySnapshot;
     };
   }): Promise<AtlasActionExecutionResult> {
-    const { proposal, approval, snapshot } = input;
-    if (this.executingActionIds.has(proposal.id) || this.executedActionIds.has(proposal.id)) {
-      return { status: "rejected", actionId: proposal.id, reason: "This ATLAS action has already been submitted." };
-    }
-    const permission = new AtlasPermissionEngine().evaluate(proposal.type);
-    if (permission.decision === "forbidden") {
-      return { status: "rejected", actionId: proposal.id, reason: permission.reason };
-    }
-    if (proposal.source !== "atlas" || proposal.risk !== permission.risk ||
-        proposal.requiresApproval !== (permission.decision === "approval-required")) {
-      return { status: "rejected", actionId: proposal.id, reason: "The proposal permission metadata is invalid." };
-    }
-    const approvalRequired = permission.decision === "approval-required";
-    if (approvalRequired && (!approval || approval.version !== "1.1.0" || approval.source !== "user" ||
-        approval.actionId !== proposal.id || approval.decision !== "approved" ||
-        approval.proposalFingerprint !== createAtlasProposalFingerprint(proposal) ||
-        Number.isNaN(Date.parse(approval.decidedAt)))) {
-      return { status: "rejected", actionId: proposal.id, reason: "Explicit current user approval is required." };
-    }
-    const scope = input.executionScope;
-    if (scope && !scope.isCurrent()) {
-      return { status: "rejected", actionId: proposal.id, reason: "The action account scope is no longer current." };
-    }
-    const problem = getAtlasActionReferenceProblem(proposal, scope ? scope.readSnapshot() : snapshot);
-    if (problem) return { status: "rejected", actionId: proposal.id, reason: problem };
-
-    this.executingActionIds.add(proposal.id);
+    let proposal = input.proposal;
+    const { approval, snapshot } = input;
+    const attempt = createAtlasAttempt(proposal, input.executionScope?.ownerUserId ?? null);
+    const reject = (category: AtlasNotStartedCategory, reason: string) => {
+      const result = notStartedResult(attempt, category, reason);
+      if (category !== "duplicate-submission" && result.outcome) this.outcomes.set(proposal.id, result.outcome);
+      return result;
+    };
+    if (this.submittedActionIds.has(proposal.id)) return reject("duplicate-submission", "This ATLAS action has already been submitted.");
+    let startedAt: string;
+    let dispatchProposal: AtlasActionProposal;
+    let approvalRequired: boolean;
+    let approvedAt: string | undefined;
     try {
+      const permission = new AtlasPermissionEngine().evaluate(proposal.type);
+      if (permission.decision === "forbidden") return reject("permission-denied", permission.reason);
+      if (proposal.source !== "atlas" || proposal.risk !== permission.risk ||
+          proposal.requiresApproval !== (permission.decision === "approval-required")) {
+        return reject("permission-denied", "The proposal permission metadata is invalid.");
+      }
+      approvalRequired = permission.decision === "approval-required";
+      if (approvalRequired && (!approval || approval.version !== "1.1.0" || approval.source !== "user" ||
+          approval.actionId !== proposal.id || approval.decision !== "approved" ||
+          approval.proposalFingerprint !== createAtlasProposalFingerprint(proposal) ||
+          Number.isNaN(Date.parse(approval.decidedAt)))) {
+        return reject("approval-invalid", "Explicit current user approval is required.");
+      }
+      approvedAt = approvalRequired ? approval?.decidedAt : undefined;
+      const scope = input.executionScope;
+      if (scope && !scope.isCurrent()) return reject("account-stale", "The action account scope is no longer current.");
+      const problem = getAtlasActionReferenceProblem(proposal, scope ? scope.readSnapshot() : snapshot);
+      if (problem) return reject("reference-invalid", problem);
+      dispatchProposal = structuredClone(proposal);
+      // Retain a private validated snapshot for completion/audit metadata. Neither
+      // the caller nor the adapter may retarget it while an operation is pending.
+      proposal = structuredClone(dispatchProposal);
       if (scope && !scope.isCurrent()) {
-        this.executingActionIds.delete(proposal.id);
-        return { status: "rejected", actionId: proposal.id, reason: "The action account scope is no longer current." };
+        return reject("account-stale", "The action account scope is no longer current.");
       }
-      const mutation = await this.adapter.execute(proposal);
-      if (!mutation.executed) {
-        this.executingActionIds.delete(proposal.id);
-        return { status: "rejected", actionId: proposal.id, reason: mutation.reason ?? "The trusted LifeOS mutation was not applied." };
+      startedAt = new Date().toISOString();
+    } catch {
+      return reject("preflight-error", "The action could not be validated. Nothing was dispatched.");
+    }
+    const publish = (outcome: AtlasActionOutcome) => {
+      this.outcomes.set(proposal.id, structuredClone(outcome));
+      return structuredClone(outcome);
+    };
+    this.submittedActionIds.add(proposal.id);
+    publish({ ...attempt, operation: { status: "in-flight", startedAt }, audit: { status: "not-required" } });
+    const unknown = (category: "adapter-exception" | "adapter-uncertain" | "malformed-adapter-result"): AtlasActionExecutionResult => ({
+      status: "unknown", actionId: proposal.id, safeError: "The operation may have been applied. Reconcile its result before trying again.",
+      outcome: publish({ ...attempt, operation: { status: "unknown", category, startedAt, completedAt: new Date().toISOString() }, audit: { status: "not-required" } }),
+    });
+    let mutation: unknown;
+    try {
+      mutation = await this.adapter.execute(dispatchProposal);
+    } catch {
+      // A thrown error after invocation is not proof that no mutation occurred.
+      return unknown("adapter-exception");
+    }
+    let entityId: number | undefined;
+    let executionRecordIds: number[] = [];
+    try {
+      if (typeof mutation !== "object" || mutation === null) return unknown("malformed-adapter-result");
+      const value = mutation as Record<string, unknown>;
+      if (value.outcome === "unknown") return unknown("adapter-uncertain");
+      if (value.executed !== true && value.executed !== false) return unknown("malformed-adapter-result");
+      if (value.entityId !== undefined) {
+        if (typeof value.entityId !== "number" || !Number.isSafeInteger(value.entityId) || value.entityId <= 0) return unknown("malformed-adapter-result");
+        entityId = value.entityId;
       }
-      this.executedActionIds.add(proposal.id);
+      if (value.executionRecordIds !== undefined) {
+        if (!Array.isArray(value.executionRecordIds) || value.executionRecordIds.length > 1000 ||
+            !Array.from(value.executionRecordIds).every(id => typeof id === "number" && Number.isSafeInteger(id) && id > 0)) return unknown("malformed-adapter-result");
+        executionRecordIds = [...value.executionRecordIds];
+      }
+      if (!value.executed) return {
+        status: "rejected", actionId: proposal.id, reason: "The trusted adapter confirmed that this operation was not applied.",
+        outcome: publish({ ...attempt, operation: { status: "failed", category: "adapter-declined", startedAt, completedAt: new Date().toISOString() }, audit: { status: "not-required" } }),
+      };
+    } catch { return unknown("malformed-adapter-result"); }
+    const operation = { status: "succeeded" as const, confirmation: "adapter-acknowledged" as const, startedAt, completedAt: new Date().toISOString() };
+    publish({ ...attempt, operation, audit: this.auditWriter ? { status: "pending" } : { status: "not-configured" } });
+    let audit: AtlasSuccessAudit = { status: "not-configured" };
+    let auditIds: readonly number[] = [];
+    if (this.auditWriter) try {
       const capability = getConnectorCapabilityForAction(proposal.type);
       const connectorDefinition = capability ? getConnectorCapabilityDefinition(capability) : undefined;
-      const auditIds = this.auditWriter
-        ? await this.auditWriter.record({
-            actionId: proposal.id,
-            actionType: proposal.type,
-            ...(approvalRequired && approval ? { approvedAt: approval.decidedAt } : {}),
-            approvalRequired,
-            source: "atlas",
-            ...(connectorDefinition ? { connectorId: connectorDefinition.connectorId, capability: connectorDefinition.capability } : {}),
-            resultStatus: "executed",
-          })
-        : [];
-      this.executingActionIds.delete(proposal.id);
-      return {
-        status: "executed",
+      const receipt = await this.auditWriter.record({
         actionId: proposal.id,
-        ...(mutation.entityId === undefined ? {} : { entityId: mutation.entityId }),
-        executionRecordIds: [...(mutation.executionRecordIds ?? []), ...auditIds],
-      };
+        actionType: proposal.type,
+        ...(approvedAt === undefined ? {} : { approvedAt }),
+        approvalRequired,
+        source: "atlas",
+        ...(connectorDefinition ? { connectorId: connectorDefinition.connectorId, capability: connectorDefinition.capability } : {}),
+        resultStatus: "executed",
+      });
+      const confirmed = !Array.isArray(receipt) && "persistence" in receipt && receipt.persistence === "confirmed";
+      const ids = Array.isArray(receipt) ? receipt : "recordIds" in receipt ? receipt.recordIds : [];
+      if (Array.isArray(ids) && ids.length > 0 && ids.length <= 1000 &&
+          Array.from(ids).every(id => typeof id === "number" && Number.isSafeInteger(id) && id > 0)) {
+        auditIds = [...ids];
+        audit = confirmed ? { status: "confirmed", recordIds: auditIds } : { status: "unconfirmed", category: "receipt-unconfirmed" };
+      } else audit = { status: "unconfirmed", category: "receipt-unconfirmed" };
     } catch {
-      this.executingActionIds.delete(proposal.id);
-      return { status: "failed", actionId: proposal.id, safeError: "The approved LifeOS action could not be completed safely." };
+      audit = { status: "unconfirmed", category: "append-error" };
     }
+    return {
+      status: "executed",
+      actionId: proposal.id,
+      ...(entityId === undefined ? {} : { entityId }),
+      executionRecordIds: [...executionRecordIds, ...auditIds],
+      outcome: publish({ ...attempt, operation, audit }),
+    };
   }
 }

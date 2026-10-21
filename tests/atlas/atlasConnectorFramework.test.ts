@@ -59,9 +59,9 @@ test("connection and unsupported capability failures remain structured and opaqu
   const setup = registry();
   setup.calendar.setConnectionState("disconnected");
   const disconnected = await setup.registry.execute({ version: "1.0.0", requestId: "r1", connectorId: "calendar", capability: "calendar.read", payload: {} });
-  assert.deepEqual(disconnected, { status: "unavailable", requestId: "r1", safeError: "The connector is not connected." });
+  assert.deepEqual(disconnected, { status: "unavailable", requestId: "r1", dispatch: "not-started", safeError: "The connector is not connected." });
   const unsupported = await setup.registry.execute({ version: "1.0.0", requestId: "r2", connectorId: "calendar", capability: "finance.balance.read", payload: {} });
-  assert.deepEqual(unsupported, { status: "failed", requestId: "r2", safeError: "The connector capability is unsupported." });
+  assert.deepEqual(unsupported, { status: "failed", requestId: "r2", dispatch: "not-started", safeError: "The connector capability is unsupported." });
   assert.equal(JSON.stringify(disconnected).includes("token"), false);
 });
 
@@ -155,7 +155,9 @@ test("connector failure is safely surfaced without provider internals", async ()
   const executor = new AtlasActionExecutor(createConnectorActionAdapter(new AtlasConnectorRegistry([failing])));
   const read = proposal({ type: "calendar.read", title: "Read calendar", payload: {} }, "0006");
   const result = await executor.executeApprovedAction({ proposal: read, snapshot: EMPTY });
-  assert.deepEqual(result, { status: "rejected", actionId: read.id, reason: "The connector action failed safely." });
+  assert.equal(result.status, "unknown");
+  assert.equal(result.outcome?.operation.status, "unknown");
+  assert.equal(result.outcome?.audit.status, "not-required");
   assert.equal(JSON.stringify(result).includes("do-not-leak"), false);
 });
 

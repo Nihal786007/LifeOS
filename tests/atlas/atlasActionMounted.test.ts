@@ -14,6 +14,9 @@ import type { AtlasActionCandidateGenerationResult, AtlasActionCandidateProvider
 import { DeterministicMockAtlasActionCandidateProvider } from "../../src/atlas/actions/candidate.ts";
 import type { AtlasTaskCreatePayload } from "../../src/atlas/actions/types.ts";
 import type { useAtlasActions } from "../../src/atlas/actions/useAtlasActions.ts";
+import type AtlasActionProposalCard from "../../src/components/atlas/AtlasActionProposalCard.tsx";
+import { atlasOutcomeMessage } from "../../src/atlas/actions/actionOutcome.ts";
+import { getConnectorCapabilityForAction } from "../../src/atlas/connectors/registry.ts";
 
 type Controller = ReturnType<typeof useAtlasActions>;
 function deferred<T>() {
@@ -41,6 +44,7 @@ interface Model {
   tasks: { id: number; title: string; completed: boolean }[];
   mutations: { owner: string; kind: string; text?: string }[];
   captureGate?: ReturnType<typeof deferred<void>>;
+  captureFailure?: boolean;
 }
 const Context = createContext<Model | null>(null);
 function useModel() {
@@ -80,6 +84,7 @@ function loadHook(): typeof useAtlasActions {
     "../../context/AppContext": { useApp: () => {
       const m = useModel(); return { addCapture: async (text: string) => {
         m.mutations.push({ owner: m.owner, kind: "capture.create", text });
+        if (m.captureFailure) throw new Error("Private synthetic failure detail");
         await m.captureGate?.promise;
       } };
     } },
@@ -110,6 +115,18 @@ function loadHook(): typeof useAtlasActions {
   return module.exports.useAtlasActions;
 }
 const mountedHook = loadHook();
+function loadCard(): typeof AtlasActionProposalCard {
+  const url = new URL("../../src/components/atlas/AtlasActionProposalCard.tsx", import.meta.url);
+  const require = createRequire(url);
+  const module = { exports: {} as { default: typeof AtlasActionProposalCard } };
+  runInNewContext(ts.transpileModule(readFileSync(url, "utf8"), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX },
+  }).outputText, { module, exports: module.exports, require: (id: string) =>
+    id.endsWith("/actionOutcome") ? { atlasOutcomeMessage } :
+    id.endsWith("/registry") ? { getConnectorCapabilityForAction } : require(id) });
+  return module.exports.default;
+}
+const MountedCard = loadCard();
 const unavailable: AtlasActionCandidateProvider = { id: "synthetic-unavailable", generate: async () => ({ status: "unavailable" }) };
 
 async function harness(provider = unavailable, strict = false) {
@@ -145,7 +162,10 @@ async function harness(provider = unavailable, strict = false) {
     return createElement("div", null,
       createElement("output", null, `${value.status}:${value.proposal?.id ?? "none"}`),
       createElement("button", { onClick: value.approve }, "Approve"),
-      createElement("button", { onClick: value.cancel }, "Cancel"));
+      createElement("button", { onClick: value.cancel }, "Cancel"),
+      createElement(MountedCard, { proposal: value.proposal, result: value.result,
+        executing: value.status === "executing", onApprove: value.approve,
+        onCancel: value.cancel, onDismissResult: value.clearResult }));
   }
   const root = createRoot(dom.window.document.getElementById("root")!);
   let mounted = true;
@@ -160,12 +180,20 @@ async function harness(provider = unavailable, strict = false) {
   }
   return {
     get current() { return current; }, get model() { return model; }, get renders() { return renders; }, a, b, errors,
+    get text() { return dom.window.document.body.textContent ?? ""; },
     async rerender(changes: Partial<Model> = {}) { model = { ...model, ...changes }; await render(); },
     async switchToB(ready = true) {
       ExecutionHistoryService.releaseRepository(a.repository);
       ExecutionHistoryService.configureRepository(b.repository);
       await ExecutionHistoryService.initialize();
       model = { ...model, owner: "synthetic-b", readyOwner: ready ? "synthetic-b" : "synthetic-a", ready, ledger: b };
+      await render();
+    },
+    async switchToA() {
+      ExecutionHistoryService.releaseRepository(b.repository);
+      ExecutionHistoryService.configureRepository(a.repository);
+      await ExecutionHistoryService.initialize();
+      model = { ...model, owner: "synthetic-a", readyOwner: "synthetic-a", ready: true, ledger: a };
       await render();
     },
     async approve() { await act(async () => { await current.approve(); }); },
@@ -422,9 +450,71 @@ test("mounted hook: a started A operation must not append its audit to B's activ
     let pending!: Promise<void>;
     await act(async () => { pending = h.current.approve(); });
     await h.switchToB();
+    await h.switchToA(); await h.switchToB();
     await act(async () => { gate.resolve(); await pending; });
     assert.equal(h.current.result, null);
     assert.equal(h.b.rows().length, 0);
     assert.equal(h.model.mutations.filter(m => m.owner === "synthetic-b").length, 0);
+  } finally { await h.close(); }
+});
+
+test("mounted recovery: audit failure preserves acknowledged operation and warns separately", async () => {
+  const h = await harness();
+  try {
+    h.a.repository.append = async () => { throw new Error("Private synthetic failure detail"); };
+    await h.interpret(); await h.approve();
+    assert.equal(h.current.result?.status, "executed");
+    assert.equal(h.current.outcome?.operation.status, "succeeded");
+    assert.equal(h.current.outcome?.audit.status, "unconfirmed");
+    assert.match(h.text, /Action acknowledged · audit unconfirmed/);
+    assert.doesNotMatch(h.text, /Private synthetic|Action could not be completed/);
+    assert.equal(h.model.mutations.length, 1);
+    await h.approve(); assert.equal(h.model.mutations.length, 1);
+  } finally { await h.close(); }
+});
+
+test("mounted recovery: post-dispatch exception is unknown and repeated approval cannot replay it", async () => {
+  const h = await harness();
+  try {
+    await h.rerender({ captureFailure: true });
+    await act(async () => { h.current.prepare({ type: "capture.create", title: "Synthetic capture", payload: { text: "Synthetic" } }); });
+    const approve = h.current.approve;
+    await act(async () => { await approve(); await approve(); });
+    assert.equal(h.current.result?.status, "unknown");
+    assert.equal(h.current.outcome?.operation.status, "unknown");
+    assert.match(h.text, /Action outcome unknown/);
+    assert.match(h.text, /Do not repeat it automatically/);
+    assert.equal(h.model.mutations.length, 1); assert.equal(h.a.rows().length, 0);
+    assert.doesNotMatch(JSON.stringify(h.current.result), /Private synthetic/);
+  } finally { await h.close(); }
+});
+
+test("mounted recovery: account switch while audit is pending cannot publish into B", async () => {
+  const h = await harness(); const gate = deferred<void>();
+  let pending: Promise<void> | undefined;
+  try {
+    const append = h.a.repository.append;
+    h.a.repository.append = async rows => { await gate.promise; return append(rows); };
+    await h.interpret();
+    await act(async () => { pending = h.current.approve(); });
+    assert.equal(h.current.outcome?.operation.status, "succeeded");
+    assert.equal(h.current.outcome?.audit.status, "pending");
+    await h.switchToB();
+    await h.switchToA(); await h.switchToB();
+    await act(async () => { gate.resolve(); await pending; });
+    assert.equal(h.current.result, null); assert.equal(h.current.outcome, null);
+    assert.doesNotMatch(h.text, /Action acknowledged|audit unconfirmed/);
+    assert.equal(h.b.rows().length, 0); assert.equal(ExecutionHistoryService.getAll().length, 0);
+  } finally { gate.resolve(); if (pending) await act(async () => { await pending; }); await h.close(); }
+});
+
+test("mounted recovery: confirmed audit survives subsequent hook unmount", async () => {
+  const h = await harness();
+  try {
+    await h.interpret(); await h.approve();
+    assert.equal(h.current.outcome?.audit.status, "confirmed");
+    assert.match(h.text, /local audit repository confirmed its record/);
+    await h.unmount();
+    assert.equal(h.a.rows().length, 1); assert.equal(h.a.rows()[0].xpAwarded, 0);
   } finally { await h.close(); }
 });

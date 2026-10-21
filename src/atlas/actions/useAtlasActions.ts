@@ -106,11 +106,12 @@ export function useAtlasActions(
     }), createConnectorActionAdapter(mockConnectorRegistry)),
     [addCapture, habitExecution, mockConnectorRegistry, planning]);
   const auditWriter = useMemo(() => createAtlasActionAuditWriter({
-      append: (records) => {
+      append: async (records) => {
         const repository = account.services?.executionHistoryRepository;
         if (!repository) throw new Error("Action audit account scope is unavailable.");
-        ExecutionHistoryService.appendForRepository(repository, records);
+        await ExecutionHistoryService.appendConfirmedForRepository(repository, records);
       },
+      confirmation: "repository",
       createId: createAuditId,
       now: auditNow,
     }), [account.services]);
@@ -197,7 +198,7 @@ export function useAtlasActions(
       setStatus("idle");
       return;
     }
-    setResult({ status: "rejected", actionId: proposal.id, reason: "Cancelled by the user." });
+    setResult(lifecycle.rejectBeforeStart(proposal, "cancelled", "Cancelled by the user."));
     setProposal(null);
     setStatus("result");
   }, [lifecycle, proposal, status]);
@@ -239,6 +240,7 @@ export function useAtlasActions(
   }, [lifecycle, status]);
 
   return {
+    outcome: stateScope === lifecycle && proposal ? lifecycle.outcomeFor(proposal.id) : null,
     status: stateScope === lifecycle ? status : "idle" as const,
     proposal: stateScope === lifecycle ? proposal : null,
     result: stateScope === lifecycle ? result : null,
