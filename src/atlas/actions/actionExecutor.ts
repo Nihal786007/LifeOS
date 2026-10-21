@@ -70,6 +70,10 @@ export class AtlasActionExecutor {
     proposal: AtlasActionProposal;
     approval?: AtlasActionApproval;
     snapshot: AtlasActionEntitySnapshot;
+    executionScope?: {
+      isCurrent(): boolean;
+      readSnapshot(): AtlasActionEntitySnapshot;
+    };
   }): Promise<AtlasActionExecutionResult> {
     const { proposal, approval, snapshot } = input;
     if (this.executingActionIds.has(proposal.id) || this.executedActionIds.has(proposal.id)) {
@@ -90,11 +94,19 @@ export class AtlasActionExecutor {
         Number.isNaN(Date.parse(approval.decidedAt)))) {
       return { status: "rejected", actionId: proposal.id, reason: "Explicit current user approval is required." };
     }
-    const problem = getAtlasActionReferenceProblem(proposal, snapshot);
+    const scope = input.executionScope;
+    if (scope && !scope.isCurrent()) {
+      return { status: "rejected", actionId: proposal.id, reason: "The action account scope is no longer current." };
+    }
+    const problem = getAtlasActionReferenceProblem(proposal, scope ? scope.readSnapshot() : snapshot);
     if (problem) return { status: "rejected", actionId: proposal.id, reason: problem };
 
     this.executingActionIds.add(proposal.id);
     try {
+      if (scope && !scope.isCurrent()) {
+        this.executingActionIds.delete(proposal.id);
+        return { status: "rejected", actionId: proposal.id, reason: "The action account scope is no longer current." };
+      }
       const mutation = await this.adapter.execute(proposal);
       if (!mutation.executed) {
         this.executingActionIds.delete(proposal.id);

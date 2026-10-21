@@ -180,6 +180,18 @@ export class ExecutionHistoryService {
     }
   }
 
+  /** Fence a delayed producer to the repository it was authorized to use.
+   * Keep the check and dispatch synchronous; never redirect to a new account. */
+  static appendForRepository(
+    repository: CompatibleRepository,
+    records: ExecutionRecord[]
+  ): ExecutionRecord[] {
+    if (this.repository !== repository) {
+      throw new Error("Execution History account scope is no longer current");
+    }
+    return this.append(records);
+  }
+
   static append(records: ExecutionRecord[]): ExecutionRecord[] {
     this.requireHydrated();
     if (records.length === 0) return this.getAll();
