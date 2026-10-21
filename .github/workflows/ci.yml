@@ -2,7 +2,7 @@ name: LifeOS — CI
 
 on:
   push:
-    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1]
+    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1, feat/atlas-action-outcome-recovery-v1]
   pull_request:
     branches: [main]
 
