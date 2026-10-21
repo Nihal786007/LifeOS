@@ -24,5 +24,5 @@ export function createConnectorActionAdapter(registry: AtlasConnectorRegistry): 
 }
 
 export function createCompositeAtlasActionAdapter(lifeOS: AtlasActionAdapter, connectors: AtlasActionAdapter): AtlasActionAdapter {
-  return { execute: (proposal) => getConnectorCapabilityForAction(proposal.type) ? connectors.execute(proposal) : lifeOS.execute(proposal) };
+  return { execute: (proposal, attempt) => getConnectorCapabilityForAction(proposal.type) ? connectors.execute(proposal, attempt) : lifeOS.execute(proposal, attempt) };
 }

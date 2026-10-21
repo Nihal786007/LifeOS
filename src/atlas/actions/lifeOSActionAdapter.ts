@@ -1,4 +1,6 @@
 import type { ExecutionRecord } from "../../shared/execution";
+import type { TaskCreationAcceptance } from "../../shared/taskMutation.ts";
+import type { AtlasAttemptIdentity } from "./actionOutcomeTypes.ts";
 import type {
   AtlasActionAuditEntry,
   AtlasActionAuditWriter,
@@ -15,7 +17,7 @@ import type {
 } from "./types.ts";
 
 export interface TrustedLifeOSActionPorts {
-  createTask(payload: AtlasTaskCreatePayload): void;
+  createTask(payload: AtlasTaskCreatePayload): TaskCreationAcceptance | void;
   updateTask(taskId: number, updates: Omit<AtlasTaskUpdatePayload, "taskId">): { updated: boolean; message: string };
   completeTask(taskId: number): void;
   createHabit(payload: AtlasHabitCreatePayload): void;
@@ -29,11 +31,24 @@ export function createLifeOSActionAdapter(
   ports: TrustedLifeOSActionPorts
 ): AtlasLifeOSActionAdapter {
   return {
-    async execute(proposal: AtlasActionProposal): Promise<AtlasTrustedMutationResult> {
+    async execute(proposal: AtlasActionProposal, attempt?: Readonly<AtlasAttemptIdentity>): Promise<AtlasTrustedMutationResult> {
       switch (proposal.type) {
-        case "task.create":
-          ports.createTask(proposal.payload as AtlasTaskCreatePayload);
-          return { executed: true };
+        case "task.create": {
+          const result = ports.createTask(proposal.payload as AtlasTaskCreatePayload);
+          if (result === undefined) return { executed: true }; // Legacy acknowledgement only.
+          if (!attempt?.ownerUserId || attempt.actionId !== proposal.id || attempt.actionType !== "task.create") return { outcome: "unknown" };
+          const identity = { version: "1.0.0" as const, actionType: "task.create" as const,
+            actionId: attempt.actionId, attemptId: attempt.attemptId, ownerUserId: attempt.ownerUserId };
+          if (result?.status === "rejected" && Object.keys(result).length === 1 && Object.hasOwn(result, "status")) {
+            return { receipt: { ...identity, status: "rejected", assurance: "not-applied" } };
+          }
+          if (result?.status === "accepted" && Object.keys(result).length === 2 &&
+              Object.hasOwn(result, "status") && Object.hasOwn(result, "taskId") &&
+              Number.isSafeInteger(result.taskId) && result.taskId > 0) {
+            return { receipt: { ...identity, status: "accepted", assurance: "canonical-accepted", entityId: result.taskId } };
+          }
+          return { outcome: "unknown" };
+        }
         case "task.update": {
           const { taskId, ...updates } = proposal.payload as AtlasTaskUpdatePayload;
           const result = ports.updateTask(taskId, updates);

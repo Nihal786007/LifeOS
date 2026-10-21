@@ -41,9 +41,17 @@ export function atlasOutcomeMessage(outcome: AtlasActionOutcome): { title: strin
     case "in-flight": return { title: "Action in progress", detail: "An approved operation has started. Closing this view cannot undo it." };
     case "failed": return { title: "Action not applied", detail: "The trusted adapter confirmed it did not apply this operation. A new proposal and approval are required to try again." };
     case "unknown": return { title: "Action outcome unknown", detail: "The operation may have been applied. Check its account-scoped result before trying again. Do not repeat it automatically." };
-    case "succeeded": return { title: outcome.audit.status === "confirmed" ? "Action acknowledged" : "Action acknowledged · audit unconfirmed",
+    case "succeeded": {
+      if (outcome.operation.confirmation === "canonical-accepted") return {
+        title: outcome.audit.status === "confirmed" ? "Task accepted" : "Task accepted · audit unconfirmed",
+        detail: `LifeOS accepted the task into its canonical in-memory state. Local persistence and cloud synchronization are not confirmed.${outcome.audit.status === "confirmed"
+          ? " The local audit repository confirmed its separate record."
+          : " Its separate audit is unconfirmed. Do not repeat the action to repair the audit."}`,
+      };
+      return { title: outcome.audit.status === "confirmed" ? "Action acknowledged" : "Action acknowledged · audit unconfirmed",
       detail: outcome.audit.status === "confirmed"
         ? "The adapter acknowledged the action and the local audit repository confirmed its record. Cloud synchronization is separate."
         : "The adapter acknowledged the action, but its audit is not confirmed. Do not repeat the action to repair the audit." };
+    }
   }
 }

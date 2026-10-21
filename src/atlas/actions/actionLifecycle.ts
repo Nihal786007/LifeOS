@@ -33,10 +33,10 @@ export class AtlasActionLifecycle {
   constructor(ownerUserId: string | null) {
     this.ownerUserId = ownerUserId;
     this.executor = new AtlasActionExecutor({
-      execute: (proposal) => {
+      execute: (proposal, attempt) => {
         const operation = this.operations.get(proposal.id);
         if (!operation) return Promise.resolve({ executed: false });
-        return operation.adapter.execute(proposal);
+        return operation.adapter.execute(proposal, attempt);
       },
     }, {
       // An operation already started must never switch its audit writer to another account.

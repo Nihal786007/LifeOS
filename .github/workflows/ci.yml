@@ -55,15 +55,15 @@ jobs:
       - name: Typecheck tests
         run: npx --no-install tsc --noEmit -p tests/tsconfig.json
 
-      - name: Run all deterministic tests (930, including 129 Calendar security, 41 lifecycle and 49 outcome/recovery cases)
+      - name: Run all deterministic tests (952, including 129 Calendar security, 41 lifecycle, 49 outcome/recovery and 22 receipt cases)
         run: |
           mapfile -d '' test_files < <(git ls-files -z 'tests/**/*.test.ts')
           test "${#test_files[@]}" -gt 0
           node --experimental-strip-types --experimental-specifier-resolution=node \
             --test --test-reporter=tap "${test_files[@]}" | tee "$RUNNER_TEMP/lifeos-tests.tap"
           # Review/update this baseline deliberately when adding or removing tests.
-          grep -qx '# tests 930' "$RUNNER_TEMP/lifeos-tests.tap"
-          grep -qx '# pass 930' "$RUNNER_TEMP/lifeos-tests.tap"
+          grep -qx '# tests 952' "$RUNNER_TEMP/lifeos-tests.tap"
+          grep -qx '# pass 952' "$RUNNER_TEMP/lifeos-tests.tap"
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-tests.tap"
 
       - name: Check both native Deno entrypoints (no server started)

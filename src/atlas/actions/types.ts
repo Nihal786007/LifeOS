@@ -166,10 +166,11 @@ export type AtlasTrustedMutationResult = {
   entityId?: number;
   executionRecordIds?: readonly number[];
   reason?: string;
-} | { outcome: "unknown"; executed?: never };
+} | { outcome: "unknown"; executed?: never }
+  | { receipt: import("./mutationReceiptTypes.ts").AtlasTaskCreationReceipt; executed?: never };
 
 export interface AtlasActionAdapter {
-  execute(proposal: AtlasActionProposal): Promise<AtlasTrustedMutationResult>;
+  execute(proposal: AtlasActionProposal, attempt?: Readonly<import("./actionOutcomeTypes.ts").AtlasAttemptIdentity>): Promise<AtlasTrustedMutationResult>;
 }
 
 export type AtlasLifeOSActionAdapter = AtlasActionAdapter;

@@ -2,6 +2,7 @@ import { AtlasPermissionEngine } from "./permissionEngine.ts";
 import { createAtlasProposalFingerprint } from "./proposal.ts";
 import { getConnectorCapabilityDefinition, getConnectorCapabilityForAction } from "../connectors/registry.ts";
 import { createAtlasAttempt, notStartedResult } from "./actionOutcome.ts";
+import { readTaskCreationReceipt } from "./mutationReceipt.ts";
 import type { AtlasActionOutcome, AtlasNotStartedCategory, AtlasSuccessAudit } from "./actionOutcome.ts";
 import type {
   AtlasActionApproval,
@@ -138,33 +139,46 @@ export class AtlasActionExecutor {
     });
     let mutation: unknown;
     try {
-      mutation = await this.adapter.execute(dispatchProposal);
+      mutation = await this.adapter.execute(dispatchProposal, Object.freeze({ ...attempt }));
     } catch {
       // A thrown error after invocation is not proof that no mutation occurred.
       return unknown("adapter-exception");
     }
     let entityId: number | undefined;
     let executionRecordIds: number[] = [];
+    let confirmation: "adapter-acknowledged" | "canonical-accepted" = "adapter-acknowledged";
     try {
       if (typeof mutation !== "object" || mutation === null) return unknown("malformed-adapter-result");
       const value = mutation as Record<string, unknown>;
-      if (value.outcome === "unknown") return unknown("adapter-uncertain");
-      if (value.executed !== true && value.executed !== false) return unknown("malformed-adapter-result");
-      if (value.entityId !== undefined) {
-        if (typeof value.entityId !== "number" || !Number.isSafeInteger(value.entityId) || value.entityId <= 0) return unknown("malformed-adapter-result");
-        entityId = value.entityId;
+      if ("receipt" in value) {
+        if (Object.keys(value).length !== 1 || !Object.hasOwn(value, "receipt")) return unknown("malformed-adapter-result");
+        const receipt = readTaskCreationReceipt(value.receipt, attempt);
+        if (!receipt) return unknown("malformed-adapter-result");
+        if (receipt.status === "rejected") return {
+          status: "rejected", actionId: proposal.id, reason: "The canonical task mutation was not accepted.",
+          outcome: publish({ ...attempt, operation: { status: "failed", category: "adapter-declined", startedAt, completedAt: new Date().toISOString() }, audit: { status: "not-required" } }),
+        };
+        entityId = receipt.entityId;
+        confirmation = receipt.assurance;
+      } else {
+        if (value.outcome === "unknown") return unknown("adapter-uncertain");
+        if (value.executed !== true && value.executed !== false) return unknown("malformed-adapter-result");
+        if (value.entityId !== undefined) {
+          if (typeof value.entityId !== "number" || !Number.isSafeInteger(value.entityId) || value.entityId <= 0) return unknown("malformed-adapter-result");
+          entityId = value.entityId;
+        }
+        if (value.executionRecordIds !== undefined) {
+          if (!Array.isArray(value.executionRecordIds) || value.executionRecordIds.length > 1000 ||
+              !Array.from(value.executionRecordIds).every(id => typeof id === "number" && Number.isSafeInteger(id) && id > 0)) return unknown("malformed-adapter-result");
+          executionRecordIds = [...value.executionRecordIds];
+        }
+        if (!value.executed) return {
+          status: "rejected", actionId: proposal.id, reason: "The trusted adapter confirmed that this operation was not applied.",
+          outcome: publish({ ...attempt, operation: { status: "failed", category: "adapter-declined", startedAt, completedAt: new Date().toISOString() }, audit: { status: "not-required" } }),
+        };
       }
-      if (value.executionRecordIds !== undefined) {
-        if (!Array.isArray(value.executionRecordIds) || value.executionRecordIds.length > 1000 ||
-            !Array.from(value.executionRecordIds).every(id => typeof id === "number" && Number.isSafeInteger(id) && id > 0)) return unknown("malformed-adapter-result");
-        executionRecordIds = [...value.executionRecordIds];
-      }
-      if (!value.executed) return {
-        status: "rejected", actionId: proposal.id, reason: "The trusted adapter confirmed that this operation was not applied.",
-        outcome: publish({ ...attempt, operation: { status: "failed", category: "adapter-declined", startedAt, completedAt: new Date().toISOString() }, audit: { status: "not-required" } }),
-      };
     } catch { return unknown("malformed-adapter-result"); }
-    const operation = { status: "succeeded" as const, confirmation: "adapter-acknowledged" as const, startedAt, completedAt: new Date().toISOString() };
+    const operation = { status: "succeeded" as const, confirmation, startedAt, completedAt: new Date().toISOString() };
     publish({ ...attempt, operation, audit: this.auditWriter ? { status: "pending" } : { status: "not-configured" } });
     let audit: AtlasSuccessAudit = { status: "not-configured" };
     let auditIds: readonly number[] = [];

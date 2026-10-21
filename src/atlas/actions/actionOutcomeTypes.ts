@@ -12,7 +12,7 @@ export interface AtlasAttemptIdentity {
 }
 type NotStarted = { status: "not-started"; category: AtlasNotStartedCategory };
 type InFlight = { status: "in-flight"; startedAt: string };
-type Succeeded = { status: "succeeded"; startedAt: string; completedAt: string; confirmation: "adapter-acknowledged" };
+type Succeeded = { status: "succeeded"; startedAt: string; completedAt: string; confirmation: "adapter-acknowledged" | "canonical-accepted" };
 type Failed = { status: "failed"; startedAt: string; completedAt: string; category: "adapter-declined" };
 type Unknown = { status: "unknown"; startedAt: string; completedAt: string;
   category: "adapter-exception" | "adapter-uncertain" | "malformed-adapter-result" };
