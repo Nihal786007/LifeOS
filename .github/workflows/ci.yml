@@ -2,7 +2,7 @@ name: LifeOS — CI
 
 on:
   push:
-    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1, feat/atlas-action-outcome-recovery-v1, feat/atlas-trustworthy-mutation-receipts-v1]
+    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1, feat/atlas-action-outcome-recovery-v1, feat/atlas-trustworthy-mutation-receipts-v1, feat/real-application-demo-integration-v1]
   pull_request:
     branches: [main]
 
@@ -55,6 +55,9 @@ jobs:
       - name: Typecheck tests
         run: npx --no-install tsc --noEmit -p tests/tsconfig.json
 
+      - name: Typecheck isolated real-application demo
+        run: npx --no-install tsc --noEmit -p real-app-demo/tsconfig.json
+
       - name: Run all deterministic tests (952, including 129 Calendar security, 41 lifecycle, 49 outcome/recovery and 22 receipt cases)
         run: |
           mapfile -d '' test_files < <(git ls-files -z 'tests/**/*.test.ts')
@@ -65,6 +68,19 @@ jobs:
           grep -qx '# tests 952' "$RUNNER_TEMP/lifeos-tests.tap"
           grep -qx '# pass 952' "$RUNNER_TEMP/lifeos-tests.tap"
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-tests.tap"
+
+      - name: Run real-application demo integration tests (17, zero skipped)
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types --experimental-specifier-resolution=node \
+            --test --test-reporter=tap \
+            real-app-demo/integration.test.ts real-app-demo/planningTasks.test.ts \
+            | tee "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# tests 17' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# pass 17' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# fail 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# cancelled 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
 
       - name: Check both native Deno entrypoints (no server started)
         env:
@@ -98,11 +114,30 @@ jobs:
           node --check scripts/ci/security-check.mjs
           node --check scripts/ci/security-check.test.mjs
 
+      - name: Lint reviewed real-application demo scope
+        run: >-
+          npx --no-install eslint
+          real-app-demo
+          src/App.tsx
+          src/components/AppShell.tsx
+          src/components/planning/GoalModal.tsx
+          src/components/tasks/UniversalTaskTable.tsx
+          src/components/ui/Modal.tsx
+          src/theme/ThemeProvider.tsx
+          vite.real-app-demo.config.ts
+          scripts/verify-real-app-demo.mjs
+
       - name: Build production client (no deployment)
         run: npm run build
 
       - name: Check client bundle for server-secret and private-tool markers
         run: node scripts/ci/security-check.mjs bundle
+
+      - name: Build isolated real-application demo (no deployment)
+        run: npx --no-install vite build --config vite.real-app-demo.config.ts
+
+      - name: Verify isolated demo components, security boundaries and bundle
+        run: node scripts/verify-real-app-demo.mjs
 
       - name: Check changed-file whitespace
         env:
