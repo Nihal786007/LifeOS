@@ -1,4 +1,5 @@
 import {
+  useId,
   useState,
 } from "react";
 
@@ -74,6 +75,7 @@ export default function GoalModal({
   onClose,
   onCreate,
 }: GoalModalProps) {
+  const formId = useId();
   const [
     title,
     setTitle,
@@ -133,6 +135,7 @@ export default function GoalModal({
 
   return (
     <Modal
+      onClose={handleClose}
       open={
         open
       }
@@ -164,11 +167,12 @@ export default function GoalModal({
       ====================================== */}
 
       <div>
-        <label className="text-sm text-slate-400">
+        <label htmlFor={`${formId}-title`} className="text-sm text-slate-400">
           Goal Title
         </label>
 
         <input
+          id={`${formId}-title`}
           value={
             title
           }
@@ -203,7 +207,7 @@ export default function GoalModal({
       ====================================== */}
 
       <div>
-        <label className="text-sm text-slate-400">
+        <label htmlFor={`${formId}-description`} className="text-sm text-slate-400">
           Description
           <span className="ml-1 text-slate-600">
             Optional
@@ -211,6 +215,7 @@ export default function GoalModal({
         </label>
 
         <textarea
+          id={`${formId}-description`}
           rows={
             4
           }
@@ -327,7 +332,7 @@ export default function GoalModal({
             gap-3
           "
         >
-          <label className="text-sm text-slate-400">
+          <label htmlFor={`${formId}-target`} className="text-sm text-slate-400">
             Target Date
             <span className="ml-1 text-slate-600">
               Optional
@@ -350,6 +355,7 @@ export default function GoalModal({
         </div>
 
         <input
+          id={`${formId}-target`}
           type="date"
           value={
             targetDate

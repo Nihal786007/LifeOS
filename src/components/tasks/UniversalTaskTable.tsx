@@ -103,8 +103,11 @@ export default function UniversalTaskTable({
 
   return (
     <div
+      role="region"
+      aria-label="Task table"
+      tabIndex={0}
       className="
-        overflow-hidden
+        overflow-x-auto
         rounded-xl
         border
         border-slate-800

@@ -58,3 +58,4 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+dist-real-app-demo/

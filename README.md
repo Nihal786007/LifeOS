@@ -8,6 +8,30 @@ LifeOS connects goals, tasks, habits, focus sessions, reviews, and external cale
 
 [Product](#what-works-today) · [Architecture](ARCHITECTURE.md) · [Setup](docs/SETUP.md) · [Roadmap](ROADMAP.md)
 
+## Explore the real application demo
+
+**Live demo: pending authorized deployment and verification.** No public URL is claimed yet.
+
+The isolated demo renders the actual LifeOS Dashboard, Planning and Tasks components, Sidebar and theme system. Visitors can explore goal → month → week → task relationships, create synthetic plans and Tasks, search/filter Tasks, and complete or reopen them using LifeOS's existing execution and XP engines.
+
+It stays signed out and runs entirely in browser memory. It has no Supabase, PowerSync, Google OAuth or AI connection. Fictional data and XP reset on reload. Focus, Calendar, ATLAS actions, Habits execution and Capture are not interactive in this demo; unavailable controls explain their limits. This is a limited product demonstration, not an account-security, cloud-sync or production-service certification.
+
+The screenshots below show the actual components with explicitly labelled synthetic data.
+
+![Actual Planning in the isolated synthetic demo](docs/images/lifeos-demo-planning-v21.jpg)
+![Actual Tasks in the isolated synthetic demo](docs/images/lifeos-demo-tasks-v21.jpg)
+
+Run the backend-free preview with Node.js 24 and npm:
+
+```sh
+npm ci --ignore-scripts --no-audit --no-fund
+npx vite build --config vite.real-app-demo.config.ts
+node scripts/verify-real-app-demo.mjs
+npx vite preview --config vite.real-app-demo.config.ts
+```
+
+Open the displayed loopback URL (port 5190). Upload only `dist-real-app-demo` after release approval—never the normal application build, repository or environment files. See the [release verification and static deployment guide](docs/demo-launch-readiness-v2.1.md).
+
 ![Daily Command Center in light mode](docs/images/lifeos-dashboard-light.jpg)
 
 *Primary focus, trusted daily summaries, calendar context, and quick navigation.*
@@ -120,13 +144,13 @@ npm install
 npm run dev
 ```
 
-**The normal app is authentication-gated.** Opening a workspace requires configured Supabase Auth and PowerSync infrastructure. Without those prerequisites you can build and run deterministic tests, but there is no guest demo mode.
+**The normal app is authentication-gated.** Opening a workspace requires configured Supabase Auth and PowerSync infrastructure. The separate synthetic build above does not change or bypass that authentication boundary.
 
 See [setup](docs/SETUP.md) for client configuration, backend prerequisites, and optional Google Calendar / ATLAS setup. Never put server secrets in `VITE_*`.
 
 ## Quality and verification
 
-Deterministic coverage spans intelligence, permissions, connectors, planning, habits, execution/XP, persistence, account isolation, focus, reviews, and notifications. The preceding checkpoint verified the full deterministic suite, clean test-project typecheck, production build, and focused lint. This checkpoint changes documentation and images only.
+Deterministic coverage spans intelligence, permissions, connectors, planning, habits, execution/XP, persistence, account isolation, focus, reviews, and notifications. The demo adds separate mounted integration and modal regression tests. Current local verification evidence and its limitations are recorded in the release guide; hosted CI and live deployment are separate gates.
 
 ```sh
 npx tsc -p tests/tsconfig.json --noEmit

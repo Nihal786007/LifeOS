@@ -1,0 +1,5 @@
+@import "../src/index.css";
+@source "./**/*.{ts,tsx}";
+@source "../src/**/*.{ts,tsx}";
+/* Only accommodate the visible notice. Product typography and spacing are intact. */
+#root > div > div > .h-dvh { height: 100%; }
