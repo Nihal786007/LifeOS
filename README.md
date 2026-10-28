@@ -10,13 +10,22 @@ A personal engineering project by **Nihal Arfain Ahmed**, focused on domain-driv
 
 ## [Try the Live Demo](https://lifeos-real-demo.pages.dev/)
 
-Explore the **actual LifeOS Dashboard, Planning and Tasks** anonymously—no sign-in required. The demo reuses the application's real components and planning/task engines.
+Explore **five genuine interactive modules: Dashboard, Planning, Tasks, Habits 2.0 and Focus Mode** anonymously—no sign-in required. The V2.6 demo reuses original LifeOS components and trusted engines, rather than recreating the interface.
 
-- **Fictional, in-memory data:** create goals, plan monthly and weekly work, and manage linked tasks. Reloading resets all changes and XP.
-- **A bounded demonstration:** authenticated persistence, live ATLAS/AI, Google Calendar, Focus Mode and Habit execution are not available in this demo. Unsupported controls explain their limits.
-- **The broader application is separate:** the features and architecture below describe the full LifeOS project, not the public demo's available modules.
+| Public demo module | What you can try |
+| --- | --- |
+| Dashboard | See task, habit, progress and XP summaries respond to your interactions. |
+| Planning & Tasks | Create Life Goals → Monthly Outcomes → Weekly Focuses → linked Tasks. Complete and uncomplete Tasks, update progress and execution history, and calculate XP through the trusted execution pipeline. Repeated completion does not award duplicate XP. |
+| Habits 2.0 | Create habits with scheduled weekdays; complete and uncomplete them; inspect weekly/monthly history and derived streaks; archive and restore them. Dashboard summaries update. Habit completion does not award XP. |
+| Focus Mode | Start from a Task, pause/resume, track pause-aware duration, then end and confirm. Keep the Task open or complete it separately. Focus evidence stays in synthetic, memory-only history. |
 
-[Demo source branch](https://github.com/Nihal786007/LifeOS/tree/feat/real-application-demo-integration-v1) · [Deployed commit](https://github.com/Nihal786007/LifeOS/commit/1e8845f3285567804da97459bd39ccbf1532a478) · [Verified hosted CI](https://github.com/Nihal786007/LifeOS/actions/runs/40289424961)
+**Fictional, in-memory data:** a full reload resets all synthetic changes, history and XP. No account or backend connection is required.
+
+**Demo limits:** no authenticated account persistence, live Supabase/PowerSync synchronization, live ATLAS conversations or hosted AI, real Google Calendar connection, account-only Focus History explorer, or working Quick Capture. Reviews, Reality Mirror and Analytics are not available as complete interactive modules. There is no native mobile app. Unsupported controls explain their limits; this is the published V2.6 scope, not a preview of completed V2.7/V2.8 features.
+
+**The broader application is separate:** the implemented experiences below describe the authenticated LifeOS project; future work is identified in the roadmap. LifeOS aims to connect goals, planning, execution, habits, focus, recorded attention, reviews, analytics, decision support and ATLAS assistance—not just task tracking.
+
+[Demo source branch](https://github.com/Nihal786007/LifeOS/tree/feat/real-demo-focus-habits-v26) · [Deployed commit](https://github.com/Nihal786007/LifeOS/commit/7447c377ddbe249af7d730cd1026c6799a0da62c) · [Verified hosted CI](https://github.com/Nihal786007/LifeOS/actions/runs/40636971361)
 
 [Product](#what-works-today) · [Architecture](ARCHITECTURE.md) · [Setup](docs/SETUP.md) · [Roadmap](ROADMAP.md)
 
@@ -132,7 +141,7 @@ npm install
 npm run dev
 ```
 
-**The normal app is authentication-gated.** Opening a workspace requires configured Supabase Auth and PowerSync infrastructure. Without those prerequisites you can build and run deterministic tests. The public demo is a separate, isolated build from the [demo source branch](https://github.com/Nihal786007/LifeOS/tree/feat/real-application-demo-integration-v1); it does not bypass the normal app's authentication.
+**The normal app is authentication-gated.** Opening a workspace requires configured Supabase Auth and PowerSync infrastructure. Without those prerequisites you can build and run deterministic tests. The public demo is a separate, isolated build from the [demo source branch](https://github.com/Nihal786007/LifeOS/tree/feat/real-demo-focus-habits-v26); it does not bypass the normal app's authentication.
 
 See [setup](docs/SETUP.md) for client configuration, backend prerequisites, and optional Google Calendar / ATLAS setup. Never put server secrets in `VITE_*`.
 
@@ -140,7 +149,9 @@ See [setup](docs/SETUP.md) for client configuration, backend prerequisites, and 
 
 Deterministic coverage spans intelligence, permissions, connectors, planning, habits, execution/XP, persistence, account isolation, focus, reviews, and notifications.
 
-The [verified demo release CI run](https://github.com/Nihal786007/LifeOS/actions/runs/40289424961) passed **952 existing deterministic tests, 17 demo integration tests, and 10 security-scanner tests**, with zero skipped tests. Application/test/demo TypeScript, native Deno checks, normal/demo builds, focused lint, and source/bundle isolation checks also passed. This evidence applies to the linked release commit; it is not a claim that every branch or live backend has been certified.
+The [verified V2.6 hosted CI run](https://github.com/Nihal786007/LifeOS/actions/runs/40636971361) passed **952 existing deterministic tests, 27 demo integration tests, and 10 security-scanner self-tests**, with zero failures, cancellations or skips. Application/test/demo TypeScript, native Deno checks, normal/demo builds, focused lint, and static source/bundle security and isolation scans also passed.
+
+Separate live HTTPS/browser verification exercised all five modules at **390, 768 and 1366 px in Light and Dark**, including keyboard dialog behavior, Focus timing, Habit history, planning/task execution, and reset-on-reload. These checks apply to the [published release commit](https://github.com/Nihal786007/LifeOS/commit/7447c377ddbe249af7d730cd1026c6799a0da62c); automated tests, static scans and browser checks provide different evidence. They are not formal security certification or proof of every backend, device or assistive technology.
 
 ```sh
 npx tsc -p tests/tsconfig.json --noEmit
