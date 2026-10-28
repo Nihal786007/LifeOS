@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -16,12 +16,14 @@ import type { usePlanningExecution } from '../src/context/PlanningExecutionConte
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 type Actions = ReturnType<typeof usePlanningExecution>;
+type HabitActions = ReturnType<typeof import('../src/context/HabitExecutionContext').useHabitExecution>;
+type FocusPort = import('../src/focus/useFocusSession').FocusSessionController;
 
 // Same explicit service substitutions as Vite; production providers, canonical
 // state selector, mutation engines, execution/XP pipeline and page JSX are real.
 function loader() {
   const cache = new Map<string, { exports: Record<string, unknown> }>();
-  const bindings = new Set(['src/context/AppContext', 'src/context/HabitExecutionContext', 'src/auth/AuthContext', 'src/data/account/AccountDataContext', 'src/connectors/googleCalendar/GoogleCalendarContext'].map(path => resolve(root, path)));
+  const bindings = new Set(['src/context/AppContext', 'src/auth/AuthContext', 'src/data/account/AccountDataContext', 'src/connectors/googleCalendar/GoogleCalendarContext'].map(path => resolve(root, path)));
   function load(path: string): Record<string, unknown> {
     const cached = cache.get(path); if (cached) return cached.exports;
     const module = { exports: {} as Record<string, unknown> }; cache.set(path, module);
@@ -36,7 +38,7 @@ function loader() {
     };
     const source = readFileSync(path, 'utf8').replaceAll('import.meta.env.DEV', 'false');
     const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
-    const sandbox = { module, exports: module.exports, require: localRequire, structuredClone, Date, console, crypto: globalThis.crypto, setTimeout, clearTimeout, queueMicrotask };
+    const sandbox = { module, exports: module.exports, require: localRequire, structuredClone, Date, Error, console, crypto: globalThis.crypto, setTimeout, clearTimeout, queueMicrotask };
     for (const name of ['window', 'document', 'HTMLElement']) Object.defineProperty(sandbox, name, { get: () => Reflect.get(globalThis, name) });
     runInNewContext(output, sandbox);
     return module.exports;
@@ -62,10 +64,12 @@ async function mount() {
   const { DemoScopeProvider } = load(resolve(root, 'real-app-demo/DemoScope.tsx')) as { DemoScopeProvider: ComponentType<{ value: { snapshot: AtlasCanonicalState; unavailable(): void }; children?: ReactNode }> };
   const actionsHook = load(resolve(root, 'src/context/PlanningExecutionContext.tsx')).usePlanningExecution as () => Actions;
   const canonicalHook = load(resolve(root, 'src/atlas/state/useAtlasCanonicalState.ts')).useAtlasCanonicalState as () => AtlasCanonicalState;
+  const habitHook = load(resolve(root, 'src/context/HabitExecutionContext.tsx')).useHabitExecution as () => HabitActions;
+  let habitActions: HabitActions;
   let state: AtlasCanonicalState = seed; let actions: Actions;
-  function Probe() { state = canonicalHook(); actions = actionsHook(); return null; }
+  function Probe() { state = canonicalHook(); actions = actionsHook(); habitActions = habitHook(); return null; }
   const reactRoot = createRoot(dom.window.document.getElementById('root')!);
-  async function render(page?: 'Tasks' | 'Planning', extra?: ReactNode) {
+  async function render(page?: 'Tasks' | 'Planning' | 'Habits', extra?: ReactNode) {
     const Page = page ? load(resolve(root, `src/pages/${page}.tsx`)).default as ComponentType<{ onNavigate(): void }> : null;
     await act(async () => reactRoot.render(createElement(StrictMode, null, createElement(DemoScopeProvider, { value: { snapshot: seed, unavailable() {} } }, createElement(Providers, { repositories }, createElement(Probe), Page && createElement(Page, { onNavigate() {} }), extra)))));
   }
@@ -73,6 +77,7 @@ async function mount() {
   return {
     dom, repositories, seed, load, render,
     state: () => state,
+    habitAct: async (operation: (actions: HabitActions) => void) => { await act(async () => operation(habitActions)); },
     act: async (operation: (actions: Actions) => void) => { await act(async () => operation(actions)); },
     async close() {
       await act(async () => reactRoot.unmount()); dom.window.close();
@@ -291,4 +296,110 @@ test('nested opt-in Modal cancellation and focus wrapping do not dismiss or subm
     assert.equal(h.doc.querySelector('dialog'), null); assert.equal(h.doc.activeElement, opener);
     assert.equal(h.state().lifeGoals.length, 2); assert.equal(h.state().executionHistory.length, 0);
   } finally { await h.close(); }
+});
+
+test('real Habits creates schedules and memory reads remain independent', async () => {
+  const h=await mount(); try {
+    await h.habitAct(a=>a.createHabit({name:'Synthetic reading practice',activeDays:['monday','tuesday','wednesday','thursday','friday','saturday','sunday'],startDate:h.seed.tasks[0].dueDate!}));
+    assert.equal(h.state().habitDefinitions.length,3);
+    const stored=await h.repositories.habitRepository.initialize();assert.equal(stored.habits.length,3);
+    stored.habits[0].name='Changed copy';assert.notEqual((await h.repositories.habitRepository.initialize()).habits[0].name,'Changed copy');
+    assert.equal(h.state().executionHistory.length,0);
+  }finally{await h.close();}
+});
+test('real Habit completion is exact-date, idempotent, shared and zero XP',async()=>{
+  const h=await mount();try{
+    const date=h.seed.tasks[0].dueDate!;
+    await h.habitAct(a=>a.completeHabit(401,date));await h.habitAct(a=>a.completeHabit(401,date));
+    assert.equal(h.state().habitCompletions.length,1);assert.equal(h.state().executionHistory.length,1);
+    assert.equal(h.state().executionHistory[0].xpAwarded,0);assert.equal((await h.repositories.habitRepository.initialize()).completions.length,1);
+    await h.habitAct(a=>a.uncompleteHabit(401,date));assert.equal(h.state().habitCompletions.length,0);assert.equal(h.state().executionHistory.length,2);
+    assert.equal(h.state().executionHistory.reduce((sum,r)=>sum+r.xpAwarded,0),0);
+  }finally{await h.close();}
+});
+test('real Habit archive/restore preserves history and real monthly/weekly controls render',async()=>{
+  const h=await mount();try{
+    const date=h.seed.tasks[0].dueDate!;
+    await h.habitAct(a=>a.completeHabit(401,date));await h.habitAct(a=>a.archiveHabit(401));
+    assert.equal(h.state().habitDefinitions.find(x=>x.id===401)?.archived,true);assert.equal(h.state().habitCompletions.length,1);
+    await h.habitAct(a=>a.restoreHabit(401));assert.equal(h.state().habitDefinitions.find(x=>x.id===401)?.archived,false);
+    const before=h.state().executionHistory.length;await h.habitAct(a=>a.completeHabit(999999,date));assert.equal(h.state().executionHistory.length,before);
+    await h.render('Habits');assert.ok(h.dom.window.document.body.textContent?.includes('Monthly'));
+    assert.ok([...h.dom.window.document.querySelectorAll<HTMLButtonElement>('button[title="Future scheduled day"]')].every(b=>b.disabled));
+  }finally{await h.close();}
+});
+function focusAdapter(h:Awaited<ReturnType<typeof mount>>,now:()=>number){
+  const Controller=h.load(resolve(root,'real-app-demo/focusController.ts')).DemoFocusController as typeof import('./focusController').DemoFocusController;
+  return new Controller(h.state().tasks,h.repositories.executionHistoryRepository,now,()=>crypto.randomUUID());
+}
+test('Focus real pause-aware timing records exactly one zero-XP event without Task completion',async()=>{
+  const h=await mount();try{
+    let now=Date.now();const c=focusAdapter(h,()=>now);c.start(1);const id=c.getSnapshot().session!.sessionId;c.start(2);assert.equal(c.getSnapshot().session!.sessionId,id);
+    now+=10000;c.pause();now+=20000;c.tick();assert.equal(c.getSnapshot().elapsedMs,10000);c.resume();now+=5000;
+    await act(async()=>{await Promise.all([c.end(),c.end()]);});
+    assert.equal(c.getSnapshot().outcome?.durationMs,15000);assert.equal(h.state().executionHistory.length,1);assert.equal(h.state().executionHistory[0].xpAwarded,0);assert.equal(h.state().tasks[0].completed,false);
+    await act(async()=>{await c.end();});assert.equal(h.state().executionHistory.length,1);assert.equal((await h.repositories.executionHistoryRepository.readCurrent()).length,1);
+  }finally{await h.close();}
+});
+test('Focus rejects invalid/completed tasks and invalidates a removed canonical task',async()=>{
+  const h=await mount();try{
+    const c=focusAdapter(h,Date.now);c.start(99999);assert.equal(c.getSnapshot().session,null);
+    c.setTasks(h.state().tasks.map(t=>({...t,completed:true})));c.start(1);assert.equal(c.getSnapshot().session,null);
+    c.setTasks(h.state().tasks);c.start(1);c.setTasks(h.state().tasks.filter(t=>t.id!==1));assert.equal(c.getSnapshot().session,null);assert.equal(h.state().executionHistory.length,0);
+  }finally{await h.close();}
+});
+test('failed Focus audit acknowledgement keeps session open without a success claim',async()=>{
+  const h=await mount();try{
+    let now=Date.now();const c=focusAdapter(h,()=>now);c.start(1);now+=10000;h.repositories.executionHistoryRepository.append=async()=>{throw Error('Synthetic append failure');};
+    await act(async()=>{await c.end();});assert.ok(c.getSnapshot().session);assert.equal(c.getSnapshot().outcome,null);assert.match(c.getSnapshot().error!,/Synthetic append failure/);assert.equal(h.state().executionHistory.length,0);
+  }finally{await h.close();}
+});
+test('Focus cannot write into a replacement repository or publish after deactivation',async()=>{
+  const h=await mount();const Service=h.load(resolve(root,'src/services/ExecutionHistoryService.ts')).ExecutionHistoryService as typeof import('../src/services/ExecutionHistoryService').ExecutionHistoryService;
+  try{
+    let now=Date.now();const c=focusAdapter(h,()=>now);c.start(1);now+=1000;
+    const other={...h.repositories.executionHistoryRepository,initialize:async()=>[],append:async()=>{throw Error('Foreign repository must not be called');}};
+    Service.configureRepository(other);await Service.initialize();await c.end();assert.equal(c.getSnapshot().outcome,null);assert.match(c.getSnapshot().error!,/scope/);assert.equal(Service.getAll().length,0);
+    Service.releaseRepository(other);Service.configureRepository(h.repositories.executionHistoryRepository);await Service.initialize();c.deactivate();const before=c.getSnapshot();await c.end();assert.equal(c.getSnapshot(),before);
+  }finally{await h.close();}
+});
+async function focusHarness(){
+  const h=await goalDialogHarness();const useController=h.load(resolve(root,'real-app-demo/useDemoFocusSession.ts')).useDemoFocusSession as ()=>FocusPort;
+  const Focus=h.load(resolve(root,'src/focus/FocusMode.tsx')).default as ComponentType<{controller:FocusPort;orchestrator:unknown;initialTaskId:number;onExit():void;onContinue():void}>;
+  const Orchestrator=h.load(resolve(root,'src/atlas/orchestration/AtlasAIOrchestrator.ts')).AtlasAIOrchestrator as new(p:unknown)=>unknown;
+  const orchestrator=new Orchestrator({descriptor:{id:'synthetic-unavailable',kind:'local',displayName:'Unavailable'},reason:async()=>{throw Error('No provider');}});let controller:FocusPort;
+  function View(){controller=useController();return createElement(Focus,{controller,orchestrator,initialTaskId:1,onExit(){},onContinue(){}});}
+  await h.render(undefined,createElement(View));
+  const click=async(text:string)=>{const b=[...h.doc.querySelectorAll('button')].find(b=>b.textContent?.trim()===text);assert.ok(b,text);await act(async()=>b.click());};
+  return {...h,controller:()=>controller,click};
+}
+test('mounted real Focus cancellation preserves the session and repeated confirmation records once',async()=>{
+  let now=Date.now();const clock=mock.method(Date,'now',()=>now);const h=await focusHarness();try{
+    await h.click('Start Focus');now+=12000;await h.click('Pause');await h.click('End Session');const dialog=h.doc.querySelector('dialog')!;assert.ok(dialog.open);
+    await act(async()=>dialog.dispatchEvent(new h.dom.window.Event('cancel',{bubbles:true,cancelable:true})));assert.equal(h.doc.querySelector('dialog'),null);assert.equal(h.state().executionHistory.length,0);
+    await h.click('End Session');await act(async()=>h.doc.querySelector('dialog')!.dispatchEvent(new h.dom.window.MouseEvent('mousedown',{bubbles:true})));assert.equal(h.doc.querySelector('dialog'),null);assert.equal(h.state().executionHistory.length,0);
+    await h.click('End Session');const confirm=[...h.doc.querySelectorAll('dialog button')].find(b=>b.textContent==='End Session') as HTMLButtonElement;
+    await act(async()=>{confirm.click();confirm.click();});assert.equal(h.state().executionHistory.length,1);assert.ok(h.doc.body.textContent?.includes('Session recorded'));
+    await h.click('Keep Task Open');assert.equal(h.state().tasks[0].completed,false);assert.equal(h.controller().outcome,null);
+  }finally{await h.close();clock.mock.restore();}
+});
+test('mounted real Focus completes the canonical Task only after separate explicit choice',async()=>{
+  let now=Date.now();const clock=mock.method(Date,'now',()=>now);const h=await focusHarness();try{
+    await h.click('Start Focus');now+=5000;await h.click('End Session');const confirm=[...h.doc.querySelectorAll('dialog button')].find(b=>b.textContent==='End Session') as HTMLButtonElement;await act(async()=>confirm.click());
+    assert.equal(h.state().tasks[0].completed,false);await h.click('Complete Task');assert.equal(h.state().tasks[0].completed,true);assert.equal(h.state().executionHistory.filter(r=>r.type==='task_completed').length,1);assert.equal(h.state().executionHistory.reduce((sum,r)=>sum+r.xpAwarded,0),25);
+  }finally{await h.close();clock.mock.restore();}
+});
+
+test('late Focus audit may finish in its own memory ledger but cannot publish after unmount',async()=>{
+  const h=await mount();try{
+    let now=Date.now();const c=focusAdapter(h,()=>now);const original=h.repositories.executionHistoryRepository.append;
+    let release!:()=>void;const barrier=new Promise<void>(resolve=>{release=resolve;});
+    h.repositories.executionHistoryRepository.append=async rows=>{await barrier;return original(rows);};
+    c.start(1);now+=1000;const before=c.getSnapshot();
+    await act(async()=>{const pending=c.end();c.deactivate();release();await pending;});
+    assert.equal(c.getSnapshot(),before);assert.equal(h.state().executionHistory.length,1);assert.equal(h.state().executionHistory[0].xpAwarded,0);
+    const fresh=createElement('span');await h.render(undefined,fresh);
+    const make=h.load(resolve(root,'real-app-demo/repository.ts')).createDemoRepositories as typeof import('./repository').createDemoRepositories;
+    const reset=make(h.seed);assert.equal((await reset.habitRepository.initialize()).completions.length,0);assert.equal((await reset.executionHistoryRepository.initialize()).length,0);
+  }finally{await h.close();}
 });

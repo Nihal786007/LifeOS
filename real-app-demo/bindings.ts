@@ -12,9 +12,10 @@ export function useHabitExecution() {
   return { toggleHabit: () => unavailable('Habit completion') };
 }
 export function useApp() {
-  const { snapshot } = useDemoScope();
+  const { snapshot, unavailable } = useDemoScope();
   return { captures: snapshot.captures, profile: snapshot.profile,
     capturePersistence: { phase: 'hydrated' as const, error: null },
+    addCapture: async () => { unavailable('Focus Quick Capture'); throw new Error('Capture is not integrated in this demo.'); },
     deleteCapture: async () => { throw new Error('Capture deletion is unavailable in this proof.'); } };
 }
 // Anonymous stays anonymous. Never invent a session or an authenticated owner.

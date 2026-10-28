@@ -8,7 +8,6 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 const normalize = (path: string) => path.replaceAll('\\', '/').replace(/\.tsx?$/, '');
 const bindings = new Set([
   'src/context/AppContext',
-  'src/context/HabitExecutionContext',
   'src/auth/AuthContext',
   'src/data/account/AccountDataContext',
   'src/connectors/googleCalendar/GoogleCalendarContext',

@@ -5,6 +5,7 @@ import { PlanningStateProvider } from '../src/context/PlanningStateContext';
 import { LifeGoalsProvider } from '../src/context/LifeGoalsContext';
 import { MonthlyPlanningProvider } from '../src/context/MonthlyPlanningContext';
 import { WeeklyPlanningProvider } from '../src/context/WeeklyPlanningContext';
+import { HabitExecutionProvider } from '../src/context/HabitExecutionContext';
 import { HabitProvider } from '../src/context/HabitContext';
 import { PlanningExecutionProvider } from '../src/context/PlanningExecutionContext';
 import { ExecutionHistoryService } from '../src/services/ExecutionHistoryService';
@@ -22,8 +23,8 @@ export default function DemoDomainProviders({ repositories, children }: { reposi
   }, [repositories]);
   if (!ready) return <p role={error ? 'alert' : 'status'} className="p-6 text-lifeos-text-secondary">{error || 'Loading synthetic LifeOS data…'}</p>;
   return <DemoServicesContext.Provider value={repositories}>
-    <TaskProvider><PlanningStateProvider><LifeGoalsProvider><MonthlyPlanningProvider><WeeklyPlanningProvider><HabitProvider><PlanningExecutionProvider>
+    <TaskProvider><PlanningStateProvider><LifeGoalsProvider><MonthlyPlanningProvider><WeeklyPlanningProvider><HabitProvider><HabitExecutionProvider><PlanningExecutionProvider>
       {children}
-    </PlanningExecutionProvider></HabitProvider></WeeklyPlanningProvider></MonthlyPlanningProvider></LifeGoalsProvider></PlanningStateProvider></TaskProvider>
+    </PlanningExecutionProvider></HabitExecutionProvider></HabitProvider></WeeklyPlanningProvider></MonthlyPlanningProvider></LifeGoalsProvider></PlanningStateProvider></TaskProvider>
   </DemoServicesContext.Provider>;
 }

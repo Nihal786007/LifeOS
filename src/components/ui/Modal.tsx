@@ -9,6 +9,7 @@ interface ModalProps {
   children: ReactNode;
   footer?: ReactNode;
   onClose?: () => void;
+  dismissOnBackdrop?: boolean;
 }
 
 export default function Modal({
@@ -18,6 +19,7 @@ export default function Modal({
   children,
   footer,
   onClose,
+  dismissOnBackdrop = false,
 }: ModalProps) {
   const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -80,7 +82,7 @@ export default function Modal({
   // Existing callers retain their original overlay contract. A caller opts in
   // to native modality and dismissal only by providing its cancellation path.
   return dismissible ? (
-    <dialog ref={dialog} aria-labelledby={titleId} aria-describedby={description ? `${titleId}-description` : undefined} onKeyDown={wrapFocus} onCancel={event => {
+    <dialog ref={dialog} onMouseDown={event => { if (dismissOnBackdrop && event.target === event.currentTarget) onClose?.(); }} aria-labelledby={titleId} aria-describedby={description ? `${titleId}-description` : undefined} onKeyDown={wrapFocus} onCancel={event => {
       if (event.target !== event.currentTarget) return;
       event.preventDefault(); onClose?.();
     }} className="m-auto max-h-none w-[calc(100%-2rem)] max-w-xl overflow-visible border-0 bg-transparent p-0 text-lifeos-text backdrop:bg-lifeos-overlay backdrop:backdrop-blur-sm">{content}</dialog>

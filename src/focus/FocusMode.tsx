@@ -12,6 +12,7 @@ import {
 import type { AtlasAIOrchestrator } from "../atlas/orchestration/AtlasAIOrchestrator";
 import { useAtlasCanonicalState } from "../atlas/state/useAtlasCanonicalState";
 import Button from "../components/ui/Button";
+import Modal from "../components/ui/Modal";
 import { useApp } from "../context/AppContext";
 import { usePlanningExecution } from "../context/PlanningExecutionContext";
 import { TaskRelationshipEngine } from "../engines/TaskRelationshipEngine";
@@ -162,15 +163,9 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
         {!controller.session&&<FocusHistory state={{tasks:[...state.tasks],lifeGoals:[...state.lifeGoals],monthlyTargets:[...state.monthlyTargets],weeklyTargets:[...state.weeklyTargets],executionRecords:state.executionHistory}}/>}
       </div>
 
-      {confirmEnd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setConfirmEnd(false)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="focus-end-title" className="w-full max-w-md rounded-2xl border border-lifeos-border bg-lifeos-surface p-6 shadow-2xl">
-            <h2 id="focus-end-title" className="text-xl font-black">End this focus session?</h2>
-            <p className="mt-2 text-sm text-lifeos-text-secondary">The elapsed time will be recorded with 0 XP. Your task will stay open unless you explicitly complete it afterward.</p>
-            <div className="mt-6 flex justify-end gap-3"><Button variant="ghost" onClick={() => setConfirmEnd(false)}>Continue focusing</Button><Button variant="danger" onClick={() => { setConfirmEnd(false); void controller.end(); }}>End Session</Button></div>
-          </div>
-        </div>
-      )}
+      <Modal dismissOnBackdrop open={confirmEnd} title="End this focus session?" description="The elapsed time will be recorded with 0 XP. Your task will stay open unless you explicitly complete it afterward." onClose={() => setConfirmEnd(false)}>
+        <div className="flex justify-end gap-3"><Button variant="ghost" onClick={() => setConfirmEnd(false)}>Continue focusing</Button><Button variant="danger" onClick={() => { setConfirmEnd(false); void controller.end(); }}>End Session</Button></div>
+      </Modal>
     </main>
   );
 }

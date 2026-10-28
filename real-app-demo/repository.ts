@@ -4,6 +4,8 @@ import type { AtlasCanonicalState } from '../src/atlas/state/types';
 import type { AsyncPlanningRepository, PlanningRepositoryState, PlanningRepositoryEvent } from '../src/data/planning/asyncPlanningRepository';
 import type { TaskRepositoryEvent } from '../src/data/tasks/asyncTaskRepository';
 import type { AsyncExecutionHistoryRepository, ExecutionHistoryRepositoryEvent } from '../src/data/execution/asyncExecutionHistoryRepository';
+import type { HabitState } from '../src/shared/habits';
+import type { HabitRepositoryEvent } from '../src/data/habits/asyncHabitRepository';
 import type { AsyncHabitRepository } from '../src/data/habits/asyncHabitRepository';
 import type { ExecutionRecord } from '../src/shared/execution';
 
@@ -55,9 +57,10 @@ export function createDemoRepositories(seed: AtlasCanonicalState) {
     clear: async () => { history.write([]); }, subscribe: history.subscribe,
     waitForPersistence: async () => { throw new Error('Demo history is memory only; cloud/durable persistence is unavailable.'); },
   };
+  const habits = memoryCell<HabitState, HabitRepositoryEvent>({ habits: [...seed.habitDefinitions], completions: [...seed.habitCompletions] }, state => ({ type: 'habits', state }));
   const habitRepository: AsyncHabitRepository = {
-    initialize: async () => ({ habits: structuredClone([...seed.habitDefinitions]), completions: structuredClone([...seed.habitCompletions]) }),
-    replace: async () => { throw new Error('Habit mutation is outside this checkpoint.'); }, subscribe: () => () => undefined,
+    initialize: async () => habits.read(),
+    replace: async state => { habits.write(state); }, subscribe: habits.subscribe,
   };
   return { taskRepository, planningRepository, executionHistoryRepository, habitRepository };
 }

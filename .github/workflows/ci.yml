@@ -69,15 +69,15 @@ jobs:
           grep -qx '# pass 952' "$RUNNER_TEMP/lifeos-tests.tap"
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-tests.tap"
 
-      - name: Run real-application demo integration tests (17, zero skipped)
+      - name: Run real-application demo integration tests (27, zero skipped)
         run: |
           set -euo pipefail
           node --experimental-strip-types --experimental-specifier-resolution=node \
             --test --test-reporter=tap \
             real-app-demo/integration.test.ts real-app-demo/planningTasks.test.ts \
             | tee "$RUNNER_TEMP/lifeos-demo-tests.tap"
-          grep -qx '# tests 17' "$RUNNER_TEMP/lifeos-demo-tests.tap"
-          grep -qx '# pass 17' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# tests 27' "$RUNNER_TEMP/lifeos-demo-tests.tap"
+          grep -qx '# pass 27' "$RUNNER_TEMP/lifeos-demo-tests.tap"
           grep -qx '# fail 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
           grep -qx '# cancelled 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
@@ -123,6 +123,7 @@ jobs:
           src/components/planning/GoalModal.tsx
           src/components/tasks/UniversalTaskTable.tsx
           src/components/ui/Modal.tsx
+          src/focus/FocusMode.tsx
           src/theme/ThemeProvider.tsx
           vite.real-app-demo.config.ts
           scripts/verify-real-app-demo.mjs
