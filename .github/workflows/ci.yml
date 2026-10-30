@@ -2,7 +2,7 @@ name: LifeOS — CI
 
 on:
   push:
-    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1, feat/atlas-action-outcome-recovery-v1, feat/atlas-trustworthy-mutation-receipts-v1, feat/real-application-demo-integration-v1, feat/real-demo-focus-habits-v26]
+    branches: [security/google-calendar-disconnect-v3, feat/atlas-action-lifecycle-fencing-v1, feat/atlas-action-outcome-recovery-v1, feat/atlas-trustworthy-mutation-receipts-v1, feat/real-application-demo-integration-v1, feat/real-demo-focus-habits-v26, feat/lifeos-premium-theme-v1]
   pull_request:
     branches: [main]
 
@@ -82,6 +82,19 @@ jobs:
           grep -qx '# cancelled 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
           grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-demo-tests.tap"
 
+      - name: Run premium theme and repair tests (29, zero skipped)
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types --experimental-specifier-resolution=node \
+            --test --test-reporter=tap \
+            tests/theme/premiumTheme.theme.ts tests/theme/premiumThemeRepair.theme.ts \
+            | tee "$RUNNER_TEMP/lifeos-theme-tests.tap"
+          grep -qx '# tests 29' "$RUNNER_TEMP/lifeos-theme-tests.tap"
+          grep -qx '# pass 29' "$RUNNER_TEMP/lifeos-theme-tests.tap"
+          grep -qx '# fail 0' "$RUNNER_TEMP/lifeos-theme-tests.tap"
+          grep -qx '# cancelled 0' "$RUNNER_TEMP/lifeos-theme-tests.tap"
+          grep -qx '# skipped 0' "$RUNNER_TEMP/lifeos-theme-tests.tap"
+
       - name: Check both native Deno entrypoints (no server started)
         env:
           DENO_DIR: ${{ runner.temp }}/lifeos-deno
@@ -127,6 +140,9 @@ jobs:
           src/theme/ThemeProvider.tsx
           vite.real-app-demo.config.ts
           scripts/verify-real-app-demo.mjs
+
+      - name: Lint entire repository
+        run: npm run lint
 
       - name: Build production client (no deployment)
         run: npm run build
