@@ -9,15 +9,15 @@ export default function ActivityXP({
     <div
       className="
         rounded-full
-        bg-cyan-500/10
+        bg-lifeos-accent/10
         border
-        border-cyan-500/20
+        border-lifeos-accent/20
         px-3
         py-1
         text-xs
         font-bold
-        tracking-[0.2em]
-        text-cyan-300
+        tracking-[0.12em]
+        text-lifeos-accent
       "
     >
       +{xp} XP

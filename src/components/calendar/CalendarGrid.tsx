@@ -61,14 +61,14 @@ export default function CalendarGrid({
   const today = formatLocalDate(new Date());
 
   return (
-    <section className="overflow-hidden rounded-[1.75rem] border border-slate-800 bg-slate-900/55 p-2.5 sm:p-5">
+    <section className="min-w-0 overflow-hidden rounded-[var(--lifeos-radius-surface)] border border-lifeos-border bg-lifeos-surface/55 p-2.5 sm:p-5">
       <div>
         <div>
           <div className="mb-1 grid grid-cols-7 gap-1 sm:mb-2 sm:gap-2">
             {WEEK_DAYS.map((day) => (
               <div
                 key={day}
-                className="py-1.5 text-center text-[9px] font-black uppercase tracking-normal text-slate-600 sm:py-2 sm:text-[10px] sm:tracking-[0.18em]"
+                className="py-1.5 text-center text-[11px] font-bold uppercase tracking-normal text-lifeos-muted sm:py-2 sm:text-[11px] sm:tracking-[0.12em]"
               >
                 {day}
               </div>
@@ -99,12 +99,12 @@ export default function CalendarGrid({
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-slate-800 pt-4 text-[10px] text-slate-500">
-        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-red-400" />Overdue</span>
-        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-cyan-400" />Active</span>
-        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-amber-400" />Mixed</span>
-        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-emerald-400" />Completed</span>
-        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-blue-400" />Google event</span>
+      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-lifeos-border pt-4 text-[11px] text-lifeos-muted">
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-lifeos-danger" />Overdue</span>
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-lifeos-accent" />Active</span>
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-lifeos-warning" />Mixed</span>
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-lifeos-success" />Completed</span>
+        <span><i className="mr-1.5 inline-block h-2 w-2 rounded-full bg-lifeos-accent" />Google event</span>
       </div>
     </section>
   );

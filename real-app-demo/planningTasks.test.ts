@@ -16,7 +16,7 @@ import type { usePlanningExecution } from '../src/context/PlanningExecutionConte
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 type Actions = ReturnType<typeof usePlanningExecution>;
-type HabitActions = ReturnType<typeof import('../src/context/HabitExecutionContext').useHabitExecution>;
+type HabitActions = ReturnType<typeof import('../src/context/habitExecutionContextValue').useHabitExecution>;
 type FocusPort = import('../src/focus/useFocusSession').FocusSessionController;
 
 // Same explicit service substitutions as Vite; production providers, canonical
@@ -64,7 +64,7 @@ async function mount() {
   const { DemoScopeProvider } = load(resolve(root, 'real-app-demo/DemoScope.tsx')) as { DemoScopeProvider: ComponentType<{ value: { snapshot: AtlasCanonicalState; unavailable(): void }; children?: ReactNode }> };
   const actionsHook = load(resolve(root, 'src/context/PlanningExecutionContext.tsx')).usePlanningExecution as () => Actions;
   const canonicalHook = load(resolve(root, 'src/atlas/state/useAtlasCanonicalState.ts')).useAtlasCanonicalState as () => AtlasCanonicalState;
-  const habitHook = load(resolve(root, 'src/context/HabitExecutionContext.tsx')).useHabitExecution as () => HabitActions;
+  const habitHook = load(resolve(root, 'src/context/habitExecutionContextValue.ts')).useHabitExecution as () => HabitActions;
   let habitActions: HabitActions;
   let state: AtlasCanonicalState = seed; let actions: Actions;
   function Probe() { state = canonicalHook(); actions = actionsHook(); habitActions = habitHook(); return null; }

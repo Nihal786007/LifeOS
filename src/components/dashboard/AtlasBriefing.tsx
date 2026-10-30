@@ -10,57 +10,57 @@ export default function AtlasBriefing({
   briefing,
 }: AtlasBriefingProps) {
   return (
-    <div className="rounded-3xl border border-cyan-500/20 bg-slate-900 p-6 shadow-lg">
+    <div className="rounded-3xl border border-lifeos-accent/20 bg-lifeos-surface p-6 shadow-lg">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-cyan-400">
+        <h2 className="text-xl font-bold text-lifeos-accent">
           Daily Intelligence
         </h2>
 
-        <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-widest text-cyan-300">
+        <span className="rounded-full bg-lifeos-accent/10 px-3 py-1 text-xs uppercase tracking-widest text-lifeos-accent">
           ATLAS
         </span>
       </div>
 
-      <p className="mt-5 leading-7 text-slate-300">
+      <p className="mt-5 leading-7 text-lifeos-text-secondary">
         {briefing.summary}
       </p>
 
-      <div className="my-6 h-px bg-slate-700" />
+      <div className="my-6 h-px bg-lifeos-hover" />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl bg-lifeos-elevated p-4">
+          <p className="text-xs uppercase tracking-wider text-lifeos-text-secondary">
             Focus Score
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-cyan-400">
+          <p className="mt-2 text-3xl font-bold text-lifeos-accent">
             {briefing.focusScore}%
           </p>
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl bg-lifeos-elevated p-4">
+          <p className="text-xs uppercase tracking-wider text-lifeos-text-secondary">
             Due Today
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-orange-400">
+          <p className="mt-2 text-3xl font-bold text-lifeos-warning">
             {briefing.dueTodayTasks}
           </p>
         </div>
 
-        <div className="rounded-xl bg-slate-800 p-4">
-          <p className="text-xs uppercase tracking-wider text-slate-400">
+        <div className="rounded-xl bg-lifeos-elevated p-4">
+          <p className="text-xs uppercase tracking-wider text-lifeos-text-secondary">
             Overdue
           </p>
 
-          <p className="mt-2 text-3xl font-bold text-red-400">
+          <p className="mt-2 text-3xl font-bold text-lifeos-danger">
             {briefing.overdueTasks}
           </p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
-        <p className="text-xs uppercase tracking-widest text-cyan-300">
+      <div className="mt-6 rounded-2xl border border-lifeos-accent/20 bg-lifeos-accent/5 p-5">
+        <p className="text-xs uppercase tracking-widest text-lifeos-accent">
           Primary Objective
         </p>
 
@@ -68,7 +68,7 @@ export default function AtlasBriefing({
           {briefing.recommendedMission}
         </h3>
 
-        <p className="mt-3 text-slate-300">
+        <p className="mt-3 text-lifeos-text-secondary">
           {briefing.recommendation}
         </p>
       </div>

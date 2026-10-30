@@ -865,19 +865,19 @@ export default function Statistics() {
         title="Analytics"
         description="See where your effort is going, measure your consistency, and turn real execution history into meaningful progress."
       >
-        <Card className="border-cyan-500/20 bg-cyan-500/5">
+        <Card className="border-lifeos-accent/20 bg-lifeos-accent/5">
 
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-300">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
             Lifetime Completion
           </p>
 
-          <h2 className="mt-3 text-5xl font-black text-white">
+          <h2 className="mt-3 text-5xl font-bold text-lifeos-text">
             {
               overall.completionRate
             }%
           </h2>
 
-          <p className="mt-3 text-sm text-slate-400">
+          <p className="mt-3 text-sm text-lifeos-text-secondary">
             {
               overall.completedTasks
             }{" "}
@@ -888,10 +888,10 @@ export default function Statistics() {
             tasks completed
           </p>
 
-          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-slate-800">
+          <div className="mt-5 h-1.5 overflow-hidden rounded-full bg-lifeos-elevated">
 
             <div
-              className="h-full rounded-full bg-cyan-400 transition-all duration-700"
+              className="h-full rounded-full bg-lifeos-accent transition-all duration-700"
               style={{
                 width:
                   `${overall.completionRate}%`,
@@ -900,13 +900,13 @@ export default function Statistics() {
 
           </div>
 
-          <div className="mt-5 border-t border-cyan-500/10 pt-4">
+          <div className="mt-5 border-t border-lifeos-accent/10 pt-4">
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-lifeos-muted">
               Lifetime XP
             </p>
 
-            <p className="mt-1 text-xl font-black text-amber-300">
+            <p className="mt-1 text-xl font-bold text-lifeos-warning">
               +{
                 overall.xpEarned
               }
@@ -923,21 +923,21 @@ export default function Statistics() {
 
       <section className="space-y-6">
 
-        <div className="flex flex-col gap-4 border-b border-slate-800/70 pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col gap-4 border-b border-lifeos-border/70 pb-5 lg:flex-row lg:items-end lg:justify-between">
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-400/70">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
               Overview
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold text-white">
+            <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
               {
                 selectedAnalytics.label
               }
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               {
                 periodDescription
               }
@@ -992,21 +992,21 @@ export default function Statistics() {
 
               <div>
 
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400/70">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
                   Momentum
                 </p>
 
-                <h2 className="mt-2 text-2xl font-bold text-white">
+                <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
                   Execution Trend
                 </h2>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-lifeos-muted">
                   How your execution moved through this period.
                 </p>
 
               </div>
 
-              <div className="inline-flex rounded-lg border border-slate-800 bg-slate-950 p-1">
+              <div className="inline-flex rounded-lg border border-lifeos-border bg-lifeos-app p-1">
 
                 <button
                   type="button"
@@ -1026,8 +1026,8 @@ export default function Statistics() {
                     ${
                       trendMetric ===
                       "tasks"
-                        ? "bg-cyan-500/15 text-cyan-300"
-                        : "text-slate-500 hover:text-slate-300"
+                        ? "bg-lifeos-accent/15 text-lifeos-accent"
+                        : "text-lifeos-muted hover:text-lifeos-text-secondary"
                     }
                   `}
                 >
@@ -1052,8 +1052,8 @@ export default function Statistics() {
                     ${
                       trendMetric ===
                       "xp"
-                        ? "bg-yellow-500/15 text-yellow-300"
-                        : "text-slate-500 hover:text-slate-300"
+                        ? "bg-lifeos-warning/15 text-lifeos-warning"
+                        : "text-lifeos-muted hover:text-lifeos-text-secondary"
                     }
                   `}
                 >
@@ -1079,15 +1079,15 @@ export default function Statistics() {
 
             <div className="mb-1">
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-400/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-success">
                 Planned Work
               </p>
 
-              <h2 className="mt-2 text-xl font-bold text-white">
+              <h2 className="mt-2 text-xl font-bold text-lifeos-text">
                 Completion
               </h2>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-lifeos-muted">
                 Planned work completed versus remaining.
               </p>
 
@@ -1104,13 +1104,13 @@ export default function Statistics() {
 
             <div className="grid grid-cols-2 gap-3">
 
-              <div className="rounded-lg border border-emerald-500/10 bg-emerald-500/5 p-3">
+              <div className="rounded-lg border border-lifeos-success/10 bg-lifeos-success/5 p-3">
 
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-lifeos-muted">
                   Completed
                 </p>
 
-                <p className="mt-1 text-lg font-bold text-emerald-400">
+                <p className="mt-1 text-lg font-bold text-lifeos-success">
                   {
                     selectedAnalytics.completedDueTasks
                   }
@@ -1118,13 +1118,13 @@ export default function Statistics() {
 
               </div>
 
-              <div className="rounded-lg border border-amber-500/10 bg-amber-500/5 p-3">
+              <div className="rounded-lg border border-lifeos-warning/10 bg-lifeos-warning/5 p-3">
 
-                <p className="text-[11px] text-slate-500">
+                <p className="text-[11px] text-lifeos-muted">
                   Remaining
                 </p>
 
-                <p className="mt-1 text-lg font-bold text-amber-400">
+                <p className="mt-1 text-lg font-bold text-lifeos-warning">
                   {
                     selectedAnalytics.pendingTasks
                   }
@@ -1142,19 +1142,19 @@ export default function Statistics() {
             Momentum Shift
         ==================================== */}
 
-        <Card className="border-slate-800/80 bg-slate-950/20">
+        <Card className="border-lifeos-border/80 bg-lifeos-app/20">
 
           <div className="mb-5">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400/60">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
               Momentum Shift
             </p>
 
-            <h2 className="mt-2 text-xl font-bold text-white">
+            <h2 className="mt-2 text-xl font-bold text-lifeos-text">
               Previous Period
             </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               What improved, declined, or stayed unchanged.
             </p>
 
@@ -1176,17 +1176,17 @@ export default function Statistics() {
 
       <section className="space-y-6">
 
-        <div className="border-b border-slate-800/70 pb-4">
+        <div className="border-b border-lifeos-border/70 pb-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-purple-400/70">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-chart-secondary">
             Execution Quality
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
+          <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
             Why your results look this way
           </h2>
 
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-lifeos-muted">
             Go beyond output volume and inspect priority, alignment, and the rewards created by your execution.
           </p>
 
@@ -1194,19 +1194,19 @@ export default function Statistics() {
 
         <div className="grid gap-6 xl:grid-cols-2">
 
-          <Card className="border-slate-800/80">
+          <Card className="border-lifeos-border/80">
 
             <div className="mb-5">
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-rose-400/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-danger">
                 Importance
               </p>
 
-              <h3 className="mt-2 text-xl font-bold text-white">
+              <h3 className="mt-2 text-xl font-bold text-lifeos-text">
                 Priority Execution
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-lifeos-muted">
                 Did the work that mattered most actually get done?
               </p>
 
@@ -1220,19 +1220,19 @@ export default function Statistics() {
 
           </Card>
 
-          <Card className="border-slate-800/80">
+          <Card className="border-lifeos-border/80">
 
             <div className="mb-5">
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-400/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-chart-secondary">
                 Alignment
               </p>
 
-              <h3 className="mt-2 text-xl font-bold text-white">
+              <h3 className="mt-2 text-xl font-bold text-lifeos-text">
                 Where Your Effort Went
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-lifeos-muted">
                 How completed work was distributed across your planning system.
               </p>
 
@@ -1248,19 +1248,19 @@ export default function Statistics() {
 
         </div>
 
-        <Card className="border-amber-400/10 bg-amber-400/[0.025]">
+        <Card className="border-lifeos-warning/10 bg-lifeos-warning/[0.025]">
 
           <div className="mb-5">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-400/70">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-warning">
               Reward Intelligence
             </p>
 
-            <h3 className="mt-2 text-xl font-bold text-white">
+            <h3 className="mt-2 text-xl font-bold text-lifeos-text">
               XP Breakdown
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               Every XP point traced back to real execution history.
             </p>
 
@@ -1286,39 +1286,39 @@ export default function Statistics() {
       ) && (
         <section className="space-y-6">
 
-          <div className="border-b border-slate-800/70 pb-4">
+          <div className="border-b border-lifeos-border/70 pb-4">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-400/70">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
               Long-Range Patterns
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold text-white">
+            <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
               Performance over time
             </h2>
 
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+            <p className="mt-1 max-w-2xl text-sm leading-6 text-lifeos-muted">
               Step back from individual tasks and inspect the larger pattern of execution and consistency.
             </p>
 
           </div>
 
-          <Card className="border-slate-800/80">
+          <Card className="border-lifeos-border/80">
 
             <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
 
               <div>
 
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-purple-400/70">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-chart-secondary">
                   Comparison
                 </p>
 
-                <h3 className="mt-2 text-xl font-bold text-white">
+                <h3 className="mt-2 text-xl font-bold text-lifeos-text">
                   {
                     barSectionTitle
                   }
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-lifeos-muted">
                   {
                     barSectionDescription
                   }
@@ -1326,7 +1326,7 @@ export default function Statistics() {
 
               </div>
 
-              <div className="inline-flex flex-wrap rounded-lg border border-slate-800 bg-slate-950 p-1">
+              <div className="inline-flex flex-wrap rounded-lg border border-lifeos-border bg-lifeos-app p-1">
 
                 <button
                   type="button"
@@ -1346,8 +1346,8 @@ export default function Statistics() {
                     ${
                       barMetric ===
                       "tasks"
-                        ? "bg-cyan-500/15 text-cyan-300"
-                        : "text-slate-500 hover:text-slate-300"
+                        ? "bg-lifeos-accent/15 text-lifeos-accent"
+                        : "text-lifeos-muted hover:text-lifeos-text-secondary"
                     }
                   `}
                 >
@@ -1372,8 +1372,8 @@ export default function Statistics() {
                     ${
                       barMetric ===
                       "completion"
-                        ? "bg-emerald-500/15 text-emerald-300"
-                        : "text-slate-500 hover:text-slate-300"
+                        ? "bg-lifeos-success/15 text-lifeos-success"
+                        : "text-lifeos-muted hover:text-lifeos-text-secondary"
                     }
                   `}
                 >
@@ -1398,8 +1398,8 @@ export default function Statistics() {
                     ${
                       barMetric ===
                       "xp"
-                        ? "bg-yellow-500/15 text-yellow-300"
-                        : "text-slate-500 hover:text-slate-300"
+                        ? "bg-lifeos-warning/15 text-lifeos-warning"
+                        : "text-lifeos-muted hover:text-lifeos-text-secondary"
                     }
                   `}
                 >
@@ -1421,21 +1421,21 @@ export default function Statistics() {
 
           </Card>
 
-          <Card className="border-slate-800/80">
+          <Card className="border-lifeos-border/80">
 
             <div className="mb-5">
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-400/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
                 Consistency
               </p>
 
-              <h3 className="mt-2 text-xl font-bold text-white">
+              <h3 className="mt-2 text-xl font-bold text-lifeos-text">
                 {
                   heatmapTitle
                 }
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-lifeos-muted">
                 {
                   heatmapDescription
                 }
@@ -1463,35 +1463,35 @@ export default function Statistics() {
 
       <section className="space-y-6">
 
-        <div className="border-b border-slate-800/70 pb-4">
+        <div className="border-b border-lifeos-border/70 pb-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-orange-400/70">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-warning">
             Records & Reflection
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
+          <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
             Your execution history
           </h2>
 
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-lifeos-muted">
             Records are secondary to today’s work, but they reveal what your best execution has looked like.
           </p>
 
         </div>
 
-        <Card className="border-slate-800/80 bg-slate-950/20">
+        <Card className="border-lifeos-border/80 bg-lifeos-app/20">
 
           <div className="mb-5">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-orange-400/70">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-warning">
               Personal Records
             </p>
 
-            <h3 className="mt-2 text-xl font-bold text-white">
+            <h3 className="mt-2 text-xl font-bold text-lifeos-text">
               Personal Bests
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               Your strongest execution records discovered from historical activity.
             </p>
 
@@ -1513,17 +1513,17 @@ export default function Statistics() {
 
       <section className="space-y-5">
 
-        <div className="border-b border-cyan-500/10 pb-4">
+        <div className="border-b border-lifeos-accent/10 pb-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-400/70">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
             Interpretation
           </p>
 
-          <h2 className="mt-2 text-2xl font-bold text-white">
+          <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
             Performance Insights
           </h2>
 
-          <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm leading-6 text-lifeos-muted">
             Deterministic interpretation of the signals above, grounded only in your actual execution data.
           </p>
 

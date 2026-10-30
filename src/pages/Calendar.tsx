@@ -86,7 +86,7 @@ export default function Calendar({ onNavigate }: CalendarProps) {
 
       <CreateGoogleCalendarEvent />
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
         <CalendarGrid
           currentDate={currentDate}
           selectedDate={selectedDate}

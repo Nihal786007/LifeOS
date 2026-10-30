@@ -128,19 +128,19 @@ export default function GoalPlanningHealthPanel({
 
   const currentWeekClass =
     !report.currentWeek
-      ? "text-slate-500"
+      ? "text-lifeos-muted"
       : report.currentWeekPlanned
-        ? "text-emerald-400"
-        : "text-amber-400";
+        ? "text-lifeos-success"
+        : "text-lifeos-warning";
 
   const coverageClass =
     report.planningCoveragePercent ===
     100
-      ? "text-emerald-400"
+      ? "text-lifeos-success"
       : report.planningCoveragePercent >=
           60
-        ? "text-amber-400"
-        : "text-red-400";
+        ? "text-lifeos-warning"
+        : "text-lifeos-danger";
 
   // ==========================================
   // UI
@@ -152,8 +152,8 @@ export default function GoalPlanningHealthPanel({
         overflow-hidden
         rounded-xl
         border
-        border-slate-800
-        bg-slate-950/30
+        border-lifeos-border
+        bg-lifeos-app/30
       "
     >
       {/* ======================================
@@ -177,7 +177,7 @@ export default function GoalPlanningHealthPanel({
           py-4
           text-left
           transition
-          hover:bg-slate-800/25
+          hover:bg-lifeos-elevated/25
         "
       >
         <div
@@ -192,8 +192,8 @@ export default function GoalPlanningHealthPanel({
             border
             ${
               needsAttention
-                ? "border-amber-500/20 bg-amber-500/5 text-amber-400"
-                : "border-emerald-500/20 bg-emerald-500/5 text-emerald-400"
+                ? "border-lifeos-warning/20 bg-lifeos-warning/5 text-lifeos-warning"
+                : "border-lifeos-success/20 bg-lifeos-success/5 text-lifeos-success"
             }
           `}
         >
@@ -216,11 +216,11 @@ export default function GoalPlanningHealthPanel({
           >
             <span
               className="
-                text-[10px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-cyan-400
+                text-lifeos-accent
               "
             >
               Planning Health
@@ -228,12 +228,12 @@ export default function GoalPlanningHealthPanel({
 
             <span
               className={`
-                text-[10px]
+                text-[11px]
                 font-semibold
                 ${
                   needsAttention
-                    ? "text-amber-400"
-                    : "text-emerald-400"
+                    ? "text-lifeos-warning"
+                    : "text-lifeos-success"
                 }
               `}
             >
@@ -265,7 +265,7 @@ export default function GoalPlanningHealthPanel({
               % coverage
             </span>
 
-            <span className="text-slate-700">
+            <span className="text-lifeos-muted">
               ·
             </span>
 
@@ -277,15 +277,15 @@ export default function GoalPlanningHealthPanel({
               {currentWeekLabel}
             </span>
 
-            <span className="text-slate-700">
+            <span className="text-lifeos-muted">
               ·
             </span>
 
             <span
               className={
                 hasOverdueTasks
-                  ? "text-red-400"
-                  : "text-slate-500"
+                  ? "text-lifeos-danger"
+                  : "text-lifeos-muted"
               }
             >
               {
@@ -294,15 +294,15 @@ export default function GoalPlanningHealthPanel({
               overdue
             </span>
 
-            <span className="text-slate-700">
+            <span className="text-lifeos-muted">
               ·
             </span>
 
             <span
               className={
                 hasIntegrityIssues
-                  ? "text-amber-400"
-                  : "text-slate-500"
+                  ? "text-lifeos-warning"
+                  : "text-lifeos-muted"
               }
             >
               {hasIntegrityIssues
@@ -315,9 +315,9 @@ export default function GoalPlanningHealthPanel({
             <p
               className="
                 mt-1
-                text-[10px]
+                text-[11px]
                 font-medium
-                text-amber-300
+                text-lifeos-warning
               "
             >
               {
@@ -335,7 +335,7 @@ export default function GoalPlanningHealthPanel({
           className="
             shrink-0
             text-xs
-            text-slate-600
+            text-lifeos-muted
           "
         >
           {expanded ? (
@@ -355,8 +355,8 @@ export default function GoalPlanningHealthPanel({
           className="
             space-y-5
             border-t
-            border-slate-800
-            bg-slate-950/20
+            border-lifeos-border
+            bg-lifeos-app/20
             p-4
           "
         >
@@ -367,11 +367,11 @@ export default function GoalPlanningHealthPanel({
           <div>
             <p
               className="
-                text-[10px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-slate-500
+                text-lifeos-muted
               "
             >
               Summary
@@ -382,7 +382,7 @@ export default function GoalPlanningHealthPanel({
                 mt-2
                 text-xs
                 leading-5
-                text-slate-400
+                text-lifeos-text-secondary
               "
             >
               {report.summary}
@@ -396,7 +396,7 @@ export default function GoalPlanningHealthPanel({
           <div
             className="
               border-t
-              border-slate-800
+              border-lifeos-border
               pt-4
             "
           >
@@ -410,11 +410,11 @@ export default function GoalPlanningHealthPanel({
             >
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 Weekly Planning
@@ -422,12 +422,12 @@ export default function GoalPlanningHealthPanel({
 
               <span
                 className={`
-                  text-[10px]
+                  text-[11px]
                   font-semibold
                   ${
                     hasPlanningGaps
-                      ? "text-amber-400"
-                      : "text-emerald-400"
+                      ? "text-lifeos-warning"
+                      : "text-lifeos-success"
                   }
                 `}
               >
@@ -448,7 +448,7 @@ export default function GoalPlanningHealthPanel({
                 className="
                   mt-2
                   text-xs
-                  text-emerald-400
+                  text-lifeos-success
                 "
               >
                 Every active calendar week has a Weekly Focus.
@@ -460,7 +460,7 @@ export default function GoalPlanningHealthPanel({
                     mt-2
                     text-[11px]
                     leading-5
-                    text-slate-500
+                    text-lifeos-muted
                   "
                 >
                   These real calendar weeks still need a Weekly Focus:
@@ -481,13 +481,13 @@ export default function GoalPlanningHealthPanel({
                         className="
                           rounded-md
                           border
-                          border-amber-500/20
-                          bg-amber-500/5
+                          border-lifeos-warning/20
+                          bg-lifeos-warning/5
                           px-2
                           py-1
-                          text-[10px]
+                          text-[11px]
                           font-medium
-                          text-amber-300
+                          text-lifeos-warning
                         "
                       >
                         {
@@ -508,17 +508,17 @@ export default function GoalPlanningHealthPanel({
           <div
             className="
               border-t
-              border-slate-800
+              border-lifeos-border
               pt-4
             "
           >
             <p
               className="
-                text-[10px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-slate-500
+                text-lifeos-muted
               "
             >
               Task Execution
@@ -534,11 +534,11 @@ export default function GoalPlanningHealthPanel({
                 text-[11px]
               "
             >
-              <span className="text-slate-400">
+              <span className="text-lifeos-text-secondary">
                 <span
                   className="
                     font-semibold
-                    text-emerald-400
+                    text-lifeos-success
                   "
                 >
                   {
@@ -548,11 +548,11 @@ export default function GoalPlanningHealthPanel({
                 completed
               </span>
 
-              <span className="text-slate-400">
+              <span className="text-lifeos-text-secondary">
                 <span
                   className="
                     font-semibold
-                    text-slate-300
+                    text-lifeos-text-secondary
                   "
                 >
                   {
@@ -565,8 +565,8 @@ export default function GoalPlanningHealthPanel({
               <span
                 className={
                   hasOverdueTasks
-                    ? "text-red-400"
-                    : "text-slate-500"
+                    ? "text-lifeos-danger"
+                    : "text-lifeos-muted"
                 }
               >
                 <span className="font-semibold">
@@ -586,17 +586,17 @@ export default function GoalPlanningHealthPanel({
           <div
             className="
               border-t
-              border-slate-800
+              border-lifeos-border
               pt-4
             "
           >
             <p
               className="
-                text-[10px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-slate-500
+                text-lifeos-muted
               "
             >
               Workload
@@ -606,14 +606,14 @@ export default function GoalPlanningHealthPanel({
               className="
                 mt-2
                 text-xs
-                text-slate-400
+                text-lifeos-text-secondary
               "
             >
               Average{" "}
               <span
                 className="
                   font-semibold
-                  text-slate-300
+                  text-lifeos-text-secondary
                 "
               >
                 {
@@ -630,7 +630,7 @@ export default function GoalPlanningHealthPanel({
                 className="
                   mt-1
                   text-[11px]
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 Busiest week:{" "}
@@ -658,8 +658,8 @@ export default function GoalPlanningHealthPanel({
                     mt-3
                     rounded-lg
                     border
-                    border-amber-500/20
-                    bg-amber-500/5
+                    border-lifeos-warning/20
+                    bg-lifeos-warning/5
                     px-3
                     py-2
                   "
@@ -668,7 +668,7 @@ export default function GoalPlanningHealthPanel({
                     className="
                       text-[11px]
                       leading-5
-                      text-amber-300
+                      text-lifeos-warning
                     "
                   >
                     {
@@ -688,17 +688,17 @@ export default function GoalPlanningHealthPanel({
             <div
               className="
                 border-t
-                border-slate-800
+                border-lifeos-border
                 pt-4
               "
             >
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 Structural Integrity
@@ -709,7 +709,7 @@ export default function GoalPlanningHealthPanel({
                   mt-2
                   text-xs
                   leading-5
-                  text-amber-300
+                  text-lifeos-warning
                 "
               >
                 {

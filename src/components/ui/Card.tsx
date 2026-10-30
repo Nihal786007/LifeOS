@@ -30,14 +30,14 @@ export default function Card({
   const paddingClass = {
     none: "",
     sm: "p-4",
-    md: "p-6",
-    lg: "p-8",
+    md: "p-4 sm:p-6",
+    lg: "p-5 sm:p-7",
   }[padding];
 
   return (
     <div
       className={`
-        rounded-2xl
+        rounded-[var(--lifeos-radius-surface)]
         border
         border-lifeos-border
         bg-lifeos-surface
@@ -46,7 +46,7 @@ export default function Card({
 
         shadow-[var(--lifeos-shadow-surface)]
 
-        transition-all
+        transition-colors
         duration-150
 
         ${
@@ -57,7 +57,7 @@ export default function Card({
 
         ${
           glow
-            ? "ring-1 ring-cyan-500/20"
+            ? "ring-1 ring-lifeos-accent/15"
             : ""
         }
 

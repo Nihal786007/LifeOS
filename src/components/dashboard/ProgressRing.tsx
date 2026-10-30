@@ -30,7 +30,7 @@ export default function ProgressRing({
           cx="70"
           cy="70"
           r={normalizedRadius}
-          stroke="#1e293b"
+          stroke="var(--lifeos-divider)"
           strokeWidth={stroke}
           fill="transparent"
         />
@@ -39,7 +39,7 @@ export default function ProgressRing({
           cx="70"
           cy="70"
           r={normalizedRadius}
-          stroke="#06b6d4"
+          stroke="var(--lifeos-accent)"
           strokeWidth={stroke}
           fill="transparent"
           strokeLinecap="round"
@@ -55,11 +55,11 @@ export default function ProgressRing({
 
       <div className="-mt-24 text-center">
 
-        <h2 className="text-4xl font-black">
+        <h2 className="text-4xl font-bold">
           {value}%
         </h2>
 
-        <p className="mt-1 text-sm uppercase tracking-widest text-slate-500">
+        <p className="mt-1 text-sm uppercase tracking-widest text-lifeos-muted">
           Progress
         </p>
 

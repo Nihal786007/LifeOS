@@ -25,19 +25,19 @@ const STATUS_STYLES: Readonly<
 > = {
   overdue: {
     label: "Overdue",
-    className: "border-red-400/20 bg-red-400/10 text-red-300",
+    className: "border-lifeos-danger/20 bg-lifeos-danger/10 text-lifeos-danger",
   },
   today: {
     label: "Due today",
-    className: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
+    className: "border-lifeos-accent/20 bg-lifeos-accent/10 text-lifeos-accent",
   },
   upcoming: {
     label: "Upcoming",
-    className: "border-violet-400/20 bg-violet-400/10 text-violet-300",
+    className: "border-lifeos-chart-secondary/20 bg-lifeos-chart-secondary/10 text-lifeos-chart-secondary",
   },
   completed: {
     label: "Completed",
-    className: "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
+    className: "border-lifeos-success/20 bg-lifeos-success/10 text-lifeos-success",
   },
 };
 
@@ -106,55 +106,55 @@ export default function DayPanel({
     : new Date(event.start.dateTime).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 
   return (
-    <aside className="self-start rounded-[1.75rem] border border-slate-800 bg-slate-900/75 p-5 xl:sticky xl:top-0">
-      <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-5">
+    <aside className="self-start rounded-[var(--lifeos-radius-surface)] border border-lifeos-border bg-lifeos-surface/75 p-5 xl:sticky xl:top-0">
+      <div className="flex items-start justify-between gap-4 border-b border-lifeos-border pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-accent">
               Selected day
             </p>
             {isToday && (
-              <span className="rounded-md bg-cyan-300 px-1.5 py-0.5 text-[9px] font-black uppercase text-slate-950">
+              <span className="rounded-md bg-lifeos-accent px-1.5 py-0.5 text-[11px] font-bold uppercase text-lifeos-accent-foreground">
                 Today
               </span>
             )}
           </div>
-          <h2 className="mt-2 text-2xl font-black text-white">{fullDate}</h2>
-          <p className="mt-2 text-xs text-slate-500">
+          <h2 className="mt-2 text-2xl font-bold text-lifeos-text">{fullDate}</h2>
+          <p className="mt-2 text-xs text-lifeos-muted">
             {tasks.length === 0
               ? "No tasks due"
               : `${openTaskCount} open · ${tasks.length} total`}
           </p>
         </div>
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-lifeos-accent/10 text-lifeos-accent">
           <FaCalendarCheck />
         </div>
       </div>
 
-      <div className="mt-5 border-b border-slate-800 pb-5">
-        <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-bold text-slate-200">Google Calendar</h3><span className="text-[10px] font-black uppercase tracking-wider text-blue-300">External · read-only</span></div>
-        {externalConnection !== "connected" ? <p className="mt-3 text-xs text-slate-500">Connect Google Calendar in Settings to see external events.</p>
-          : externalEvents.length === 0 ? <p className="mt-3 text-xs text-slate-500">No Google events for this day.</p>
-          : <div className="mt-3 space-y-2">{externalEvents.map((event) => <article key={`${event.calendarId}:${event.externalId}`} className="rounded-xl border border-blue-400/15 bg-blue-400/5 p-3">
-              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-200">{event.title}</p><p className="mt-1 text-xs text-blue-200">{eventTime(event)} · {event.calendarName}</p></div><span className="shrink-0 rounded-md bg-blue-400/10 px-2 py-1 text-[9px] font-bold uppercase text-blue-300">Google</span></div>
-              {event.location && <p className="mt-2 flex items-center gap-2 truncate text-xs text-slate-500"><FaLocationDot />{event.location}</p>}
+      <div className="mt-5 border-b border-lifeos-border pb-5">
+        <div className="flex items-center justify-between gap-3"><h3 className="text-sm font-bold text-lifeos-text">Google Calendar</h3><span className="text-[11px] font-bold uppercase tracking-wider text-lifeos-accent">External · read-only</span></div>
+        {externalConnection !== "connected" ? <p className="mt-3 text-xs text-lifeos-muted">Connect Google Calendar in Settings to see external events.</p>
+          : externalEvents.length === 0 ? <p className="mt-3 text-xs text-lifeos-muted">No Google events for this day.</p>
+          : <div className="mt-3 space-y-2">{externalEvents.map((event) => <article key={`${event.calendarId}:${event.externalId}`} className="rounded-xl border border-lifeos-accent/15 bg-lifeos-accent/5 p-3">
+              <div className="flex items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-sm font-bold text-lifeos-text">{event.title}</p><p className="mt-1 text-xs text-lifeos-accent">{eventTime(event)} · {event.calendarName}</p></div><span className="shrink-0 rounded-md bg-lifeos-accent/10 px-2 py-1 text-[11px] font-bold uppercase text-lifeos-accent">Google</span></div>
+              {event.location && <p className="mt-2 flex items-center gap-2 truncate text-xs text-lifeos-muted"><FaLocationDot />{event.location}</p>}
             </article>)}</div>}
       </div>
 
       <div className="mt-5 space-y-3">
         {orderedTasks.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/30 px-5 py-8 text-center">
-            <FaClock className="mx-auto text-xl text-slate-600" />
-            <h3 className="mt-3 text-sm font-bold text-slate-300">
+          <div className="rounded-2xl border border-dashed border-lifeos-border bg-lifeos-app/30 px-5 py-8 text-center">
+            <FaClock className="mx-auto text-xl text-lifeos-muted" />
+            <h3 className="mt-3 text-sm font-bold text-lifeos-text-secondary">
               No tasks for this day
             </h3>
-            <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-slate-600">
+            <p className="mx-auto mt-1 max-w-xs text-xs leading-5 text-lifeos-muted">
               Choose another date or open Tasks to plan the next concrete action.
             </p>
             <button
               type="button"
               onClick={onOpenTasks}
-              className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-cyan-300 transition hover:text-cyan-200"
+              className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-lifeos-accent transition hover:text-lifeos-accent"
             >
               Open Tasks
               <FaArrowRight />
@@ -168,14 +168,14 @@ export default function DayPanel({
             return (
               <article
                 key={task.id}
-                className="rounded-2xl border border-slate-800 bg-slate-950/45 p-4"
+                className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-4"
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
                       task.completed
-                        ? "bg-emerald-400/10 text-emerald-300"
-                        : "bg-slate-800 text-slate-400"
+                        ? "bg-lifeos-success/10 text-lifeos-success"
+                        : "bg-lifeos-elevated text-lifeos-text-secondary"
                     }`}
                   >
                     {task.completed ? <FaCheck /> : <FaListCheck />}
@@ -184,8 +184,8 @@ export default function DayPanel({
                     <h3
                       className={`truncate text-sm font-bold ${
                         task.completed
-                          ? "text-slate-500 line-through"
-                          : "text-slate-200"
+                          ? "text-lifeos-muted line-through"
+                          : "text-lifeos-text"
                       }`}
                       title={task.title}
                     >
@@ -193,7 +193,7 @@ export default function DayPanel({
                     </h3>
                     {task.description && (
                       <p
-                        className="mt-1 truncate text-xs text-slate-600"
+                        className="mt-1 truncate text-xs text-lifeos-muted"
                         title={task.description}
                       >
                         {task.description}
@@ -201,13 +201,13 @@ export default function DayPanel({
                     )}
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <span
-                        className={`rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase ${
+                        className={`rounded-md border px-2 py-0.5 text-[11px] font-bold uppercase ${
                           statusStyle.className
                         }`}
                       >
                         {statusStyle.label}
                       </span>
-                      <span className="text-[10px] capitalize text-slate-600">
+                      <span className="text-[11px] capitalize text-lifeos-muted">
                         {task.priority} priority
                       </span>
                     </div>
@@ -223,7 +223,7 @@ export default function DayPanel({
         <button
           type="button"
           onClick={onOpenTasks}
-          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-2.5 text-xs font-bold text-slate-300 transition hover:border-cyan-400/25 hover:text-cyan-200"
+          className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl border border-lifeos-border bg-lifeos-app/40 px-4 py-2.5 text-xs font-bold text-lifeos-text-secondary transition hover:border-lifeos-accent/25 hover:text-lifeos-accent"
         >
           Manage in Tasks
           <FaArrowRight />

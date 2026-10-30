@@ -75,8 +75,8 @@ export default function AnalyticsSummaryGrid({
         className="
           rounded-xl
           border
-          border-cyan-500/20
-          bg-cyan-500/5
+          border-lifeos-accent/20
+          bg-lifeos-accent/5
           p-5
         "
       >
@@ -88,14 +88,14 @@ export default function AnalyticsSummaryGrid({
                 text-[11px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
-                text-cyan-400
+                tracking-[0.12em]
+                text-lifeos-accent
               "
             >
               Completion
             </p>
 
-            <h3 className="mt-3 text-3xl font-black text-white">
+            <h3 className="mt-3 text-3xl font-bold text-lifeos-text">
               {completionRate}%
             </h3>
           </div>
@@ -109,9 +109,9 @@ export default function AnalyticsSummaryGrid({
               justify-center
               rounded-lg
               border
-              border-cyan-500/20
-              bg-cyan-500/10
-              text-cyan-400
+              border-lifeos-accent/20
+              bg-lifeos-accent/10
+              text-lifeos-accent
             "
           >
             <FaCheckCircle />
@@ -119,7 +119,7 @@ export default function AnalyticsSummaryGrid({
 
         </div>
 
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-lifeos-muted">
           Planned work completed
         </p>
       </div>
@@ -132,8 +132,8 @@ export default function AnalyticsSummaryGrid({
         className="
           rounded-xl
           border
-          border-emerald-500/20
-          bg-emerald-500/5
+          border-lifeos-success/20
+          bg-lifeos-success/5
           p-5
         "
       >
@@ -145,14 +145,14 @@ export default function AnalyticsSummaryGrid({
                 text-[11px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
-                text-emerald-400
+                tracking-[0.12em]
+                text-lifeos-success
               "
             >
               Completed
             </p>
 
-            <h3 className="mt-3 text-3xl font-black text-white">
+            <h3 className="mt-3 text-3xl font-bold text-lifeos-text">
               {completedTasks}
             </h3>
           </div>
@@ -166,9 +166,9 @@ export default function AnalyticsSummaryGrid({
               justify-center
               rounded-lg
               border
-              border-emerald-500/20
-              bg-emerald-500/10
-              text-emerald-400
+              border-lifeos-success/20
+              bg-lifeos-success/10
+              text-lifeos-success
             "
           >
             <FaCheckCircle />
@@ -176,7 +176,7 @@ export default function AnalyticsSummaryGrid({
 
         </div>
 
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-lifeos-muted">
           Tasks executed in this period
         </p>
       </div>
@@ -189,8 +189,8 @@ export default function AnalyticsSummaryGrid({
         className="
           rounded-xl
           border
-          border-yellow-500/20
-          bg-yellow-500/5
+          border-lifeos-warning/20
+          bg-lifeos-warning/5
           p-5
         "
       >
@@ -202,14 +202,14 @@ export default function AnalyticsSummaryGrid({
                 text-[11px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
-                text-yellow-400
+                tracking-[0.12em]
+                text-lifeos-warning
               "
             >
               XP Earned
             </p>
 
-            <h3 className="mt-3 text-3xl font-black text-white">
+            <h3 className="mt-3 text-3xl font-bold text-lifeos-text">
               +{xpEarned}
             </h3>
           </div>
@@ -223,9 +223,9 @@ export default function AnalyticsSummaryGrid({
               justify-center
               rounded-lg
               border
-              border-yellow-500/20
-              bg-yellow-500/10
-              text-yellow-400
+              border-lifeos-warning/20
+              bg-lifeos-warning/10
+              text-lifeos-warning
             "
           >
             <FaStar />
@@ -233,7 +233,7 @@ export default function AnalyticsSummaryGrid({
 
         </div>
 
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-lifeos-muted">
           Experience gained
         </p>
       </div>
@@ -246,8 +246,8 @@ export default function AnalyticsSummaryGrid({
         className="
           rounded-xl
           border
-          border-purple-500/20
-          bg-purple-500/5
+          border-lifeos-chart-secondary/20
+          bg-lifeos-chart-secondary/5
           p-5
         "
       >
@@ -259,14 +259,14 @@ export default function AnalyticsSummaryGrid({
                 text-[11px]
                 font-semibold
                 uppercase
-                tracking-[0.2em]
-                text-purple-400
+                tracking-[0.12em]
+                text-lifeos-chart-secondary
               "
             >
               {fourthMetricLabel}
             </p>
 
-            <h3 className="mt-3 text-3xl font-black text-white">
+            <h3 className="mt-3 text-3xl font-bold text-lifeos-text">
               {fourthMetricValue}
             </h3>
           </div>
@@ -280,9 +280,9 @@ export default function AnalyticsSummaryGrid({
               justify-center
               rounded-lg
               border
-              border-purple-500/20
-              bg-purple-500/10
-              text-purple-400
+              border-lifeos-chart-secondary/20
+              bg-lifeos-chart-secondary/10
+              text-lifeos-chart-secondary
             "
           >
             {showActiveDays ? (
@@ -294,7 +294,7 @@ export default function AnalyticsSummaryGrid({
 
         </div>
 
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-lifeos-muted">
           {showActiveDays
             ? "Days with real execution activity"
             : "Planned tasks still remaining"}

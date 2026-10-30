@@ -51,20 +51,20 @@ function getCategoryColor(
 ): string {
   switch (point.category) {
     case "task":
-      return "bg-cyan-400";
+      return "bg-lifeos-accent";
 
     case "weekly":
-      return "bg-emerald-400";
+      return "bg-lifeos-success";
 
     case "monthly":
-      return "bg-purple-400";
+      return "bg-lifeos-chart-secondary";
 
     case "life_goal":
-      return "bg-amber-400";
+      return "bg-lifeos-warning";
 
     case "other":
     default:
-      return "bg-slate-400";
+      return "bg-lifeos-muted";
   }
 }
 
@@ -73,20 +73,20 @@ function getCategoryTextColor(
 ): string {
   switch (point.category) {
     case "task":
-      return "text-cyan-300";
+      return "text-lifeos-accent";
 
     case "weekly":
-      return "text-emerald-300";
+      return "text-lifeos-success";
 
     case "monthly":
-      return "text-purple-300";
+      return "text-lifeos-chart-secondary";
 
     case "life_goal":
-      return "text-amber-300";
+      return "text-lifeos-warning";
 
     case "other":
     default:
-      return "text-slate-300";
+      return "text-lifeos-text-secondary";
   }
 }
 
@@ -117,25 +117,25 @@ export default function AnalyticsXPBreakdown({
 
       <div className="grid gap-3 sm:grid-cols-3">
 
-        <div className="rounded-xl border border-amber-400/10 bg-amber-400/5 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-warning/10 bg-lifeos-warning/5 px-4 py-3">
 
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-400/60">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-warning">
             XP Earned
           </p>
 
-          <p className="mt-1 text-2xl font-black text-amber-300">
+          <p className="mt-1 text-2xl font-bold text-lifeos-warning">
             +{analytics.totalXP}
           </p>
 
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/45 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-border bg-lifeos-app/45 px-4 py-3">
 
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Rewarded Events
           </p>
 
-          <p className="mt-1 text-xl font-black text-white">
+          <p className="mt-1 text-xl font-bold text-lifeos-text">
             {
               analytics.rewardedEvents
             }
@@ -143,13 +143,13 @@ export default function AnalyticsXPBreakdown({
 
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/45 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-border bg-lifeos-app/45 px-4 py-3">
 
-          <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Protected Repeats
           </p>
 
-          <p className="mt-1 text-xl font-black text-slate-300">
+          <p className="mt-1 text-xl font-bold text-lifeos-text-secondary">
             {
               analytics.zeroXPCompletionEvents
             }
@@ -189,9 +189,9 @@ export default function AnalyticsXPBreakdown({
                         justify-center
                         rounded-lg
                         border
-                        border-slate-800
-                        bg-slate-950
-                        text-[10px]
+                        border-lifeos-border
+                        bg-lifeos-app
+                        text-[11px]
 
                         ${getCategoryTextColor(
                           point
@@ -207,13 +207,13 @@ export default function AnalyticsXPBreakdown({
 
                     <div className="min-w-0">
 
-                      <p className="truncate text-sm font-semibold text-white">
+                      <p className="truncate text-sm font-semibold text-lifeos-text">
                         {
                           point.label
                         }
                       </p>
 
-                      <p className="mt-0.5 text-[11px] text-slate-600">
+                      <p className="mt-0.5 text-[11px] text-lifeos-muted">
                         {
                           point.rewardedEvents
                         }{" "}
@@ -240,7 +240,7 @@ export default function AnalyticsXPBreakdown({
                     <p
                       className={`
                         text-base
-                        font-black
+                        font-bold
 
                         ${getCategoryTextColor(
                           point
@@ -252,7 +252,7 @@ export default function AnalyticsXPBreakdown({
                       }
                     </p>
 
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-600">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-lifeos-muted">
                       {
                         point.percentage
                       }%
@@ -262,7 +262,7 @@ export default function AnalyticsXPBreakdown({
 
                 </div>
 
-                <div className="h-1.5 overflow-hidden rounded-full bg-slate-900">
+                <div className="h-1.5 overflow-hidden rounded-full bg-lifeos-surface">
 
                   <div
                     className={`
@@ -295,13 +295,13 @@ export default function AnalyticsXPBreakdown({
       ====================================== */}
 
       {!hasActivity && (
-        <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-6 text-center">
+        <div className="rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-5 py-6 text-center">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             No XP earned in this period
           </p>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-lifeos-muted">
             Complete tasks and planning outcomes to build XP history.
           </p>
 
@@ -314,9 +314,9 @@ export default function AnalyticsXPBreakdown({
 
       {analytics.zeroXPCompletionEvents >
         0 && (
-        <div className="rounded-lg border border-cyan-500/15 bg-cyan-500/5 px-4 py-2.5">
+        <div className="rounded-lg border border-lifeos-accent/15 bg-lifeos-accent/5 px-4 py-2.5">
 
-          <p className="text-xs leading-5 text-cyan-200">
+          <p className="text-xs leading-5 text-lifeos-accent">
             {
               analytics.zeroXPCompletionEvents
             }{" "}

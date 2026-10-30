@@ -68,7 +68,7 @@ async function mounted() {
     [resolve(base, "context/WeeklyPlanningContext.tsx"), { useWeeklyPlanning: () => ({ weeklyTargets: [], addCalendarWeeklyTarget() {} }) }],
     [resolve(base, "context/PlanningStateContext.tsx"), { usePlanningState: () => ({ replacePlanningState() {} }) }],
     [resolve(base, "context/HabitContext.tsx"), { useHabits: () => ({ habits: [] }) }],
-    [resolve(base, "context/HabitExecutionContext.tsx"), { useHabitExecution: () => ({ createHabit() {}, updateHabit() {} }) }],
+    [resolve(base, "context/habitExecutionContextValue.ts"), { useHabitExecution: () => ({ createHabit() {}, updateHabit() {} }) }],
     [resolve(base, "context/AppContext.tsx"), { useApp: () => ({ addCapture: async () => {} }) }],
     [resolve(base, "atlas/providers/ollama/ollamaAtlasActionCandidateProvider.ts"), { OllamaAtlasActionCandidateProvider: class { readonly id = "unused"; async generate() { return { status: "unavailable" }; } } }],
   ]);

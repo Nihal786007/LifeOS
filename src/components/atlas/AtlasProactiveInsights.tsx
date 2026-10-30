@@ -26,11 +26,11 @@ const SEVERITY_STYLES: Readonly<
   Record<AtlasProactiveSeverity, string>
 > = {
   important:
-    "border-rose-400/20 bg-rose-400/[0.05] text-rose-300",
+    "border-lifeos-danger/20 bg-lifeos-danger/[0.05] text-lifeos-danger",
   attention:
-    "border-amber-400/20 bg-amber-400/[0.05] text-amber-300",
+    "border-lifeos-warning/20 bg-lifeos-warning/[0.05] text-lifeos-warning",
   info:
-    "border-cyan-400/15 bg-cyan-400/[0.04] text-cyan-300",
+    "border-lifeos-accent/15 bg-lifeos-accent/[0.04] text-lifeos-accent",
 };
 
 function SignalCard({
@@ -46,23 +46,23 @@ function SignalCard({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] opacity-80">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] opacity-80">
             {insight.type}
           </p>
-          <h3 className="mt-1 font-semibold text-slate-100">
+          <h3 className="mt-1 font-semibold text-lifeos-text">
             {insight.title}
           </h3>
         </div>
-        <span className="rounded-full border border-current/20 px-2.5 py-1 text-[9px] font-black uppercase tracking-wider">
+        <span className="rounded-full border border-current/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider">
           {insight.severity}
         </span>
       </div>
-      <p className="mt-2 text-xs leading-5 text-slate-400">
+      <p className="mt-2 text-xs leading-5 text-lifeos-text-secondary">
         {insight.summary}
       </p>
 
       <details className="group mt-3 border-t border-current/10 pt-3">
-        <summary className="flex cursor-pointer list-none items-center justify-between text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+        <summary className="flex cursor-pointer list-none items-center justify-between text-[11px] font-bold uppercase tracking-[0.16em] opacity-70">
           <span className="flex items-center gap-2">
             <FaShieldHalved />
             Grounded evidence · {insight.evidence.length}
@@ -79,15 +79,15 @@ function SignalCard({
             return (
               <div
                 key={`${citation.source}:${citation.path}:${index}`}
-                className="rounded-xl bg-slate-950/50 p-3"
+                className="rounded-xl bg-lifeos-app/50 p-3"
               >
-                <p className="text-xs font-semibold text-slate-300">
+                <p className="text-xs font-semibold text-lifeos-text-secondary">
                   {evidence.summary}
                 </p>
-                <p className="mt-1 text-[11px] leading-4 text-slate-600">
+                <p className="mt-1 text-[11px] leading-4 text-lifeos-muted">
                   {citation.explanation}
                 </p>
-                <p className="mt-2 break-all font-mono text-[9px] text-slate-700">
+                <p className="mt-2 break-all font-mono text-[11px] text-lifeos-muted">
                   {citation.source}.{citation.path} ·{" "}
                   {formatAtlasEvidenceValue(evidence.value)}
                 </p>
@@ -105,13 +105,13 @@ export default function AtlasProactiveInsights({
   context,
 }: AtlasProactiveInsightsProps) {
   return (
-    <section className="rounded-[1.75rem] border border-slate-800 bg-slate-900/70 p-6">
+    <section className="rounded-[var(--lifeos-radius-surface)] border border-lifeos-border bg-lifeos-surface/70 p-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <FaSatelliteDish className="text-cyan-300" />
-          <h2 className="font-bold text-white">ATLAS Signals</h2>
+          <FaSatelliteDish className="text-lifeos-accent" />
+          <h2 className="font-bold text-lifeos-text">ATLAS Signals</h2>
         </div>
-        <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1 text-[9px] font-bold uppercase tracking-[0.16em] text-slate-500">
+        <span className="rounded-full border border-lifeos-border bg-lifeos-app px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-lifeos-muted">
           Live · Deterministic
         </span>
       </div>
@@ -126,7 +126,7 @@ export default function AtlasProactiveInsights({
             />
           ))
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-700 p-5 text-sm text-slate-500">
+          <div className="rounded-2xl border border-dashed border-lifeos-border p-5 text-sm text-lifeos-muted">
             No important signals right now. ATLAS will surface a
             grounded change here when the current state supports it.
           </div>

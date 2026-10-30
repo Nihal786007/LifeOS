@@ -24,18 +24,18 @@ export default function TaskCard({
   const priorityStyles = {
     low: {
       label: "Low Priority",
-      bg: "bg-green-500/10",
-      text: "text-green-300",
+      bg: "bg-lifeos-success/10",
+      text: "text-lifeos-success",
     },
     medium: {
       label: "Medium Priority",
-      bg: "bg-yellow-500/10",
-      text: "text-yellow-300",
+      bg: "bg-lifeos-warning/10",
+      text: "text-lifeos-warning",
     },
     high: {
       label: "High Priority",
-      bg: "bg-red-500/10",
-      text: "text-red-300",
+      bg: "bg-lifeos-danger/10",
+      text: "text-lifeos-danger",
     },
   } as const;
 
@@ -111,7 +111,7 @@ export default function TaskCard({
     <Card
       className={`group transition-all duration-300 hover:-translate-y-1 ${
         isOverdue
-          ? "border-2 border-red-500 bg-red-500/10 shadow-lg shadow-red-500/20"
+          ? "border-2 border-lifeos-danger bg-lifeos-danger/10 shadow-lg shadow-lifeos-danger/20"
           : ""
       }`}
     >
@@ -124,9 +124,9 @@ export default function TaskCard({
         >
           <div className="mt-1 text-2xl">
             {task.completed ? (
-              <FaCheckCircle className="text-green-400" />
+              <FaCheckCircle className="text-lifeos-success" />
             ) : (
-              <FaRegCircle className="text-slate-500 transition-colors group-hover:text-cyan-400" />
+              <FaRegCircle className="text-lifeos-muted transition-colors group-hover:text-lifeos-accent" />
             )}
           </div>
 
@@ -134,35 +134,35 @@ export default function TaskCard({
             <h2
               className={`text-2xl font-bold transition-colors ${
                 task.completed
-                  ? "text-slate-500 line-through"
-                  : "text-white"
+                  ? "text-lifeos-muted line-through"
+                  : "text-lifeos-text"
               }`}
             >
               {task.title}
             </h2>
 
             {task.description && (
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">
+              <p className="mt-3 text-sm leading-relaxed text-lifeos-text-secondary">
                 {task.description}
               </p>
             )}
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <span
-                className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] ${priority.bg} ${priority.text}`}
+                className={`flex items-center gap-2 rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${priority.bg} ${priority.text}`}
               >
                 <FaFlag />
                 {priority.label}
               </span>
 
               {isOverdue && (
-                <span className="animate-pulse rounded-full bg-red-600 px-4 py-1 text-xs font-bold uppercase tracking-[0.25em] text-white">
+                <span className="animate-pulse rounded-full bg-lifeos-danger px-4 py-1 text-xs font-bold uppercase tracking-[0.12em] text-lifeos-danger-foreground">
                   OVERDUE
                 </span>
               )}
 
               {task.completed && (
-                <span className="rounded-full bg-green-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-green-300">
+                <span className="rounded-full bg-lifeos-success/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-success">
                   COMPLETED
                 </span>
               )}
@@ -181,15 +181,15 @@ export default function TaskCard({
         </Button>
       </div>
 
-      <div className="mt-8 flex items-center justify-between border-t border-slate-800 pt-5">
-        <div className="flex items-center gap-3 text-sm text-slate-400">
-          <FaChevronRight className="text-cyan-400" />
+      <div className="mt-8 flex items-center justify-between border-t border-lifeos-border pt-5">
+        <div className="flex items-center gap-3 text-sm text-lifeos-text-secondary">
+          <FaChevronRight className="text-lifeos-accent" />
 
           <span>
             {getDueStatus()}
 
             {task.dueDate && (
-              <span className="ml-2 text-slate-500">
+              <span className="ml-2 text-lifeos-muted">
                 • {formatDueDate()}
               </span>
             )}
@@ -203,7 +203,7 @@ export default function TaskCard({
           }
           className={`px-5 py-2 text-sm transition-all ${
             task.completed
-              ? "bg-green-600 hover:bg-green-700"
+              ? "bg-lifeos-success hover:bg-lifeos-success"
               : ""
           }`}
         >

@@ -72,7 +72,7 @@ export default function Modal({
           {children}
 
           {footer && (
-            <div className="flex justify-end gap-4">
+            <div className="lifeos-dialog-actions flex justify-end gap-4">
               {footer}
             </div>
           )}

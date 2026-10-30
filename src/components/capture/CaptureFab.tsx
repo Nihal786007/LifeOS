@@ -32,21 +32,21 @@ export default function CaptureFab({
 
         rounded-full
 
-        bg-cyan-500
-        text-white
+        bg-lifeos-accent
+        text-lifeos-accent-foreground
         text-xl
 
         lg:text-2xl
 
-        shadow-xl
-        shadow-cyan-500/40
+        shadow-md
+        shadow-black/10
 
         transition-all
-        duration-300
+        duration-150
 
-        hover:scale-110
-        hover:bg-cyan-400
-        hover:shadow-cyan-400/60
+        hover:scale-105
+        hover:bg-lifeos-accent
+        hover:shadow-black/15
 
         active:scale-95
       "

@@ -46,13 +46,13 @@ interface UniversalTaskRowProps {
 
 const priorityStyles = {
   low:
-    "text-green-400 bg-green-500/10 border-green-500/20",
+    "text-lifeos-success bg-lifeos-success/10 border-lifeos-success/20",
 
   medium:
-    "text-yellow-400 bg-yellow-500/10 border-yellow-500/20",
+    "text-lifeos-warning bg-lifeos-warning/10 border-lifeos-warning/20",
 
   high:
-    "text-red-400 bg-red-500/10 border-red-500/20",
+    "text-lifeos-danger bg-lifeos-danger/10 border-lifeos-danger/20",
 };
 
 // ==========================================
@@ -216,7 +216,7 @@ export default function UniversalTaskRow({
         justify-center
         rounded-lg
         transition
-        hover:bg-slate-800
+        hover:bg-lifeos-elevated
         md:h-8
         md:w-8
       `}
@@ -225,8 +225,8 @@ export default function UniversalTaskRow({
         aria-hidden="true"
         className={`flex h-5 w-5 items-center justify-center rounded border text-xs font-bold ${
           task.completed
-            ? "border-cyan-400 bg-cyan-400 text-slate-950"
-            : "border-slate-600"
+            ? "border-lifeos-accent bg-lifeos-accent text-lifeos-accent-foreground"
+            : "border-lifeos-border"
         }`}
       >
         {task.completed ? "✓" : ""}
@@ -252,10 +252,10 @@ export default function UniversalTaskRow({
           items-center
           justify-center
           rounded-lg
-          text-slate-600
+          text-lifeos-muted
           transition
-          hover:bg-cyan-500/10
-          hover:text-cyan-300
+          hover:bg-lifeos-accent/10
+          hover:text-lifeos-accent
           md:h-8
           md:w-8
         "
@@ -286,10 +286,10 @@ export default function UniversalTaskRow({
           items-center
           justify-center
           rounded-lg
-          text-slate-600
+          text-lifeos-muted
           transition
-          hover:bg-red-500/10
-          hover:text-red-400
+          hover:bg-lifeos-danger/10
+          hover:text-lifeos-danger
           md:h-8
           md:w-8
         "
@@ -318,11 +318,11 @@ export default function UniversalTaskRow({
             grid-cols-[40px_minmax(150px,1fr)_90px_90px_76px]
             items-center
             border-b
-            border-slate-800
+            border-lifeos-border
             px-2
             text-sm
             transition
-            hover:bg-slate-800/40
+            hover:bg-lifeos-elevated/40
             md:grid
           "
         >
@@ -346,8 +346,8 @@ export default function UniversalTaskRow({
 
                 ${
                   task.completed
-                    ? "text-slate-500 line-through"
-                    : "text-slate-100"
+                    ? "text-lifeos-muted line-through"
+                    : "text-lifeos-text"
                 }
               `}
               title={
@@ -365,7 +365,7 @@ export default function UniversalTaskRow({
                   mt-0.5
                   truncate
                   text-[11px]
-                  text-slate-600
+                  text-lifeos-muted
                 "
                 title={
                   task.description
@@ -390,7 +390,7 @@ export default function UniversalTaskRow({
                 border
                 px-2
                 py-0.5
-                text-[10px]
+                text-[11px]
                 font-medium
                 capitalize
 
@@ -410,7 +410,7 @@ export default function UniversalTaskRow({
 
           {/* Due */}
 
-          <div className="whitespace-nowrap px-1 text-xs text-slate-400">
+          <div className="whitespace-nowrap px-1 text-xs text-lifeos-text-secondary">
             {
               formatDate(
                 task.dueDate
@@ -439,11 +439,11 @@ export default function UniversalTaskRow({
         <div
           className="
             border-b
-            border-slate-800
+            border-lifeos-border
             px-2
             py-2.5
             transition
-            hover:bg-slate-800/40
+            hover:bg-lifeos-elevated/40
             md:hidden
           "
         >
@@ -465,8 +465,8 @@ export default function UniversalTaskRow({
 
                   ${
                     task.completed
-                      ? "text-slate-500 line-through"
-                      : "text-slate-100"
+                      ? "text-lifeos-muted line-through"
+                      : "text-lifeos-text"
                   }
                 `}
                 title={
@@ -484,7 +484,7 @@ export default function UniversalTaskRow({
                     mt-0.5
                     truncate
                     text-[11px]
-                    text-slate-600
+                    text-lifeos-muted
                   "
                   title={
                     task.description
@@ -496,7 +496,7 @@ export default function UniversalTaskRow({
                 </p>
               )}
 
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500">
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[11px] text-lifeos-muted">
 
                 <span
                   className={`
@@ -570,11 +570,11 @@ export default function UniversalTaskRow({
           grid-cols-[44px_minmax(240px,1.2fr)_110px_minmax(220px,1.4fr)_90px_88px_78px_76px]
           items-center
           border-b
-          border-slate-800
+          border-lifeos-border
           px-3
           text-sm
           transition
-          hover:bg-slate-800/40
+          hover:bg-lifeos-elevated/40
           md:grid
         "
       >
@@ -597,8 +597,8 @@ export default function UniversalTaskRow({
 
               ${
                 task.completed
-                  ? "text-slate-500 line-through"
-                  : "text-slate-100"
+                  ? "text-lifeos-muted line-through"
+                  : "text-lifeos-text"
               }
             `}
             title={
@@ -616,7 +616,7 @@ export default function UniversalTaskRow({
                 mt-0.5
                 truncate
                 text-xs
-                text-slate-500
+                text-lifeos-muted
               "
               title={
                 task.description
@@ -658,8 +658,8 @@ export default function UniversalTaskRow({
               className={
                 planType ===
                 "none"
-                  ? "text-slate-600"
-                  : "text-slate-400"
+                  ? "text-lifeos-muted"
+                  : "text-lifeos-text-secondary"
               }
             >
               {
@@ -678,7 +678,7 @@ export default function UniversalTaskRow({
             min-w-0
             px-3
             text-sm
-            text-slate-400
+            text-lifeos-text-secondary
           "
           title={
             weeklyTargetTitle
@@ -723,7 +723,7 @@ export default function UniversalTaskRow({
 
         {/* Due */}
 
-        <div className="whitespace-nowrap px-1 text-xs text-slate-400">
+        <div className="whitespace-nowrap px-1 text-xs text-lifeos-text-secondary">
           {
             formatDate(
               task.dueDate
@@ -738,8 +738,8 @@ export default function UniversalTaskRow({
           <span
             className={
               task.completed
-                ? "text-green-400"
-                : "text-slate-400"
+                ? "text-lifeos-success"
+                : "text-lifeos-text-secondary"
             }
           >
             {
@@ -772,11 +772,11 @@ export default function UniversalTaskRow({
       <div
         className="
           border-b
-          border-slate-800
+          border-lifeos-border
           px-3
           py-2.5
           transition
-          hover:bg-slate-800/40
+          hover:bg-lifeos-elevated/40
           md:hidden
         "
       >
@@ -802,8 +802,8 @@ export default function UniversalTaskRow({
 
                   ${
                     task.completed
-                      ? "text-slate-500 line-through"
-                      : "text-slate-100"
+                      ? "text-lifeos-muted line-through"
+                      : "text-lifeos-text"
                   }
                 `}
               >
@@ -819,7 +819,7 @@ export default function UniversalTaskRow({
                   items-center
                   gap-1
                   text-[11px]
-                  text-slate-500
+                  text-lifeos-muted
                 "
                 title={
                   planLabel
@@ -846,7 +846,7 @@ export default function UniversalTaskRow({
                   mt-0.5
                   truncate
                   text-xs
-                  text-slate-600
+                  text-lifeos-muted
                 "
                 title={
                   task.description
@@ -858,7 +858,7 @@ export default function UniversalTaskRow({
               </p>
             )}
 
-            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+            <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-lifeos-muted">
 
               <span
                 className={`
@@ -904,7 +904,7 @@ export default function UniversalTaskRow({
                   mt-1.5
                   truncate
                   text-[11px]
-                  text-slate-500
+                  text-lifeos-muted
                 "
                 title={
                   weeklyTargetTitle

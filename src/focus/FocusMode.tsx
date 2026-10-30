@@ -95,17 +95,17 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
             : <button type="button" onClick={onExit} className="lifeos-icon-button" aria-label="Leave Focus Mode"><FaArrowLeft /></button>}
           <div className="text-center">
             <p className="lifeos-page-eyebrow">LifeOS</p>
-            <h1 className="text-xl font-black tracking-tight">Focus Mode</h1>
+            <h1 className="text-xl font-bold tracking-tight">Focus Mode</h1>
           </div>
           <div className="min-w-24 text-right text-xs leading-5 text-lifeos-muted"><span className="block">{tasksCompletedToday} tasks done</span><span>{focusMinutesToday}m focused</span></div>
         </header>
 
-        {controller.error && <p role="alert" className="mt-5 rounded-xl border border-lifeos-danger/40 bg-red-500/10 p-3 text-sm text-lifeos-danger">{controller.error}</p>}
+        {controller.error && <p role="alert" className="mt-5 rounded-xl border border-lifeos-danger/40 bg-lifeos-danger/10 p-3 text-sm text-lifeos-danger">{controller.error}</p>}
 
         {!controller.session && !controller.outcome && (
           <section className="mx-auto mt-12 max-w-2xl lifeos-surface-panel p-6 sm:p-8">
             <p className="lifeos-page-eyebrow">Choose one thing</p>
-            <h2 className="mt-2 text-2xl font-black">What deserves your full attention?</h2>
+            <h2 className="mt-2 text-2xl font-bold">What deserves your full attention?</h2>
             {availableTasks.length === 0 ? (
               <div className="lifeos-empty-state mt-6">No active tasks are available. Create one in Tasks, then return to Focus Mode.</div>
             ) : (
@@ -124,13 +124,13 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
         {controller.session && controller.task && (
           <section className="mx-auto mt-10 max-w-3xl text-center">
             <p className="lifeos-page-eyebrow">{controller.session.status === "running" ? "Focused now" : "Session paused"}</p>
-            <h2 className="mt-4 text-3xl font-black sm:text-5xl">{controller.task.title}</h2>
+            <h2 className="mt-4 text-3xl font-bold sm:text-5xl">{controller.task.title}</h2>
             {relationship && (relationship.weeklyTarget || relationship.monthlyTarget || relationship.lifeGoal) && (
               <p className="mt-3 text-sm text-lifeos-text-secondary">
                 {[relationship.lifeGoal?.title, relationship.monthlyTarget?.title, relationship.weeklyTarget?.title].filter(Boolean).join(" → ")}
               </p>
             )}
-            <p className="mt-10 font-mono text-6xl font-black tabular-nums text-lifeos-accent sm:text-8xl" aria-label={`Elapsed focus time ${formatDuration(controller.elapsedMs)}`}>{formatDuration(controller.elapsedMs)}</p>
+            <p className="mt-10 font-mono text-6xl font-bold tabular-nums text-lifeos-accent sm:text-8xl" aria-label={`Elapsed focus time ${formatDuration(controller.elapsedMs)}`}>{formatDuration(controller.elapsedMs)}</p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               {controller.session.status === "running"
                 ? <Button variant="secondary" onClick={controller.pause}><FaCirclePause /> Pause</Button>
@@ -151,7 +151,7 @@ export default function FocusMode({ orchestrator, controller, initialTaskId, onC
           <section className="mx-auto mt-12 max-w-2xl lifeos-surface-panel p-6 text-center sm:p-8">
             <FaFlagCheckered className="mx-auto text-3xl text-lifeos-accent" />
             <p className="lifeos-page-eyebrow mt-4">Session recorded</p>
-            <h2 className="mt-2 text-3xl font-black">{formatDuration(controller.outcome.durationMs)} focused</h2>
+            <h2 className="mt-2 text-3xl font-bold">{formatDuration(controller.outcome.durationMs)} focused</h2>
             <p className="mt-3 text-sm text-lifeos-text-secondary">Ending Focus Mode kept the task open and recorded one zero-XP audit event.</p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button onClick={() => { completeFocusedTask(controller.outcome!.executionRecord.entityId, planning.completeTask); controller.clearOutcome(); onExit(); }}><FaCheck /> Complete Task</Button>

@@ -88,7 +88,7 @@ function loadHook(): typeof useAtlasActions {
         await m.captureGate?.promise;
       } };
     } },
-    "../../context/HabitExecutionContext": { useHabitExecution: () => {
+    "../../context/habitExecutionContextValue": { useHabitExecution: () => {
       const m = useModel(); return {
         createHabit: () => m.mutations.push({ owner: m.owner, kind: "habit.create" }),
         updateHabit: () => m.mutations.push({ owner: m.owner, kind: "habit.update" }),

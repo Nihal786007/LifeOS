@@ -8,8 +8,8 @@ export default function AtlasTrend({
   averageCompletion,
 }: AtlasTrendProps) {
   return (
-    <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6">
-      <h2 className="text-xl font-bold text-purple-400">
+    <div className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-6">
+      <h2 className="text-xl font-bold text-lifeos-chart-secondary">
         📊 Trend Analysis
       </h2>
 

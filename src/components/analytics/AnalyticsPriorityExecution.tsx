@@ -43,14 +43,14 @@ function getPriorityColor(
 ): string {
   switch (point.priority) {
     case "high":
-      return "bg-rose-400";
+      return "bg-lifeos-danger";
 
     case "medium":
-      return "bg-amber-400";
+      return "bg-lifeos-warning";
 
     case "low":
     default:
-      return "bg-slate-400";
+      return "bg-lifeos-muted";
   }
 }
 
@@ -59,14 +59,14 @@ function getPriorityTextColor(
 ): string {
   switch (point.priority) {
     case "high":
-      return "text-rose-300";
+      return "text-lifeos-danger";
 
     case "medium":
-      return "text-amber-300";
+      return "text-lifeos-warning";
 
     case "low":
     default:
-      return "text-slate-300";
+      return "text-lifeos-text-secondary";
   }
 }
 
@@ -87,11 +87,11 @@ export default function AnalyticsPriorityExecution({
       <div className="flex flex-wrap items-end gap-8">
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Planned
           </p>
 
-          <p className="mt-1 text-3xl font-black text-white">
+          <p className="mt-1 text-3xl font-bold text-lifeos-text">
             {
               analytics.totalTasks
             }
@@ -99,11 +99,11 @@ export default function AnalyticsPriorityExecution({
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Completed
           </p>
 
-          <p className="mt-1 text-xl font-bold text-emerald-300">
+          <p className="mt-1 text-xl font-bold text-lifeos-success">
             {
               analytics.completedTasks
             }
@@ -111,11 +111,11 @@ export default function AnalyticsPriorityExecution({
         </div>
 
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Priority Completion
           </p>
 
-          <p className="mt-1 text-xl font-bold text-cyan-300">
+          <p className="mt-1 text-xl font-bold text-lifeos-accent">
             {
               analytics.completionRate
             }%
@@ -153,8 +153,8 @@ export default function AnalyticsPriorityExecution({
                       justify-center
                       rounded-lg
                       border
-                      border-slate-800
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       text-xs
 
                       ${getPriorityTextColor(
@@ -171,13 +171,13 @@ export default function AnalyticsPriorityExecution({
 
                   <div className="min-w-0">
 
-                    <p className="truncate text-sm font-semibold text-white">
+                    <p className="truncate text-sm font-semibold text-lifeos-text">
                       {
                         point.label
                       }
                     </p>
 
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-lifeos-muted">
                       {
                         point.completedTasks
                       }{" "}
@@ -196,7 +196,7 @@ export default function AnalyticsPriorityExecution({
                   className={`
                     flex-none
                     text-lg
-                    font-black
+                    font-bold
 
                     ${getPriorityTextColor(
                       point
@@ -210,7 +210,7 @@ export default function AnalyticsPriorityExecution({
 
               </div>
 
-              <div className="h-2 overflow-hidden rounded-full bg-slate-900">
+              <div className="h-2 overflow-hidden rounded-full bg-lifeos-surface">
 
                 <div
                   className={`
@@ -243,13 +243,13 @@ export default function AnalyticsPriorityExecution({
 
       {analytics.totalTasks ===
         0 && (
-        <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-8 text-center">
+        <div className="rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-5 py-8 text-center">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             No prioritized work in this period
           </p>
 
-          <p className="mt-2 text-xs leading-5 text-slate-500">
+          <p className="mt-2 text-xs leading-5 text-lifeos-muted">
             Add due dates and priorities to tasks to measure whether the most important work gets executed.
           </p>
 

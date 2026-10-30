@@ -1,6 +1,5 @@
+import { XPContext } from "./xpContextValue";
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
 } from "react";
@@ -17,20 +16,6 @@ import {
   ExecutionHistoryService,
 } from "../services/ExecutionHistoryService";
 
-interface XPContextType {
-  totalXP: number;
-
-  level: number;
-
-  progress: number;
-
-  xpNeededForNextLevel: number;
-}
-
-const XPContext =
-  createContext<XPContextType | null>(
-    null
-  );
 
 export function XPProvider({
   children,
@@ -101,19 +86,4 @@ export function XPProvider({
       {children}
     </XPContext.Provider>
   );
-}
-
-export function useXP() {
-  const context =
-    useContext(
-      XPContext
-    );
-
-  if (!context) {
-    throw new Error(
-      "useXP must be used inside XPProvider"
-    );
-  }
-
-  return context;
 }

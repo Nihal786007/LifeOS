@@ -18,7 +18,7 @@ import { createReadOnlyDemoTaskRepository } from './repository.ts';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const require = createRequire(import.meta.url);
 const cache = new Map<string, { exports: Record<string, unknown> }>();
-const demoBindings = new Set(['src/atlas/state/useAtlasCanonicalState', 'src/context/AppContext', 'src/context/PlanningExecutionContext', 'src/context/HabitExecutionContext', 'src/auth/AuthContext', 'src/data/account/AccountDataContext', 'src/connectors/googleCalendar/GoogleCalendarContext'].map(path => resolve(root, path)));
+const demoBindings = new Set(['src/atlas/state/useAtlasCanonicalState', 'src/context/AppContext', 'src/context/PlanningExecutionContext', 'src/context/habitExecutionContextValue', 'src/auth/AuthContext', 'src/data/account/AccountDataContext', 'src/connectors/googleCalendar/GoogleCalendarContext'].map(path => resolve(root, path)));
 const noopComponent = () => null;
 const normalize = (path: string) => path.replace(/\.tsx?$/, '');
 

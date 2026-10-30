@@ -11,16 +11,16 @@ export default function ActivityBadge({
 }: ActivityBadgeProps) {
   const styles = {
     planned:
-      "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      "bg-lifeos-accent/10 text-lifeos-accent border-lifeos-accent/20",
 
     in_progress:
-      "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      "bg-lifeos-warning/10 text-lifeos-warning border-lifeos-warning/20",
 
     completed:
-      "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      "bg-lifeos-success/10 text-lifeos-success border-lifeos-success/20",
 
     cancelled:
-      "bg-red-500/10 text-red-400 border-red-500/20",
+      "bg-lifeos-danger/10 text-lifeos-danger border-lifeos-danger/20",
   };
 
   const labels = {
@@ -39,7 +39,7 @@ export default function ActivityBadge({
         py-1
         text-xs
         font-bold
-        tracking-[0.2em]
+        tracking-[0.12em]
         uppercase
 
         ${styles[status]}
