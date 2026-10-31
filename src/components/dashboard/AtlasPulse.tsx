@@ -22,9 +22,9 @@ export default function AtlasPulse({
       : "You're all caught up. Keep up the great work!";
 
   return (
-    <aside className="rounded-3xl border border-slate-800 bg-slate-900 p-8 shadow-xl">
+    <aside className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-8 shadow-xl">
 
-      <p className="text-xs uppercase tracking-[0.4em] text-cyan-400">
+      <p className="text-xs uppercase tracking-[0.12em] text-lifeos-accent">
         Mission Pulse
       </p>
 
@@ -32,15 +32,15 @@ export default function AtlasPulse({
         {productivity}%
       </h2>
 
-      <p className="mt-2 text-slate-400">
+      <p className="mt-2 text-lifeos-text-secondary">
         Overall Productivity
       </p>
 
       {/* Progress Bar */}
-      <div className="mt-6 h-3 overflow-hidden rounded-full bg-slate-800">
+      <div className="mt-6 h-3 overflow-hidden rounded-full bg-lifeos-elevated">
 
         <div
-          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-700"
+          className="h-full rounded-full bg-gradient-to-r from-lifeos-accent to-lifeos-accent transition-all duration-700"
           style={{
             width: `${productivity}%`,
           }}
@@ -49,12 +49,12 @@ export default function AtlasPulse({
       </div>
 
       {/* Divider */}
-      <div className="my-8 h-px bg-slate-800" />
+      <div className="my-8 h-px bg-lifeos-elevated" />
 
       <div className="space-y-6">
 
         <div>
-          <p className="text-xs uppercase tracking-widest text-slate-500">
+          <p className="text-xs uppercase tracking-widest text-lifeos-muted">
             Primary Focus
           </p>
 
@@ -64,7 +64,7 @@ export default function AtlasPulse({
         </div>
 
         <div>
-          <p className="text-xs uppercase tracking-widest text-slate-500">
+          <p className="text-xs uppercase tracking-widest text-lifeos-muted">
             Active Missions
           </p>
 
@@ -77,13 +77,13 @@ export default function AtlasPulse({
 
       {/* Recommendation */}
 
-      <div className="mt-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5">
+      <div className="mt-8 rounded-2xl border border-lifeos-accent/20 bg-lifeos-accent/5 p-5">
 
-        <p className="text-xs uppercase tracking-[0.3em] text-cyan-400">
+        <p className="text-xs uppercase tracking-[0.12em] text-lifeos-accent">
           ATLAS Recommendation
         </p>
 
-        <p className="mt-3 leading-7 text-slate-300">
+        <p className="mt-3 leading-7 text-lifeos-text-secondary">
           {recommendation}
         </p>
 

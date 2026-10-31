@@ -21,7 +21,6 @@
 // ==========================================
 
 import {
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -40,7 +39,7 @@ import {
 
 import {
   useHabitExecution,
-} from "../../context/HabitExecutionContext";
+} from "../../context/habitExecutionContextValue";
 
 import {
   HabitEngine,
@@ -215,36 +214,14 @@ export default function MonthlyHabitCalendar() {
   // Keep Selected Habit Valid
   // ========================================
 
-  useEffect(() => {
-    if (
-      activeHabits.length ===
-      0
-    ) {
-      setSelectedHabitId(
-        null
-      );
-
-      return;
-    }
-
-    const stillExists =
-      activeHabits.some(
-        (habit) =>
-          habit.id ===
-          selectedHabitId
-      );
-
-    if (
-      !stillExists
-    ) {
-      setSelectedHabitId(
-        activeHabits[0].id
-      );
-    }
-  }, [
-    activeHabits,
-    selectedHabitId,
-  ]);
+  const validSelectedHabitId = activeHabits.some(habit => habit.id === selectedHabitId)
+    ? selectedHabitId
+    : activeHabits[0]?.id ?? null;
+  // Keep this component's local selection valid before committing its children.
+  // The equality guard terminates the render retry; canonical Habit state is untouched.
+  if (selectedHabitId !== validSelectedHabitId) {
+    setSelectedHabitId(validSelectedHabitId);
+  }
 
   const selectedHabit =
     useMemo(
@@ -431,15 +408,15 @@ export default function MonthlyHabitCalendar() {
   ) {
     return (
       <Card className="p-10 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
           Monthly History
         </p>
 
-        <h2 className="mt-3 text-2xl font-bold text-white">
+        <h2 className="mt-3 text-2xl font-bold text-lifeos-text">
           No Active Habits
         </h2>
 
-        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">
+        <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-lifeos-text-secondary">
           Create a habit first. Its monthly history will appear here automatically.
         </p>
       </Card>
@@ -464,11 +441,11 @@ export default function MonthlyHabitCalendar() {
 
       <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
             Monthly History
           </p>
 
-          <h2 className="mt-2 text-3xl font-bold text-white">
+          <h2 className="mt-2 text-3xl font-bold text-lifeos-text">
             {
               selectedMonth.toLocaleDateString(
                 "en-US",
@@ -482,7 +459,7 @@ export default function MonthlyHabitCalendar() {
             }
           </h2>
 
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-lifeos-text-secondary">
             See consistency across the entire month without changing the simplicity of the weekly tracker.
           </p>
         </div>
@@ -525,7 +502,7 @@ export default function MonthlyHabitCalendar() {
       ==================================== */}
 
       <Card className="p-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
           Habit
         </p>
 
@@ -552,8 +529,8 @@ export default function MonthlyHabitCalendar() {
                   className={[
                     "rounded-xl border px-4 py-2 text-sm font-semibold transition",
                     selected
-                      ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-300"
-                      : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600 hover:text-white",
+                      ? "border-lifeos-accent/60 bg-lifeos-accent/10 text-lifeos-accent"
+                      : "border-lifeos-border bg-lifeos-surface text-lifeos-text-secondary hover:border-lifeos-border hover:text-lifeos-text",
                   ].join(
                     " "
                   )}
@@ -574,11 +551,11 @@ export default function MonthlyHabitCalendar() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <Card className="p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.12em] text-lifeos-muted">
             Consistency
           </p>
 
-          <p className="mt-3 text-3xl font-black text-cyan-400">
+          <p className="mt-3 text-3xl font-bold text-lifeos-accent">
             {
               monthAnalytics?.completionRate ??
               0
@@ -588,11 +565,11 @@ export default function MonthlyHabitCalendar() {
         </Card>
 
         <Card className="p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.12em] text-lifeos-muted">
             Completed
           </p>
 
-          <div className="mt-3 flex items-center gap-2 text-3xl font-black text-emerald-400">
+          <div className="mt-3 flex items-center gap-2 text-3xl font-bold text-lifeos-success">
             <FaCircleCheck className="text-xl" />
 
             <span>
@@ -605,11 +582,11 @@ export default function MonthlyHabitCalendar() {
         </Card>
 
         <Card className="p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.12em] text-lifeos-muted">
             Scheduled
           </p>
 
-          <p className="mt-3 text-3xl font-black text-white">
+          <p className="mt-3 text-3xl font-bold text-lifeos-text">
             {
               monthAnalytics?.scheduledDays ??
               0
@@ -618,11 +595,11 @@ export default function MonthlyHabitCalendar() {
         </Card>
 
         <Card className="p-5">
-          <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-xs uppercase tracking-[0.12em] text-lifeos-muted">
             Current Streak
           </p>
 
-          <div className="mt-3 flex items-center gap-2 text-3xl font-black text-orange-400">
+          <div className="mt-3 flex items-center gap-2 text-3xl font-bold text-lifeos-warning">
             <FaFire className="text-xl" />
 
             <span>
@@ -633,7 +610,7 @@ export default function MonthlyHabitCalendar() {
             </span>
           </div>
 
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-lifeos-muted">
             Best{" "}
             {
               streakAnalytics?.longestStreak ??
@@ -650,7 +627,7 @@ export default function MonthlyHabitCalendar() {
       <Card className="overflow-hidden p-0">
         {/* Weekday Header */}
 
-        <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/60">
+        <div className="grid grid-cols-7 border-b border-lifeos-border bg-lifeos-app/60">
           {WEEKDAY_HEADERS.map(
             (
               day
@@ -659,9 +636,9 @@ export default function MonthlyHabitCalendar() {
                 key={
                   day
                 }
-                className="border-r border-slate-800 px-2 py-3 text-center last:border-r-0"
+                className="border-r border-lifeos-border px-2 py-3 text-center last:border-r-0"
               >
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-lifeos-muted">
                   {
                     day
                   }
@@ -727,12 +704,12 @@ export default function MonthlyHabitCalendar() {
                     dateString
                   }
                   className={[
-                    "relative min-h-[96px] border-b border-r border-slate-800 p-2.5 transition",
+                    "relative min-h-[96px] border-b border-r border-lifeos-border p-2.5 transition",
                     !insideMonth
-                      ? "bg-slate-950/50 opacity-30"
+                      ? "bg-lifeos-app/50 opacity-30"
                       : "",
                     isToday
-                      ? "bg-cyan-500/[0.05]"
+                      ? "bg-lifeos-accent/[0.05]"
                       : "",
                   ].join(
                     " "
@@ -745,10 +722,10 @@ export default function MonthlyHabitCalendar() {
                       className={[
                         "text-sm font-bold",
                         isToday
-                          ? "text-cyan-300"
+                          ? "text-lifeos-accent"
                           : insideMonth
-                            ? "text-slate-300"
-                            : "text-slate-700",
+                            ? "text-lifeos-text-secondary"
+                            : "text-lifeos-muted",
                       ].join(
                         " "
                       )}
@@ -759,7 +736,7 @@ export default function MonthlyHabitCalendar() {
                     </span>
 
                     {isToday && (
-                      <span className="rounded-full bg-cyan-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-cyan-300">
+                      <span className="rounded-full bg-lifeos-accent/10 px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-accent">
                         Today
                       </span>
                     )}
@@ -772,7 +749,7 @@ export default function MonthlyHabitCalendar() {
                       {!scheduled ? (
                         <div
                           title="Rest day"
-                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/70 text-slate-700"
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-lifeos-border bg-lifeos-app/70 text-lifeos-muted"
                         >
                           —
                         </div>
@@ -804,12 +781,12 @@ export default function MonthlyHabitCalendar() {
                           className={[
                             "flex h-9 w-9 items-center justify-center rounded-xl border text-sm font-bold transition",
                             completed
-                              ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300"
+                              ? "border-lifeos-success/60 bg-lifeos-success/15 text-lifeos-success"
                               : isFuture
-                                ? "cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-700"
+                                ? "cursor-not-allowed border-lifeos-border bg-lifeos-surface/40 text-lifeos-muted"
                                 : missed
-                                  ? "border-rose-500/30 bg-rose-500/[0.06] text-rose-400 hover:border-cyan-500/40 hover:bg-cyan-500/10 hover:text-cyan-300"
-                                  : "border-cyan-500/40 bg-cyan-500/[0.06] text-cyan-300 hover:bg-cyan-500/15",
+                                  ? "border-lifeos-danger/30 bg-lifeos-danger/[0.06] text-lifeos-danger hover:border-lifeos-accent/40 hover:bg-lifeos-accent/10 hover:text-lifeos-accent"
+                                  : "border-lifeos-accent/40 bg-lifeos-accent/[0.06] text-lifeos-accent hover:bg-lifeos-accent/15",
                           ].join(
                             " "
                           )}
@@ -828,14 +805,14 @@ export default function MonthlyHabitCalendar() {
                     scheduled && (
                     <p
                       className={[
-                        "mt-2 text-center text-[10px] font-medium uppercase tracking-[0.12em]",
+                        "mt-2 text-center text-[11px] font-medium uppercase tracking-[0.12em]",
                         completed
-                          ? "text-emerald-500"
+                          ? "text-lifeos-success"
                           : isFuture
-                            ? "text-slate-700"
+                            ? "text-lifeos-muted"
                             : missed
-                              ? "text-rose-500"
-                              : "text-cyan-500",
+                              ? "text-lifeos-danger"
+                              : "text-lifeos-accent",
                       ].join(
                         " "
                       )}
@@ -857,24 +834,24 @@ export default function MonthlyHabitCalendar() {
 
         {/* Legend */}
 
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-800 bg-slate-950/50 px-5 py-4 text-xs text-slate-500">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-lifeos-border bg-lifeos-app/50 px-5 py-4 text-xs text-lifeos-muted">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded border border-emerald-400/60 bg-emerald-400/15" />
+            <span className="h-3 w-3 rounded border border-lifeos-success/60 bg-lifeos-success/15" />
             Completed
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded border border-rose-500/30 bg-rose-500/[0.06]" />
+            <span className="h-3 w-3 rounded border border-lifeos-danger/30 bg-lifeos-danger/[0.06]" />
             Missed
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded border border-slate-800 bg-slate-900/40" />
+            <span className="h-3 w-3 rounded border border-lifeos-border bg-lifeos-surface/40" />
             Future
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-slate-700">
+            <span className="text-lifeos-muted">
               —
             </span>
             Rest day

@@ -1,4 +1,5 @@
 import { parseCalendarEventPayload, type CalendarEventPayload, type CalendarEventProposal } from "../calendar/eventProposal.ts";
+import { parseDisconnectOutcome, type GoogleDisconnectOutcome } from "./disconnectOutcome.ts";
 export const GOOGLE_CALENDAR_PROVIDER = "google-calendar" as const;
 
 export type ExternalCalendarProvider = typeof GOOGLE_CALENDAR_PROVIDER;
@@ -45,6 +46,7 @@ export interface GoogleCalendarConnection {
   accountLabel?: string;
   safeError?: string;
   canCreate?: boolean;
+  disconnectOutcome?: GoogleDisconnectOutcome;
 }
 
 export interface GoogleCalendarReadModel {
@@ -66,7 +68,7 @@ export type GoogleCalendarWriteCommand =
   | { action: "create"; approvalId: string; fingerprint: string; payload: CalendarEventPayload; approved: true };
 
 export type GoogleCalendarResponse =
-  | { status: "disconnected" }
+  | { status: "disconnected"; disconnectOutcome?: GoogleDisconnectOutcome }
   | { status: "authorization-required"; authorizationUrl: string }
   | { status: "connected"; accountLabel: string; canCreate?: boolean; proposal?: CalendarEventProposal; createdEvent?: ExternalCalendarEvent; auditRowId?: string; calendars?: ExternalCalendar[]; events?: ExternalCalendarEvent[]; fetchedAt?: string; windowStart?: string; windowEnd?: string }
   | { status: "expired" | "revoked" | "provider-failure"; safeError: string };
@@ -134,7 +136,10 @@ function isCalendarEvent(value: unknown): value is ExternalCalendarEvent {
 
 export function parseGoogleCalendarResponse(value: unknown): GoogleCalendarResponse {
   if (!isRecord(value) || typeof value.status !== "string") throw new Error("Google Calendar returned an invalid response.");
-  if (value.status === "disconnected" && hasExactKeys(value, ["status"])) return { status: "disconnected" };
+  if (value.status === "disconnected" && hasExactKeys(value, ["status"], ["disconnectOutcome"])) return {
+    status: "disconnected",
+    ...(value.disconnectOutcome === undefined ? {} : { disconnectOutcome: parseDisconnectOutcome(value.disconnectOutcome) }),
+  };
   if (value.status === "authorization-required" && hasExactKeys(value, ["status", "authorizationUrl"]) && typeof value.authorizationUrl === "string") {
     return { status: "authorization-required", authorizationUrl: value.authorizationUrl };
   }

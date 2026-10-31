@@ -437,8 +437,8 @@ export default function SmartGoalTimeline({
         className="
           rounded-xl
           border
-          border-slate-800
-          bg-slate-950/35
+          border-lifeos-border
+          bg-lifeos-app/35
           p-4
         "
       >
@@ -459,10 +459,10 @@ export default function SmartGoalTimeline({
               justify-center
               rounded-lg
               border
-              border-cyan-500/20
-              bg-cyan-500/10
+              border-lifeos-accent/20
+              bg-lifeos-accent/10
               text-sm
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             <FaCalendarDays />
@@ -473,7 +473,7 @@ export default function SmartGoalTimeline({
               className="
                 text-sm
                 font-semibold
-                text-slate-300
+                text-lifeos-text-secondary
               "
             >
               Timeline needs a target date
@@ -484,7 +484,7 @@ export default function SmartGoalTimeline({
                 mt-1
                 text-[11px]
                 leading-5
-                text-slate-600
+                text-lifeos-muted
               "
             >
               Add a target date from the goal editor and LifeOS will generate its monthly planning timeline automatically.
@@ -505,8 +505,8 @@ export default function SmartGoalTimeline({
         overflow-hidden
         rounded-xl
         border
-        border-slate-800
-        bg-slate-950/35
+        border-lifeos-border
+        bg-lifeos-app/35
       "
     >
       {/* ======================================
@@ -519,7 +519,7 @@ export default function SmartGoalTimeline({
           flex-col
           gap-3
           border-b
-          border-slate-800
+          border-lifeos-border
           px-4
           py-4
           lg:flex-row
@@ -530,11 +530,11 @@ export default function SmartGoalTimeline({
         <div>
           <p
             className="
-              text-[10px]
+              text-[11px]
               font-bold
               uppercase
               tracking-wider
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             Smart Timeline
@@ -544,7 +544,7 @@ export default function SmartGoalTimeline({
             className="
               mt-1
               text-xs
-              text-slate-500
+              text-lifeos-muted
             "
           >
             LifeOS maps this goal across its real calendar months.
@@ -600,7 +600,7 @@ export default function SmartGoalTimeline({
       <div
         className="
           border-b
-          border-slate-800
+          border-lifeos-border
           px-4
           py-3
         "
@@ -610,8 +610,8 @@ export default function SmartGoalTimeline({
             flex
             items-center
             gap-2
-            text-[10px]
-            text-slate-600
+            text-[11px]
+            text-lifeos-muted
           "
         >
           <span
@@ -620,7 +620,7 @@ export default function SmartGoalTimeline({
               items-center
               gap-1.5
               font-medium
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             <span
@@ -628,7 +628,7 @@ export default function SmartGoalTimeline({
                 h-2
                 w-2
                 rounded-full
-                bg-cyan-400
+                bg-lifeos-accent
               "
             />
 
@@ -639,7 +639,7 @@ export default function SmartGoalTimeline({
             className="
               h-px
               flex-1
-              bg-slate-800
+              bg-lifeos-elevated
             "
           />
 
@@ -649,14 +649,14 @@ export default function SmartGoalTimeline({
               items-center
               gap-1.5
               font-medium
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Target
 
             <FaBullseye
               className="
-                text-cyan-400
+                text-lifeos-accent
               "
             />
           </span>
@@ -717,11 +717,11 @@ function TimelineMetric({
     <div>
       <p
         className="
-          text-[9px]
+          text-[11px]
           font-semibold
           uppercase
           tracking-wider
-          text-slate-600
+          text-lifeos-muted
         "
       >
         {label}
@@ -733,7 +733,7 @@ function TimelineMetric({
           whitespace-nowrap
           text-[11px]
           font-semibold
-          text-slate-300
+          text-lifeos-text-secondary
         "
       >
         {value}
@@ -788,8 +788,8 @@ function GoalMonthSlotCard({
         transition
         ${
           month.isCurrentMonth
-            ? "border-cyan-500/30 bg-cyan-500/5"
-            : "border-slate-800 bg-slate-900/60"
+            ? "border-lifeos-accent/30 bg-lifeos-accent/5"
+            : "border-lifeos-border bg-lifeos-surface/60"
         }
       `}
     >
@@ -810,7 +810,7 @@ function GoalMonthSlotCard({
             className="
               text-xs
               font-semibold
-              text-slate-200
+              text-lifeos-text
             "
           >
             {month.label}
@@ -819,8 +819,8 @@ function GoalMonthSlotCard({
           <p
             className="
               mt-0.5
-              text-[9px]
-              text-slate-600
+              text-[11px]
+              text-lifeos-muted
             "
           >
             {getDateRangeLabel(
@@ -836,14 +836,14 @@ function GoalMonthSlotCard({
             className="
               shrink-0
               rounded
-              bg-cyan-500/10
+              bg-lifeos-accent/10
               px-1.5
               py-0.5
-              text-[9px]
+              text-[11px]
               font-bold
               uppercase
               tracking-wide
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             Now
@@ -868,9 +868,9 @@ function GoalMonthSlotCard({
         {month.isStartMonth && (
           <span
             className="
-              text-[9px]
+              text-[11px]
               font-medium
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             Goal Start
@@ -883,9 +883,9 @@ function GoalMonthSlotCard({
               flex
               items-center
               gap-1
-              text-[9px]
+              text-[11px]
               font-medium
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             <FaBullseye />
@@ -917,8 +917,8 @@ function GoalMonthSlotCard({
                 gap-2
                 rounded-md
                 border
-                border-emerald-500/15
-                bg-emerald-500/5
+                border-lifeos-success/15
+                bg-lifeos-success/5
                 p-2.5
               "
             >
@@ -926,8 +926,8 @@ function GoalMonthSlotCard({
                 className="
                   mt-0.5
                   shrink-0
-                  text-[9px]
-                  text-emerald-400
+                  text-[11px]
+                  text-lifeos-success
                 "
               />
 
@@ -938,7 +938,7 @@ function GoalMonthSlotCard({
                     text-[11px]
                     font-medium
                     leading-4
-                    text-slate-300
+                    text-lifeos-text-secondary
                   "
                 >
                   {outcome.title}
@@ -958,14 +958,14 @@ function GoalMonthSlotCard({
                       flex-1
                       overflow-hidden
                       rounded-full
-                      bg-slate-800
+                      bg-lifeos-elevated
                     "
                   >
                     <div
                       className="
                         h-full
                         rounded-full
-                        bg-emerald-400
+                        bg-lifeos-success
                       "
                       style={{
                         width:
@@ -977,8 +977,8 @@ function GoalMonthSlotCard({
                   <span
                     className="
                       shrink-0
-                      text-[9px]
-                      text-slate-600
+                      text-[11px]
+                      text-lifeos-muted
                     "
                   >
                     {progress}%
@@ -990,11 +990,11 @@ function GoalMonthSlotCard({
             <p
               className="
                 mt-2
-                text-[9px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-emerald-400
+                text-lifeos-success
               "
             >
               Monthly Outcome planned
@@ -1011,15 +1011,15 @@ function GoalMonthSlotCard({
                 rounded-md
                 border
                 border-dashed
-                border-slate-800
+                border-lifeos-border
                 p-3
               "
             >
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-medium
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 No Monthly Outcome
@@ -1028,9 +1028,9 @@ function GoalMonthSlotCard({
               <p
                 className="
                   mt-1
-                  text-[9px]
+                  text-[11px]
                   leading-4
-                  text-slate-700
+                  text-lifeos-muted
                 "
               >
                 Define what this month should accomplish toward the goal.
@@ -1054,16 +1054,16 @@ function GoalMonthSlotCard({
                   gap-1.5
                   rounded-md
                   border
-                  border-cyan-500/20
-                  bg-cyan-500/5
+                  border-lifeos-accent/20
+                  bg-lifeos-accent/5
                   px-2.5
                   py-2
-                  text-[10px]
+                  text-[11px]
                   font-semibold
-                  text-cyan-400
+                  text-lifeos-accent
                   transition
-                  hover:bg-cyan-500/10
-                  hover:text-cyan-300
+                  hover:bg-lifeos-accent/10
+                  hover:text-lifeos-accent
                 "
               >
                 <FaPlus />

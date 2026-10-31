@@ -1,5 +1,4 @@
 import {
-  useEffect,
   useState,
 } from "react";
 
@@ -119,29 +118,11 @@ export default function MonthlyTargetModal({
   // Sync Locked Goal
   // ==========================================
 
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    if (
-      lockedGoalId !==
-      undefined
-    ) {
-      setGoalId(
-        String(
-          lockedGoalId
-        )
-      );
-
-      return;
-    }
-
-    setGoalId("");
-  }, [
-    lockedGoalId,
-    open,
-  ]);
+  const [goalContext, setGoalContext] = useState({ open: false, lockedGoalId });
+  if (goalContext.open !== open || goalContext.lockedGoalId !== lockedGoalId) {
+    setGoalContext({ open, lockedGoalId });
+    if (open) setGoalId(lockedGoalId === undefined ? "" : String(lockedGoalId));
+  }
 
   // ==========================================
   // Reset / Close
@@ -263,8 +244,8 @@ export default function MonthlyTargetModal({
           className="
             rounded-xl
             border
-            border-cyan-500/15
-            bg-cyan-500/5
+            border-lifeos-accent/15
+            bg-lifeos-accent/5
             px-4
             py-4
           "
@@ -282,11 +263,11 @@ export default function MonthlyTargetModal({
             <div className="min-w-0">
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-cyan-400
+                  text-lifeos-accent
                 "
               >
                 Planning Period
@@ -297,7 +278,7 @@ export default function MonthlyTargetModal({
                   mt-1
                   text-base
                   font-semibold
-                  text-white
+                  text-lifeos-text
                 "
               >
                 {planningPeriod}
@@ -306,9 +287,9 @@ export default function MonthlyTargetModal({
               <p
                 className="
                   mt-1
-                  text-[10px]
+                  text-[11px]
                   leading-4
-                  text-slate-600
+                  text-lifeos-muted
                 "
               >
                 Selected automatically from the planning timeline.
@@ -325,11 +306,11 @@ export default function MonthlyTargetModal({
               >
                 <p
                   className="
-                    text-[10px]
+                    text-[11px]
                     font-bold
                     uppercase
                     tracking-wider
-                    text-slate-500
+                    text-lifeos-muted
                   "
                 >
                   Life Goal
@@ -341,7 +322,7 @@ export default function MonthlyTargetModal({
                     truncate
                     text-sm
                     font-medium
-                    text-slate-200
+                    text-lifeos-text
                   "
                 >
                   {lockedGoal.title}
@@ -350,8 +331,8 @@ export default function MonthlyTargetModal({
                 <p
                   className="
                     mt-1
-                    text-[10px]
-                    text-slate-600
+                    text-[11px]
+                    text-lifeos-muted
                   "
                 >
                   Linked automatically
@@ -372,7 +353,7 @@ export default function MonthlyTargetModal({
                 mb-2
                 block
                 text-sm
-                text-slate-400
+                text-lifeos-text-secondary
               "
             >
               Planning Context
@@ -399,15 +380,15 @@ export default function MonthlyTargetModal({
                 w-full
                 rounded-xl
                 border
-                border-slate-800
-                bg-slate-950
+                border-lifeos-border
+                bg-lifeos-app
                 px-4
                 py-3
                 text-sm
-                text-white
+                text-lifeos-text
                 outline-none
                 transition
-                focus:border-cyan-500
+                focus:border-lifeos-accent
               "
             >
               <option value="">
@@ -433,9 +414,9 @@ export default function MonthlyTargetModal({
             <p
               className="
                 mt-2
-                text-[10px]
+                text-[11px]
                 leading-4
-                text-slate-600
+                text-lifeos-muted
               "
             >
               Choose a Life Goal only when this month is being planned outside a goal timeline.
@@ -454,7 +435,7 @@ export default function MonthlyTargetModal({
               block
               text-sm
               font-medium
-              text-slate-300
+              text-lifeos-text-secondary
             "
           >
             What should {planningPeriod} achieve?
@@ -511,8 +492,8 @@ export default function MonthlyTargetModal({
                 mt-3
                 rounded-lg
                 border
-                border-amber-500/20
-                bg-amber-500/5
+                border-lifeos-warning/20
+                bg-lifeos-warning/5
                 px-3
                 py-2
               "
@@ -520,7 +501,7 @@ export default function MonthlyTargetModal({
               <p
                 className="
                   text-xs
-                  text-amber-400
+                  text-lifeos-warning
                 "
               >
                 {error}
@@ -533,7 +514,7 @@ export default function MonthlyTargetModal({
               mt-2
               text-xs
               leading-5
-              text-slate-600
+              text-lifeos-muted
             "
           >
             Keep this outcome focused. LifeOS will break it into real calendar weeks and Universal Tasks later.

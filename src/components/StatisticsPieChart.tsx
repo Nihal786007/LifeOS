@@ -44,8 +44,8 @@ export default function StatisticsPieChart({
   ];
 
   const colors = [
-    "#22c55e",
-    "#f59e0b",
+    "var(--lifeos-success)",
+    "var(--lifeos-warning)",
   ];
 
   return (
@@ -57,7 +57,7 @@ export default function StatisticsPieChart({
       >
         <PieChart>
 
-          <Pie
+          <Pie isAnimationActive={false}
             data={data}
             cx="50%"
             cy="50%"

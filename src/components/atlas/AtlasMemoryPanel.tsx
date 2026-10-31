@@ -53,13 +53,13 @@ export default function AtlasMemoryPanel({
   }
 
   return (
-    <section className="rounded-[1.75rem] border border-violet-400/15 bg-violet-400/[0.035] p-6">
+    <section className="rounded-[var(--lifeos-radius-surface)] border border-lifeos-chart-secondary/15 bg-lifeos-chart-secondary/[0.035] p-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <FaBrain className="text-violet-300" />
+          <FaBrain className="text-lifeos-chart-secondary" />
           <div>
-            <h2 className="font-bold text-white">Memory</h2>
-            <p className="mt-1 text-xs leading-5 text-slate-500">
+            <h2 className="font-bold text-lifeos-text">Memory</h2>
+            <p className="mt-1 text-xs leading-5 text-lifeos-muted">
               Explicit context only · never canonical evidence
             </p>
           </div>
@@ -68,7 +68,7 @@ export default function AtlasMemoryPanel({
           <button
             type="button"
             onClick={() => memory.clearAll()}
-            className="text-[10px] font-bold uppercase tracking-wider text-slate-500 transition hover:text-rose-300"
+            className="text-[11px] font-bold uppercase tracking-wider text-lifeos-muted transition hover:text-lifeos-danger"
           >
             Clear all
           </button>
@@ -82,7 +82,7 @@ export default function AtlasMemoryPanel({
           onChange={(event) =>
             setType(event.target.value as AtlasMemoryType)
           }
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-violet-400/50"
+          className="w-full rounded-xl border border-lifeos-border bg-lifeos-app px-3 py-2.5 text-sm text-lifeos-text outline-none focus:border-lifeos-chart-secondary/50"
         >
           {ATLAS_MEMORY_TYPES.map((value) => (
             <option key={value} value={value}>
@@ -96,7 +96,7 @@ export default function AtlasMemoryPanel({
           maxLength={ATLAS_MEMORY_MAX_TOPIC_LENGTH}
           onChange={(event) => setTopic(event.target.value)}
           placeholder="Topic, e.g. SAT study time"
-          className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-400/50"
+          className="w-full rounded-xl border border-lifeos-border bg-lifeos-app px-3 py-2.5 text-sm text-lifeos-text outline-none placeholder:text-lifeos-muted focus:border-lifeos-chart-secondary/50"
         />
         <textarea
           aria-label="Memory content"
@@ -104,19 +104,19 @@ export default function AtlasMemoryPanel({
           maxLength={ATLAS_MEMORY_MAX_CONTENT_LENGTH}
           onChange={(event) => setContent(event.target.value)}
           placeholder="Exact context you want ATLAS to remember"
-          className="min-h-20 w-full resize-none rounded-xl border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm leading-5 text-slate-200 outline-none placeholder:text-slate-600 focus:border-violet-400/50"
+          className="min-h-20 w-full resize-none rounded-xl border border-lifeos-border bg-lifeos-app px-3 py-2.5 text-sm leading-5 text-lifeos-text outline-none placeholder:text-lifeos-muted focus:border-lifeos-chart-secondary/50"
         />
         {error && (
-          <p className="text-xs text-rose-300">{error}</p>
+          <p className="text-xs text-lifeos-danger">{error}</p>
         )}
         {memory.persistenceError && (
-          <p className="text-xs text-rose-300">{memory.persistenceError}</p>
+          <p className="text-xs text-lifeos-danger">{memory.persistenceError}</p>
         )}
         <button
           type="button"
           disabled={!memory.ready || !topic.trim() || !content.trim()}
           onClick={save}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-violet-300/20 bg-violet-400/10 px-4 py-2.5 text-sm font-bold text-violet-200 transition hover:bg-violet-400/15 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-lifeos-chart-secondary/20 bg-lifeos-chart-secondary/10 px-4 py-2.5 text-sm font-bold text-lifeos-chart-secondary transition hover:bg-lifeos-chart-secondary/15 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <FaFloppyDisk />
           Save explicitly
@@ -127,14 +127,14 @@ export default function AtlasMemoryPanel({
         {memory.activeMemories.map((item) => (
           <article
             key={item.id}
-            className="rounded-xl border border-violet-300/10 bg-slate-950/60 p-4"
+            className="rounded-xl border border-lifeos-chart-secondary/10 bg-lifeos-app/60 p-4"
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-violet-300">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-lifeos-chart-secondary">
                   {TYPE_LABELS[item.type]} · Active
                 </p>
-                <p className="mt-1 text-sm font-semibold text-slate-200">
+                <p className="mt-1 text-sm font-semibold text-lifeos-text">
                   {item.topic}
                 </p>
               </div>
@@ -142,23 +142,23 @@ export default function AtlasMemoryPanel({
                 type="button"
                 aria-label={`Delete memory ${item.topic}`}
                 onClick={() => memory.deleteMemory(item.id)}
-                className="text-slate-600 transition hover:text-rose-300"
+                className="text-lifeos-muted transition hover:text-lifeos-danger"
               >
                 <FaTrashCan />
               </button>
             </div>
-            <p className="mt-2 text-xs leading-5 text-slate-400">
+            <p className="mt-2 text-xs leading-5 text-lifeos-text-secondary">
               {item.content}
             </p>
           </article>
         ))}
 
         {!memory.ready ? (
-          <p className="rounded-xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
+          <p className="rounded-xl border border-dashed border-lifeos-border p-4 text-xs leading-5 text-lifeos-muted">
             Loading explicit memories…
           </p>
         ) : memory.activeMemories.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-700 p-4 text-xs leading-5 text-slate-500">
+          <p className="rounded-xl border border-dashed border-lifeos-border p-4 text-xs leading-5 text-lifeos-muted">
             No active memories. Questions and ATLAS answers are not
             remembered automatically.
           </p>
@@ -166,21 +166,21 @@ export default function AtlasMemoryPanel({
       </div>
 
       {memory.supersededMemories.length > 0 && (
-        <details className="mt-4 border-t border-slate-800 pt-4">
-          <summary className="cursor-pointer text-xs font-semibold text-slate-500">
+        <details className="mt-4 border-t border-lifeos-border pt-4">
+          <summary className="cursor-pointer text-xs font-semibold text-lifeos-muted">
             Superseded history · {memory.supersededMemories.length}
           </summary>
           <div className="mt-3 space-y-2">
             {memory.supersededMemories.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start justify-between gap-3 rounded-xl bg-slate-950/40 p-3"
+                className="flex items-start justify-between gap-3 rounded-xl bg-lifeos-app/40 p-3"
               >
                 <div>
-                  <p className="text-xs font-semibold text-slate-400">
+                  <p className="text-xs font-semibold text-lifeos-text-secondary">
                     {item.topic}
                   </p>
-                  <p className="mt-1 text-xs text-slate-600">
+                  <p className="mt-1 text-xs text-lifeos-muted">
                     {item.content}
                   </p>
                 </div>
@@ -188,7 +188,7 @@ export default function AtlasMemoryPanel({
                   type="button"
                   aria-label={`Delete superseded memory ${item.topic}`}
                   onClick={() => memory.deleteMemory(item.id)}
-                  className="text-slate-700 transition hover:text-rose-300"
+                  className="text-lifeos-muted transition hover:text-lifeos-danger"
                 >
                   <FaTrashCan />
                 </button>

@@ -1,11 +1,10 @@
+import { AchievementContext } from "./achievementContextValue";
 // ==========================================
 // LifeOS Achievement Context
 // Version: 1.0
 // ==========================================
 
 import {
-  createContext,
-  useContext,
   useEffect,
   useState,
 } from "react";
@@ -16,24 +15,6 @@ import type {
   Achievement,
 } from "../shared/achievements";
 
-interface AchievementContextType {
-  unlockedAchievements: Achievement[];
-
-  unlockAchievement: (
-    achievement: Achievement
-  ) => void;
-
-  isUnlocked: (
-    achievementId: string
-  ) => boolean;
-
-  clearAchievements: () => void;
-}
-
-const AchievementContext =
-  createContext<
-    AchievementContextType | null
-  >(null);
 
 const STORAGE_KEY =
   "lifeos-achievements";
@@ -119,19 +100,4 @@ export function AchievementProvider({
       {children}
     </AchievementContext.Provider>
   );
-}
-
-export function useAchievements() {
-  const context =
-    useContext(
-      AchievementContext
-    );
-
-  if (!context) {
-    throw new Error(
-      "useAchievements must be used inside AchievementProvider."
-    );
-  }
-
-  return context;
 }

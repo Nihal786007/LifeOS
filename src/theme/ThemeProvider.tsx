@@ -11,8 +11,8 @@ import { ThemeContext } from "./themeContext";
 
 const systemDarkQuery = "(prefers-color-scheme: dark)";
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreference] = useState<AppearancePreference>(() => readAppearancePreference(window.localStorage));
+export function ThemeProvider({ children, storage = window.localStorage }: { children: ReactNode; storage?: Pick<Storage, "getItem" | "setItem"> }) {
+  const [preference, setPreference] = useState<AppearancePreference>(() => readAppearancePreference(storage));
   const [systemDark, setSystemDark] = useState(() => window.matchMedia(systemDarkQuery).matches);
   const resolvedTheme = resolveTheme(preference, systemDark);
 
@@ -23,7 +23,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => watchSystemTheme(window.matchMedia(systemDarkQuery), setSystemDark), []);
 
   function updatePreference(next: AppearancePreference) {
-    if (!saveAppearancePreference(window.localStorage, next)) return;
+    if (!saveAppearancePreference(storage, next)) return;
     setPreference(next);
   }
 

@@ -20,8 +20,8 @@ export default function AtlasSuggestionCard({
         mt-6
         rounded-2xl
         border
-        border-cyan-500/30
-        bg-cyan-500/10
+        border-lifeos-accent/30
+        bg-lifeos-accent/10
         p-5
         backdrop-blur-md
       "
@@ -30,17 +30,17 @@ export default function AtlasSuggestionCard({
 
       <div className="flex items-center gap-3">
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/20 text-2xl">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-lifeos-accent/20 text-2xl">
           🤖
         </div>
 
         <div>
 
-          <p className="text-xs uppercase tracking-[0.25em] text-cyan-400">
+          <p className="text-xs uppercase tracking-[0.12em] text-lifeos-accent">
             ATLAS Intelligence
           </p>
 
-          <h3 className="mt-1 text-xl font-bold text-white">
+          <h3 className="mt-1 text-xl font-bold text-lifeos-text">
             {suggestion.title}
           </h3>
 
@@ -52,14 +52,14 @@ export default function AtlasSuggestionCard({
 
       <div className="mt-6">
 
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <p className="text-xs uppercase tracking-[0.12em] text-lifeos-text-secondary">
           Confidence
         </p>
 
-        <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-2 h-3 overflow-hidden rounded-full bg-lifeos-elevated">
 
           <div
-            className="h-full rounded-full bg-cyan-400 transition-all duration-500"
+            className="h-full rounded-full bg-lifeos-accent transition-all duration-500"
             style={{
               width: `${suggestion.confidence}%`,
             }}
@@ -67,7 +67,7 @@ export default function AtlasSuggestionCard({
 
         </div>
 
-        <p className="mt-2 text-sm text-cyan-300">
+        <p className="mt-2 text-sm text-lifeos-accent">
           {suggestion.confidence}% confidence
         </p>
 
@@ -77,11 +77,11 @@ export default function AtlasSuggestionCard({
 
       <div className="mt-6">
 
-        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+        <p className="text-xs uppercase tracking-[0.12em] text-lifeos-text-secondary">
           Reason
         </p>
 
-        <p className="mt-2 leading-7 text-slate-300">
+        <p className="mt-2 leading-7 text-lifeos-text-secondary">
           {suggestion.reason}
         </p>
 

@@ -109,7 +109,7 @@ export default function AnalyticsBarChart({
                 "12px",
 
               boxShadow:
-                "0 10px 30px rgba(0,0,0,0.35)",
+                "var(--lifeos-shadow-surface)",
             }}
             labelStyle={{
               color:
@@ -133,16 +133,16 @@ export default function AnalyticsBarChart({
             ]}
           />
 
-          <Bar
+          <Bar isAnimationActive={false}
             dataKey={
               dataKey
             }
             fill={
               metric === "xp"
-                ? "#facc15"
+                ? "var(--lifeos-chart-secondary)"
                 : metric === "completion"
-                  ? "#22c55e"
-                  : "#22d3ee"
+                  ? "var(--lifeos-success)"
+                  : "var(--lifeos-accent)"
             }
             radius={[
               6,

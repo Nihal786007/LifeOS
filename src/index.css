@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 @theme inline {
+  --color-lifeos-danger-foreground: var(--lifeos-danger-foreground);
+  --color-lifeos-success-foreground: var(--lifeos-success-foreground);
+  --color-lifeos-warning-foreground: var(--lifeos-warning-foreground);
+  --color-lifeos-chart-secondary: var(--lifeos-chart-secondary);
+  --color-lifeos-heatmap-1: var(--lifeos-heatmap-1);
+  --color-lifeos-heatmap-2: var(--lifeos-heatmap-2);
+  --color-lifeos-heatmap-3: var(--lifeos-heatmap-3);
+  --color-lifeos-heatmap-4: var(--lifeos-heatmap-4);
   --color-lifeos-app: var(--lifeos-app);
   --color-lifeos-surface: var(--lifeos-surface);
   --color-lifeos-surface-secondary: var(--lifeos-surface-secondary);
@@ -24,56 +32,64 @@
 
 :root {
   color-scheme: dark;
-  --lifeos-app: #0b1220;
-  --lifeos-surface: #111b2c;
-  --lifeos-surface-secondary: #172337;
-  --lifeos-elevated: #1e2d43;
-  --lifeos-text: #f8fafc;
-  --lifeos-text-secondary: #cbd5e1;
-  --lifeos-muted: #94a3b8;
-  --lifeos-border: #334155;
-  --lifeos-divider: #263548;
-  --lifeos-input: #0f1a2b;
-  --lifeos-hover: #25364d;
-  --lifeos-selected: #164e63;
-  --lifeos-accent: #22d3ee;
-  --lifeos-accent-foreground: #082f49;
-  --lifeos-success: #6ee7b7;
-  --lifeos-warning: #fcd34d;
-  --lifeos-danger: #fca5a5;
-  --lifeos-focus: #22d3ee;
-  --lifeos-overlay: rgb(2 6 23 / 76%);
-  --lifeos-chart-grid: #334155;
-  --lifeos-chart-label: #cbd5e1;
-  --lifeos-radius-surface: 1.5rem;
-  --lifeos-radius-control: .75rem;
-  --lifeos-shadow-surface: 0 12px 32px rgb(2 6 23 / 10%);
+  --lifeos-app: #10141c;
+  --lifeos-surface: #171d27;
+  --lifeos-surface-secondary: #1b2330;
+  --lifeos-elevated: #242e3d;
+  --lifeos-text: #eef2f7;
+  --lifeos-text-secondary: #c1cad8;
+  --lifeos-muted: #a0aec0;
+  --lifeos-border: #3b485b;
+  --lifeos-divider: #2c3748;
+  --lifeos-input: #141b25;
+  --lifeos-hover: #2a3749;
+  --lifeos-selected: #203d4c;
+  --lifeos-accent: #79c4db;
+  --lifeos-accent-foreground: #102a35;
+  --lifeos-success: #8bc9a8;
+  --lifeos-warning: #e8bf83;
+  --lifeos-danger: #eca3a8;
+  --lifeos-focus: #79c4db;
+  --lifeos-overlay: rgb(5 9 16 / 76%);
+  --lifeos-chart-grid: #344154;
+  --lifeos-chart-label: #b7c4d4;
+  --lifeos-radius-surface: 1rem;
+  --lifeos-radius-control: .625rem;
+  --lifeos-shadow-surface: 0 4px 18px rgb(0 0 0 / 10%);
+  --lifeos-danger-foreground: #301218;
+  --lifeos-success-foreground: #102b1d;
+  --lifeos-warning-foreground: #32230d;
+  --lifeos-chart-secondary: #aface2;
+  --lifeos-heatmap-1: #263a46;
+  --lifeos-heatmap-2: #365869;
+  --lifeos-heatmap-3: #52869c;
+  --lifeos-heatmap-4: #8cc8d9;
 }
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --lifeos-app: #f3f5f9;
+  --lifeos-app: #f4f6f9;
   --lifeos-surface: #ffffff;
   --lifeos-surface-secondary: #f8fafc;
-  --lifeos-elevated: #e9eef5;
-  --lifeos-text: #142033;
-  --lifeos-text-secondary: #334155;
-  --lifeos-muted: #475569;
-  --lifeos-border: #cbd5e1;
-  --lifeos-divider: #dbe2eb;
+  --lifeos-elevated: #edf1f6;
+  --lifeos-text: #192638;
+  --lifeos-text-secondary: #3e5067;
+  --lifeos-muted: #596b81;
+  --lifeos-border: #c7d1de;
+  --lifeos-divider: #e0e6ee;
   --lifeos-input: #ffffff;
-  --lifeos-hover: #e9eef5;
-  --lifeos-selected: #d6f2f7;
-  --lifeos-accent: #0e7490;
+  --lifeos-hover: #e8eef5;
+  --lifeos-selected: #e0f0f5;
+  --lifeos-accent: #176b84;
   --lifeos-accent-foreground: #ffffff;
-  --lifeos-success: #047857;
-  --lifeos-warning: #92400e;
-  --lifeos-danger: #b91c1c;
-  --lifeos-focus: #0891b2;
-  --lifeos-overlay: rgb(15 23 42 / 55%);
-  --lifeos-chart-grid: #cbd5e1;
-  --lifeos-chart-label: #334155;
-  --lifeos-shadow-surface: 0 10px 28px rgb(15 23 42 / 6%);
+  --lifeos-success: #216e4b;
+  --lifeos-warning: #8b5315;
+  --lifeos-danger: #b53643;
+  --lifeos-focus: #176b84;
+  --lifeos-overlay: rgb(15 25 42 / 50%);
+  --lifeos-chart-grid: #d9e1ec;
+  --lifeos-chart-label: #455970;
+  --lifeos-shadow-surface: 0 3px 16px rgb(24 39 60 / 5%);
 
   /* Compatibility bridge for dark-first legacy utilities. Surface variables
      remain the one source of theme truth while screens adopt semantic classes. */
@@ -87,6 +103,14 @@
   --color-slate-300: var(--lifeos-text-secondary);
   --color-slate-200: var(--lifeos-text);
   --color-slate-100: var(--lifeos-text);
+  --lifeos-danger-foreground: #ffffff;
+  --lifeos-success-foreground: #ffffff;
+  --lifeos-warning-foreground: #ffffff;
+  --lifeos-chart-secondary: #6a58a0;
+  --lifeos-heatmap-1: #e2edf1;
+  --lifeos-heatmap-2: #b8d2dd;
+  --lifeos-heatmap-3: #679eb1;
+  --lifeos-heatmap-4: #176b84;
 }
 
 html,
@@ -98,14 +122,17 @@ body,
 }
 
 body {
-  font-family: Inter, Arial, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   background: var(--lifeos-app);
   color: var(--lifeos-text);
 }
 
-.lifeos-page-header { border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-surface); background: var(--lifeos-surface-secondary); padding: clamp(1.5rem, 3vw, 2.25rem); box-shadow: var(--lifeos-shadow-surface); }
-.lifeos-page-eyebrow { color: var(--lifeos-accent); font-size: .75rem; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
-.lifeos-page-title { margin-top: .6rem; color: var(--lifeos-text); font-size: clamp(2rem, 3.2vw, 2.75rem); font-weight: 800; line-height: 1.12; letter-spacing: -.025em; }
+.lifeos-page-header { border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-surface); background: var(--lifeos-surface-secondary); padding: clamp(1.25rem, 2.6vw, 2rem); box-shadow: var(--lifeos-shadow-surface); }
+.lifeos-page-eyebrow { color: var(--lifeos-accent); font-size: .75rem; font-weight: 650; letter-spacing: .12em; text-transform: uppercase; }
+.lifeos-page-title { margin-top: .6rem; color: var(--lifeos-text); font-size: clamp(1.75rem, 2.6vw, 2.35rem); font-weight: 700; line-height: 1.12; letter-spacing: -.025em; }
 .lifeos-page-description { margin-top: .8rem; max-width: 44rem; color: var(--lifeos-text-secondary); font-size: .95rem; line-height: 1.6; }
 .lifeos-surface-panel { border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-surface); background: var(--lifeos-surface); box-shadow: var(--lifeos-shadow-surface); }
 .lifeos-field { min-height: 2.75rem; border: 1px solid var(--lifeos-border); border-radius: var(--lifeos-radius-control); background: var(--lifeos-input); color: var(--lifeos-text); padding: .65rem 1rem; transition: border-color .15s, box-shadow .15s; }
@@ -135,4 +162,41 @@ body {
 :where(button, input, select, textarea):disabled {
   cursor: not-allowed;
   opacity: .55;
+}
+
+/* Premium theme: presentation only; no domain state or persistence. */
+button, input, select, textarea { font-family: inherit; }
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button:not(:disabled), summary { cursor: pointer; }
+button { touch-action: manipulation; }
+summary { border-radius: var(--lifeos-radius-control); }
+summary:focus-visible { outline: 2px solid var(--lifeos-focus); outline-offset: 4px; }
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea { accent-color: var(--lifeos-accent); }
+input, select, textarea { caret-color: var(--lifeos-accent); }
+input[aria-invalid="true"], select[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--lifeos-danger); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--lifeos-accent); }
+::selection { background: var(--lifeos-selected); color: var(--lifeos-text); }
+dialog { overscroll-behavior: contain; }
+dialog::backdrop { background: var(--lifeos-overlay); }
+table { font-variant-numeric: tabular-nums; }
+th { font-weight: 600; }
+.lifeos-surface-panel, .lifeos-page-header { min-width: 0; }
+.lifeos-page-title { overflow-wrap: anywhere; }
+.lifeos-field { font-size: 1rem; }
+.lifeos-icon-button:active:not(:disabled) { background: var(--lifeos-selected); }
+.lifeos-status-pill { letter-spacing: .015em; }
+.recharts-tooltip-wrapper { z-index: 20; }
+.recharts-default-tooltip { box-shadow: var(--lifeos-shadow-surface); }
+@media (max-width: 639px) {
+  dialog form, dialog footer { min-width: 0; }
+  dialog .lifeos-dialog-actions { flex-wrap: wrap; }
+  .lifeos-page-description { font-size: .9375rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Prevent iOS text-entry zoom without shrinking checkboxes or compact grids. */
+@media (max-width: 639px) {
+ input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), select, textarea { font-size: 1rem; }
 }

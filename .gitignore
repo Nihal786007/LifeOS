@@ -12,6 +12,39 @@ dist
 dist-ssr
 *.local
 
+# Local environment values; keep deliberate public configuration examples visible.
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Private keys and encrypted recovery material (not source fixtures).
+*.pem
+*.key
+*.pfx
+*.p12
+*.p8
+*.dpapi
+*.cms
+*.aesgcm
+
+# Database exports and dedicated local-only verification/storage directories.
+*.dump
+*.dump.gz
+*.backup
+*.sql.gz
+*.sql.zst
+/backups/
+/recovery-private/
+/.local-verification/
+/.pgdata/
+/postgresql-data/
+
+# Machine-bound companions require a private harness; preserve locally, never publish.
+/tools/verification/calendarRecoveryRehearsal.mjs
+/tools/verification/calendarCmsRecoveryRehearsal.mjs
+/tools/verification/calendarSyntheticKeyCustody.ps1
+
 # Supabase CLI machine-local linkage and cache
 supabase/.temp/
 
@@ -25,3 +58,4 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+dist-real-app-demo/

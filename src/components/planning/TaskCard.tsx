@@ -51,9 +51,9 @@ export default function TaskCard({
     );
 
   const priorityColor = {
-    low: "text-green-400",
-    medium: "text-yellow-400",
-    high: "text-red-400",
+    low: "text-lifeos-success",
+    medium: "text-lifeos-warning",
+    high: "text-lifeos-danger",
   };
 
   function handleToggleTask() {
@@ -82,12 +82,12 @@ export default function TaskCard({
     <Card>
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-xl font-bold text-white">
+          <h3 className="text-xl font-bold text-lifeos-text">
             {task.title}
           </h3>
 
           {weeklyTarget && (
-            <p className="mt-2 text-cyan-400">
+            <p className="mt-2 text-lifeos-accent">
               📆 {weeklyTarget.title}
             </p>
           )}
@@ -118,7 +118,7 @@ export default function TaskCard({
 
         <button
           onClick={handleDeleteTask}
-          className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+          className="rounded-xl p-3 text-lifeos-danger transition hover:bg-lifeos-danger/10"
           aria-label={`Delete ${task.title}`}
         >
           <FaTrash />
@@ -127,7 +127,7 @@ export default function TaskCard({
 
       <div className="mt-6 flex items-center justify-between">
         <div>
-          <div className="flex items-center gap-2 text-sm text-slate-400">
+          <div className="flex items-center gap-2 text-sm text-lifeos-text-secondary">
             <FaCalendarAlt />
 
             <span>
@@ -139,7 +139,7 @@ export default function TaskCard({
           </div>
 
           {task.completedAt && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-green-400">
+            <div className="mt-2 flex items-center gap-2 text-sm text-lifeos-success">
               <FaCheckCircle />
 
               <span>

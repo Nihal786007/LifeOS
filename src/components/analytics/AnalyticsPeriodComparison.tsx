@@ -44,14 +44,14 @@ function getDirectionTextColor(
 ): string {
   switch (metric.direction) {
     case "up":
-      return "text-emerald-300";
+      return "text-lifeos-success";
 
     case "down":
-      return "text-rose-300";
+      return "text-lifeos-danger";
 
     case "same":
     default:
-      return "text-slate-400";
+      return "text-lifeos-text-secondary";
   }
 }
 
@@ -60,14 +60,14 @@ function getDirectionBackground(
 ): string {
   switch (metric.direction) {
     case "up":
-      return "border-emerald-400/15 bg-emerald-400/5";
+      return "border-lifeos-success/15 bg-lifeos-success/5";
 
     case "down":
-      return "border-rose-400/15 bg-rose-400/5";
+      return "border-lifeos-danger/15 bg-lifeos-danger/5";
 
     case "same":
     default:
-      return "border-slate-700 bg-slate-900/50";
+      return "border-lifeos-border bg-lifeos-surface/50";
   }
 }
 
@@ -134,13 +134,13 @@ export default function AnalyticsPeriodComparison({
 
       <div className="flex flex-wrap items-center gap-3">
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-border bg-lifeos-app/50 px-4 py-3">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Previous
           </p>
 
-          <p className="mt-1 text-sm font-semibold text-slate-300">
+          <p className="mt-1 text-sm font-semibold text-lifeos-text-secondary">
             {
               analytics.previousLabel
             }
@@ -148,17 +148,17 @@ export default function AnalyticsPeriodComparison({
 
         </div>
 
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-800 bg-slate-950 text-xs text-slate-500">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-lifeos-border bg-lifeos-app text-xs text-lifeos-muted">
           <FaArrowRight />
         </div>
 
-        <div className="rounded-xl border border-cyan-400/15 bg-cyan-400/5 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-accent/15 bg-lifeos-accent/5 px-4 py-3">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400/70">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
             Current
           </p>
 
-          <p className="mt-1 text-sm font-semibold text-cyan-200">
+          <p className="mt-1 text-sm font-semibold text-lifeos-accent">
             {
               analytics.currentLabel
             }
@@ -180,14 +180,14 @@ export default function AnalyticsPeriodComparison({
               key={
                 metric.key
               }
-              className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5"
+              className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-5"
             >
 
               <div className="flex items-start justify-between gap-4">
 
                 <div>
 
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
                     {
                       metric.label
                     }
@@ -195,7 +195,7 @@ export default function AnalyticsPeriodComparison({
 
                   <div className="mt-4 flex items-center gap-3">
 
-                    <span className="text-sm font-semibold text-slate-500">
+                    <span className="text-sm font-semibold text-lifeos-muted">
                       {
                         formatValue(
                           metric,
@@ -204,9 +204,9 @@ export default function AnalyticsPeriodComparison({
                       }
                     </span>
 
-                    <FaArrowRight className="text-[10px] text-slate-700" />
+                    <FaArrowRight className="text-[11px] text-lifeos-muted" />
 
-                    <span className="text-xl font-black text-white">
+                    <span className="text-xl font-bold text-lifeos-text">
                       {
                         formatValue(
                           metric,
@@ -249,7 +249,7 @@ export default function AnalyticsPeriodComparison({
 
               </div>
 
-              <div className="mt-5 border-t border-slate-800 pt-4">
+              <div className="mt-5 border-t border-lifeos-border pt-4">
 
                 <p
                   className={`
@@ -268,7 +268,7 @@ export default function AnalyticsPeriodComparison({
                   }
                 </p>
 
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-lifeos-muted">
                   compared with the previous period
                 </p>
 

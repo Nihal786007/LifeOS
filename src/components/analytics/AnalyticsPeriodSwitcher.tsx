@@ -76,8 +76,8 @@ export default function AnalyticsPeriodSwitcher({
         max-w-xl
         rounded-xl
         border
-        border-slate-800
-        bg-slate-950/70
+        border-lifeos-border
+        bg-lifeos-app/70
         p-1
       "
     >
@@ -114,8 +114,8 @@ export default function AnalyticsPeriodSwitcher({
 
                 ${
                   active
-                    ? "bg-cyan-500/15 text-cyan-300 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                    : "text-slate-500 hover:bg-slate-900 hover:text-slate-300"
+                    ? "bg-lifeos-accent/15 text-lifeos-accent shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
+                    : "text-lifeos-muted hover:bg-lifeos-surface hover:text-lifeos-text-secondary"
                 }
               `}
               aria-pressed={
@@ -128,8 +128,8 @@ export default function AnalyticsPeriodSwitcher({
 
                   ${
                     active
-                      ? "text-cyan-400"
-                      : "text-slate-600"
+                      ? "text-lifeos-accent"
+                      : "text-lifeos-muted"
                   }
                 `}
               >

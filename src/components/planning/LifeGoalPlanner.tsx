@@ -406,7 +406,7 @@ export default function LifeGoalPlanner() {
               className="
                 text-xs
                 font-medium
-                text-slate-500
+                text-lifeos-muted
               "
             >
               {orderedGoals.length ===
@@ -425,8 +425,8 @@ export default function LifeGoalPlanner() {
               <p
                 className="
                   mt-0.5
-                  text-[10px]
-                  text-slate-700
+                  text-[11px]
+                  text-lifeos-muted
                 "
               >
                 Select a goal to enter its planning workspace.
@@ -448,17 +448,17 @@ export default function LifeGoalPlanner() {
               gap-2
               rounded-lg
               border
-              border-cyan-500/25
-              bg-cyan-500/10
+              border-lifeos-accent/25
+              bg-lifeos-accent/10
               px-3
               py-2
               text-xs
               font-semibold
-              text-cyan-300
+              text-lifeos-accent
               transition
-              hover:border-cyan-400/40
-              hover:bg-cyan-500/15
-              hover:text-cyan-200
+              hover:border-lifeos-accent/40
+              hover:bg-lifeos-accent/15
+              hover:text-lifeos-accent
             "
           >
             <FaPlus />
@@ -478,8 +478,8 @@ export default function LifeGoalPlanner() {
               rounded-xl
               border
               border-dashed
-              border-slate-800
-              bg-slate-950/40
+              border-lifeos-border
+              bg-lifeos-app/40
               px-6
               py-12
               text-center
@@ -495,9 +495,9 @@ export default function LifeGoalPlanner() {
                 justify-center
                 rounded-xl
                 border
-                border-cyan-500/20
-                bg-cyan-500/10
-                text-cyan-400
+                border-lifeos-accent/20
+                bg-lifeos-accent/10
+                text-lifeos-accent
               "
             >
               <FaFlagCheckered />
@@ -508,7 +508,7 @@ export default function LifeGoalPlanner() {
                 mt-4
                 text-sm
                 font-semibold
-                text-slate-300
+                text-lifeos-text-secondary
               "
             >
               No Life Goals yet
@@ -521,7 +521,7 @@ export default function LifeGoalPlanner() {
                 max-w-md
                 text-xs
                 leading-5
-                text-slate-600
+                text-lifeos-muted
               "
             >
               Create a long-term outcome and LifeOS will organize it into Monthly Outcomes, real calendar weeks, and Tasks.
@@ -569,8 +569,8 @@ export default function LifeGoalPlanner() {
                       transition
                       ${
                         goalExpanded
-                          ? "border-cyan-500/20 bg-slate-950/45"
-                          : "border-slate-800 bg-slate-950/35"
+                          ? "border-lifeos-accent/20 bg-lifeos-app/45"
+                          : "border-lifeos-border bg-lifeos-app/35"
                       }
                     `}
                   >
@@ -603,10 +603,10 @@ export default function LifeGoalPlanner() {
                           items-center
                           justify-center
                           rounded-md
-                          text-slate-500
+                          text-lifeos-muted
                           transition
-                          hover:bg-slate-800
-                          hover:text-white
+                          hover:bg-lifeos-elevated
+                          hover:text-lifeos-text
                         "
                         aria-label={
                           goalExpanded
@@ -650,8 +650,8 @@ export default function LifeGoalPlanner() {
                               font-semibold
                               ${
                                 goal.completed
-                                  ? "text-slate-500 line-through"
-                                  : "text-white"
+                                  ? "text-lifeos-muted line-through"
+                                  : "text-lifeos-text"
                               }
                             `}
                           >
@@ -663,7 +663,7 @@ export default function LifeGoalPlanner() {
                               className="
                                 hidden
                                 text-[11px]
-                                text-slate-600
+                                text-lifeos-muted
                                 md:inline
                               "
                             >
@@ -688,14 +688,14 @@ export default function LifeGoalPlanner() {
                               flex-1
                               overflow-hidden
                               rounded-full
-                              bg-slate-800
+                              bg-lifeos-elevated
                             "
                           >
                             <div
                               className="
                                 h-full
                                 rounded-full
-                                bg-cyan-400
+                                bg-lifeos-accent
                                 transition-all
                                 duration-300
                               "
@@ -710,7 +710,7 @@ export default function LifeGoalPlanner() {
                             className="
                               text-[11px]
                               font-medium
-                              text-slate-400
+                              text-lifeos-text-secondary
                             "
                           >
                             {progress}%
@@ -720,7 +720,7 @@ export default function LifeGoalPlanner() {
                             className="
                               hidden
                               text-[11px]
-                              text-slate-600
+                              text-lifeos-muted
                               sm:inline
                             "
                           >
@@ -742,13 +742,13 @@ export default function LifeGoalPlanner() {
                           border
                           px-2
                           py-1
-                          text-[10px]
+                          text-[11px]
                           font-medium
                           sm:inline
                           ${
                             goal.completed
-                              ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                              : "border-cyan-500/20 bg-cyan-500/10 text-cyan-300"
+                              ? "border-lifeos-success/20 bg-lifeos-success/10 text-lifeos-success"
+                              : "border-lifeos-accent/20 bg-lifeos-accent/10 text-lifeos-accent"
                           }
                         `}
                       >
@@ -772,10 +772,10 @@ export default function LifeGoalPlanner() {
                           items-center
                           justify-center
                           rounded-md
-                          text-slate-600
+                          text-lifeos-muted
                           transition
-                          hover:bg-red-500/10
-                          hover:text-red-400
+                          hover:bg-lifeos-danger/10
+                          hover:text-lifeos-danger
                         "
                         aria-label="Delete goal"
                       >
@@ -791,8 +791,8 @@ export default function LifeGoalPlanner() {
                       <div
                         className="
                           border-t
-                          border-slate-800
-                          bg-slate-950/20
+                          border-lifeos-border
+                          bg-lifeos-app/20
                         "
                       >
                         {/* =====================
@@ -802,7 +802,7 @@ export default function LifeGoalPlanner() {
                         <div
                           className="
                             border-b
-                            border-slate-800
+                            border-lifeos-border
                             px-4
                             py-4
                           "
@@ -820,11 +820,11 @@ export default function LifeGoalPlanner() {
                             <div className="min-w-0">
                               <p
                                 className="
-                                  text-[10px]
+                                  text-[11px]
                                   font-bold
                                   uppercase
-                                  tracking-[0.18em]
-                                  text-cyan-400
+                                  tracking-[0.12em]
+                                  text-lifeos-accent
                                 "
                               >
                                 Goal Workspace
@@ -837,7 +837,7 @@ export default function LifeGoalPlanner() {
                                     max-w-3xl
                                     text-xs
                                     leading-5
-                                    text-slate-400
+                                    text-lifeos-text-secondary
                                   "
                                 >
                                   {
@@ -849,7 +849,7 @@ export default function LifeGoalPlanner() {
                                   className="
                                     mt-2
                                     text-xs
-                                    text-slate-600
+                                    text-lifeos-muted
                                   "
                                 >
                                   No description added yet.
@@ -893,7 +893,7 @@ export default function LifeGoalPlanner() {
                           className="
                             space-y-3
                             border-b
-                            border-slate-800
+                            border-lifeos-border
                             px-3
                             py-4
                             sm:px-4
@@ -962,8 +962,8 @@ export default function LifeGoalPlanner() {
                                 rounded-lg
                                 border
                                 border-dashed
-                                border-slate-800
-                                bg-slate-950/30
+                                border-lifeos-border
+                                bg-lifeos-app/30
                                 px-4
                                 py-6
                                 text-center
@@ -973,7 +973,7 @@ export default function LifeGoalPlanner() {
                                 className="
                                   text-xs
                                   font-medium
-                                  text-slate-400
+                                  text-lifeos-text-secondary
                                 "
                               >
                                 No Monthly Outcomes yet
@@ -982,9 +982,9 @@ export default function LifeGoalPlanner() {
                               <p
                                 className="
                                   mt-1
-                                  text-[10px]
+                                  text-[11px]
                                   leading-5
-                                  text-slate-600
+                                  text-lifeos-muted
                                 "
                               >
                                 Choose an unplanned month from the Smart Timeline above. LifeOS already knows the goal, month, and year.
@@ -1098,11 +1098,11 @@ function WorkspaceDate({
     <div>
       <p
         className="
-          text-[9px]
+          text-[11px]
           font-semibold
           uppercase
           tracking-wider
-          text-slate-600
+          text-lifeos-muted
         "
       >
         {label}
@@ -1114,7 +1114,7 @@ function WorkspaceDate({
           whitespace-nowrap
           text-xs
           font-medium
-          text-slate-300
+          text-lifeos-text-secondary
         "
       >
         {value}
@@ -1155,7 +1155,7 @@ function SectionHeading({
           className="
             text-xs
             font-semibold
-            text-slate-300
+            text-lifeos-text-secondary
           "
         >
           {title}
@@ -1164,9 +1164,9 @@ function SectionHeading({
         <p
           className="
             mt-0.5
-            text-[10px]
+            text-[11px]
             leading-4
-            text-slate-600
+            text-lifeos-muted
           "
         >
           {description}
@@ -1176,9 +1176,9 @@ function SectionHeading({
       {trailing && (
         <span
           className="
-            text-[10px]
+            text-[11px]
             font-medium
-            text-slate-500
+            text-lifeos-muted
           "
         >
           {trailing}

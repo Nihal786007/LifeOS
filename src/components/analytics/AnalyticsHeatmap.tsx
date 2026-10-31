@@ -229,20 +229,20 @@ function getIntensityClass(
 ): string {
   switch (intensity) {
     case 1:
-      return "bg-cyan-950/80 border-cyan-900/70";
+      return "bg-lifeos-heatmap-1 border-lifeos-border";
 
     case 2:
-      return "bg-cyan-900/80 border-cyan-700/60";
+      return "bg-lifeos-heatmap-2 border-lifeos-border";
 
     case 3:
-      return "bg-cyan-700/80 border-cyan-500/60";
+      return "bg-lifeos-heatmap-3 border-lifeos-border";
 
     case 4:
-      return "bg-cyan-400 border-cyan-300";
+      return "bg-lifeos-heatmap-4 border-lifeos-border";
 
     case 0:
     default:
-      return "bg-slate-900 border-slate-800";
+      return "bg-lifeos-surface border-lifeos-border";
   }
 }
 
@@ -289,7 +289,7 @@ function ActivityCell({
           transition
           hover:scale-110
           hover:ring-2
-          hover:ring-cyan-400/40
+          hover:ring-lifeos-accent/40
 
           ${
             compact
@@ -305,14 +305,14 @@ function ActivityCell({
         {showDayNumber && (
           <span
             className={`
-              text-[10px]
+              text-[11px]
               font-semibold
 
               ${
                 point.intensity >=
                 3
-                  ? "text-slate-950"
-                  : "text-slate-400"
+                  ? "text-lifeos-accent-foreground"
+                  : "text-lifeos-text-secondary"
               }
             `}
           >
@@ -341,8 +341,8 @@ function ActivityCell({
           -translate-x-1/2
           rounded-lg
           border
-          border-slate-700
-          bg-slate-950
+          border-lifeos-border
+          bg-lifeos-app
           px-3
           py-2.5
           text-xs
@@ -350,7 +350,7 @@ function ActivityCell({
           group-hover:block
         "
       >
-        <p className="font-semibold text-white">
+        <p className="font-semibold text-lifeos-text">
           {
             formatTooltipDate(
               point.date
@@ -360,18 +360,18 @@ function ActivityCell({
 
         <div className="mt-2 space-y-1">
 
-          <p className="text-slate-400">
+          <p className="text-lifeos-text-secondary">
             Completed{" "}
-            <span className="font-semibold text-slate-200">
+            <span className="font-semibold text-lifeos-text">
               {
                 point.completedTasks
               }
             </span>
           </p>
 
-          <p className="text-slate-400">
+          <p className="text-lifeos-text-secondary">
             XP{" "}
-            <span className="font-semibold text-yellow-300">
+            <span className="font-semibold text-lifeos-warning">
               +
               {
                 point.xpEarned
@@ -426,7 +426,7 @@ function MonthHeatmap({
                 key={
                   label
                 }
-                className="text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500"
+                className="text-center text-[11px] font-semibold uppercase tracking-wider text-lifeos-muted"
               >
                 {
                   label
@@ -656,7 +656,7 @@ function YearHeatmap({
                 key={
                   `${month.label}-${index}`
                 }
-                className="text-[10px] font-semibold uppercase tracking-wider text-slate-500"
+                className="text-[11px] font-semibold uppercase tracking-wider text-lifeos-muted"
                 style={{
                   gridColumnStart:
                     month.weekIndex +
@@ -691,7 +691,7 @@ function YearHeatmap({
                   key={
                     label
                   }
-                  className="flex h-4 w-8 items-center text-[9px] font-semibold uppercase text-slate-600"
+                  className="flex h-4 w-8 items-center text-[11px] font-semibold uppercase text-lifeos-muted"
                 >
                   {(
                     index === 0 ||
@@ -839,11 +839,11 @@ export default function AnalyticsHeatmap({
 
         <div>
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Active Days
           </p>
 
-          <p className="mt-1 text-2xl font-bold text-white">
+          <p className="mt-1 text-2xl font-bold text-lifeos-text">
             {
               activeDays
             }
@@ -853,11 +853,11 @@ export default function AnalyticsHeatmap({
 
         <div>
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Strong Days
           </p>
 
-          <p className="mt-1 text-2xl font-bold text-cyan-300">
+          <p className="mt-1 text-2xl font-bold text-lifeos-accent">
             {
               strongDays
             }
@@ -868,11 +868,11 @@ export default function AnalyticsHeatmap({
         {strongestDay && (
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Strongest Day
             </p>
 
-            <p className="mt-1 text-sm font-semibold text-slate-300">
+            <p className="mt-1 text-sm font-semibold text-lifeos-text-secondary">
               {
                 formatTooltipDate(
                   strongestDay.date
@@ -887,7 +887,7 @@ export default function AnalyticsHeatmap({
             Legend
         ================================== */}
 
-        <div className="ml-auto flex items-center gap-2 text-[10px] text-slate-500">
+        <div className="ml-auto flex items-center gap-2 text-[11px] text-lifeos-muted">
 
           <span>
             Less
@@ -929,8 +929,8 @@ export default function AnalyticsHeatmap({
         className="
           rounded-xl
           border
-          border-slate-800
-          bg-slate-950/50
+          border-lifeos-border
+          bg-lifeos-app/50
           p-4
         "
       >
@@ -954,7 +954,7 @@ export default function AnalyticsHeatmap({
           Explanation
       ====================================== */}
 
-      <p className="text-xs leading-5 text-slate-500">
+      <p className="text-xs leading-5 text-lifeos-muted">
         Stronger cells represent days with more execution activity.
         Hover any cell to see the exact date, completed tasks, and XP earned.
       </p>

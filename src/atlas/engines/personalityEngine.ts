@@ -12,7 +12,7 @@ export class PersonalityEngine {
 
     const hour = new Date().getHours();
 
-    let greeting = "";
+    let greeting: string;
 
     if (hour < 12) {
       greeting = "🌅 Good Morning";

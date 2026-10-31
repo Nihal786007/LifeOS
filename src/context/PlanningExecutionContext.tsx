@@ -68,6 +68,7 @@ import type {
   CreateTaskInput,
   UpdateTaskInput,
 } from "../shared/types";
+import type { TaskCreationAcceptance } from "../shared/taskMutation";
 
 // ==========================================
 // Context Type
@@ -132,7 +133,7 @@ interface PlanningExecutionContextType {
 
   createTask: (
     input: CreateTaskInput
-  ) => void;
+  ) => TaskCreationAcceptance;
 
   updateTask: (
     taskId: number,
@@ -274,7 +275,7 @@ export function PlanningExecutionProvider({
       weeklyFocuses: state.weeklyTargets,
     });
 
-    replaceTasks(
+    return replaceTasks(
       state.tasks
     );
   }
@@ -584,7 +585,7 @@ export function PlanningExecutionProvider({
 
   function createTask(
     input: CreateTaskInput
-  ) {
+  ): TaskCreationAcceptance {
     const result =
       PlanningMutationEngine.createTask(
         getState(),
@@ -592,14 +593,15 @@ export function PlanningExecutionProvider({
       );
 
     if (
-      !result.created
+      !result.created || !result.task
     ) {
-      return;
+      return { status: "rejected" };
     }
 
-    applyState(
+    const accepted = applyState(
       result.state
     );
+    return accepted ? { status: "accepted", taskId: result.task.id } : { status: "rejected" };
   }
 
   function updateTask(

@@ -62,62 +62,62 @@ function getToneStyles(
     case "positive":
       return {
         icon:
-          "text-emerald-300",
+          "text-lifeos-success",
         border:
-          "border-emerald-400/15",
+          "border-lifeos-success/15",
         background:
-          "bg-emerald-400/5",
+          "bg-lifeos-success/5",
         title:
-          "text-emerald-200",
+          "text-lifeos-success",
       };
 
     case "warning":
       return {
         icon:
-          "text-rose-300",
+          "text-lifeos-danger",
         border:
-          "border-rose-400/15",
+          "border-lifeos-danger/15",
         background:
-          "bg-rose-400/5",
+          "bg-lifeos-danger/5",
         title:
-          "text-rose-200",
+          "text-lifeos-danger",
       };
 
     case "focus":
       return {
         icon:
-          "text-amber-300",
+          "text-lifeos-warning",
         border:
-          "border-amber-400/15",
+          "border-lifeos-warning/15",
         background:
-          "bg-amber-400/5",
+          "bg-lifeos-warning/5",
         title:
-          "text-amber-200",
+          "text-lifeos-warning",
       };
 
     case "record":
       return {
         icon:
-          "text-orange-300",
+          "text-lifeos-warning",
         border:
-          "border-orange-400/15",
+          "border-lifeos-warning/15",
         background:
-          "bg-orange-400/5",
+          "bg-lifeos-warning/5",
         title:
-          "text-orange-200",
+          "text-lifeos-warning",
       };
 
     case "info":
     default:
       return {
         icon:
-          "text-cyan-300",
+          "text-lifeos-accent",
         border:
-          "border-cyan-400/15",
+          "border-lifeos-accent/15",
         background:
-          "bg-cyan-400/5",
+          "bg-lifeos-accent/5",
         title:
-          "text-cyan-200",
+          "text-lifeos-accent",
       };
   }
 }
@@ -165,7 +165,7 @@ export default function AtlasReport({
     analytics.primaryInsight;
 
   return (
-    <Card className="border-cyan-500/20 bg-cyan-500/5">
+    <Card className="border-lifeos-accent/20 bg-lifeos-accent/5">
 
       {/* ======================================
           Header
@@ -175,21 +175,21 @@ export default function AtlasReport({
 
         <div className="flex items-start gap-4">
 
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10 text-cyan-300">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-lifeos-accent/20 bg-lifeos-accent/10 text-lifeos-accent">
             <FaBrain />
           </div>
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-400/70">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
               Analytics Insight
             </p>
 
-            <h2 className="mt-1 text-2xl font-black text-white">
+            <h2 className="mt-1 text-2xl font-bold text-lifeos-text">
               Execution Analysis
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-lifeos-text-secondary">
               Evidence-based interpretation of your execution patterns, priorities, effort, XP, and momentum.
             </p>
 
@@ -197,13 +197,13 @@ export default function AtlasReport({
 
         </div>
 
-        <div className="rounded-xl border border-cyan-400/15 bg-slate-950/50 px-4 py-3">
+        <div className="rounded-xl border border-lifeos-accent/15 bg-lifeos-app/50 px-4 py-3">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Current Status
           </p>
 
-          <p className="mt-1 text-sm font-bold text-cyan-200">
+          <p className="mt-1 text-sm font-bold text-lifeos-accent">
             {status}
           </p>
 
@@ -216,25 +216,25 @@ export default function AtlasReport({
       ====================================== */}
 
       {primary && (
-        <div className="mt-7 rounded-2xl border border-cyan-400/20 bg-cyan-400/5 p-5">
+        <div className="mt-7 rounded-2xl border border-lifeos-accent/20 bg-lifeos-accent/5 p-5">
 
           <div className="flex items-start gap-4">
 
-            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-cyan-400/15 bg-cyan-400/10 text-sm text-cyan-300">
+            <div className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-lifeos-accent/15 bg-lifeos-accent/10 text-sm text-lifeos-accent">
               <FaBrain />
             </div>
 
             <div>
 
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400/70">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
                 Primary Signal
               </p>
 
-              <h3 className="mt-2 text-lg font-bold text-white">
+              <h3 className="mt-2 text-lg font-bold text-lifeos-text">
                 {primary.title}
               </h3>
 
-              <p className="mt-2 leading-6 text-slate-300">
+              <p className="mt-2 leading-6 text-lifeos-text-secondary">
                 {primary.message}
               </p>
 
@@ -251,37 +251,37 @@ export default function AtlasReport({
 
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950/45 p-4">
+        <div className="rounded-xl border border-lifeos-border bg-lifeos-app/45 p-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Signals
           </p>
 
-          <p className="mt-2 text-2xl font-black text-white">
+          <p className="mt-2 text-2xl font-bold text-lifeos-text">
             {analytics.insights.length}
           </p>
 
         </div>
 
-        <div className="rounded-xl border border-emerald-400/10 bg-emerald-400/5 p-4">
+        <div className="rounded-xl border border-lifeos-success/10 bg-lifeos-success/5 p-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-400/60">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-success">
             Strengths
           </p>
 
-          <p className="mt-2 text-2xl font-black text-emerald-300">
+          <p className="mt-2 text-2xl font-bold text-lifeos-success">
             {analytics.positiveCount}
           </p>
 
         </div>
 
-        <div className="rounded-xl border border-amber-400/10 bg-amber-400/5 p-4">
+        <div className="rounded-xl border border-lifeos-warning/10 bg-lifeos-warning/5 p-4">
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-400/60">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-warning">
             Focus Areas
           </p>
 
-          <p className="mt-2 text-2xl font-black text-amber-300">
+          <p className="mt-2 text-2xl font-bold text-lifeos-warning">
             {analytics.warningCount}
           </p>
 
@@ -333,7 +333,7 @@ export default function AtlasReport({
                         rounded-lg
                         border
                         border-white/5
-                        bg-slate-950/60
+                        bg-lifeos-app/60
                         text-xs
 
                         ${styles.icon}
@@ -361,7 +361,7 @@ export default function AtlasReport({
                         }
                       </h3>
 
-                      <p className="mt-1 text-sm leading-6 text-slate-400">
+                      <p className="mt-1 text-sm leading-6 text-lifeos-text-secondary">
                         {
                           insight.message
                         }
@@ -378,13 +378,13 @@ export default function AtlasReport({
 
         </div>
       ) : (
-        <div className="mt-6 rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-8 text-center">
+        <div className="mt-6 rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-5 py-8 text-center">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             More activity is needed to build a signal
           </p>
 
-          <p className="mt-2 text-xs leading-5 text-slate-500">
+          <p className="mt-2 text-xs leading-5 text-lifeos-muted">
             More execution history is needed before meaningful patterns can be identified.
           </p>
 

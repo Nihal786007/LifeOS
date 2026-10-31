@@ -13,22 +13,22 @@ export default function AtlasStats({
     {
       title: "Focus Score",
       value: `${analysis.focusScore}%`,
-      color: "text-cyan-400",
+      color: "text-lifeos-accent",
     },
     {
       title: "Productivity",
       value: `${analysis.completionRate}%`,
-      color: "text-green-400",
+      color: "text-lifeos-success",
     },
     {
       title: "Completed Tasks",
       value: analysis.completedTasks,
-      color: "text-emerald-400",
+      color: "text-lifeos-success",
     },
     {
       title: "Pending Tasks",
       value: analysis.pendingTasks,
-      color: "text-orange-400",
+      color: "text-lifeos-warning",
     },
   ];
 
@@ -37,9 +37,9 @@ export default function AtlasStats({
       {stats.map((stat) => (
         <div
           key={stat.title}
-          className="rounded-2xl border border-slate-700 bg-slate-900 p-6 transition-all duration-300 hover:border-cyan-500/40 hover:shadow-lg hover:shadow-cyan-500/10"
+          className="rounded-2xl border border-lifeos-border bg-lifeos-surface p-6 transition-all duration-300 hover:border-lifeos-accent/40 hover:shadow-lg hover:shadow-lifeos-accent/10"
         >
-          <p className="text-sm uppercase tracking-wider text-slate-400">
+          <p className="text-sm uppercase tracking-wider text-lifeos-text-secondary">
             {stat.title}
           </p>
 

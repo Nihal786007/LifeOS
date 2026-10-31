@@ -1,5 +1,6 @@
 import { mapGoogleCalendar, mapGoogleCalendarEvent, sortExternalCalendarEvents } from "../../../src/connectors/googleCalendar/mapping.ts";
 import type { ExternalCalendar, ExternalCalendarEvent } from "../../../src/connectors/googleCalendar/types.ts";
+import type { GoogleRevocation } from "./disconnect.ts";
 
 export const GOOGLE_CALENDAR_SCOPES = [
   "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
@@ -92,6 +93,14 @@ export async function readGoogleCalendarData(fetcher: typeof fetch, input: { acc
   return { accountLabel: primary?.externalId ?? primary?.name ?? "Google Calendar", calendars, events: sortExternalCalendarEvents(eventGroups.flat()).slice(0, MAX_TOTAL_EVENTS) };
 }
 
-export async function revokeGoogleToken(fetcher: typeof fetch, token: string): Promise<void> {
-  await fetcher(GOOGLE_REVOKE_ENDPOINT, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ token }) });
+export async function revokeGoogleToken(fetcher: typeof fetch, token: string, signal = AbortSignal.timeout(8_000)): Promise<GoogleRevocation> {
+  if (!token.trim()) return "unknown";
+  try {
+    const response = await fetcher(GOOGLE_REVOKE_ENDPOINT, { method: "POST", redirect: "error", signal, headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ token }) });
+    // Google documents 200 as success and 400 as an error. A 400 cannot prove
+    // whether a credential was already revoked, invalid, or the request rejected.
+    // Never read or propagate the response body.
+    if (response.status === 200) return "confirmed";
+    return response.status >= 400 && response.status < 500 ? "rejected" : "unknown";
+  } catch { return "unknown"; }
 }

@@ -1,6 +1,6 @@
 import type { AtlasResult } from "../../atlas/types";
 
-import { useXP } from "../../context/XPContext";
+import { useXP } from "../../context/xpContextValue";
 
 import AtlasGreeting from "./AtlasGreeting";
 import AtlasBriefing from "./AtlasBriefing";

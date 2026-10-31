@@ -173,13 +173,13 @@ export default function AnalyticsPersonalBests({
 
   if (!hasData) {
     return (
-      <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-10 text-center">
+      <div className="rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-5 py-10 text-center">
 
-        <p className="text-sm font-semibold text-slate-300">
+        <p className="text-sm font-semibold text-lifeos-text-secondary">
           No personal records yet
         </p>
 
-        <p className="mt-2 text-xs leading-5 text-slate-500">
+        <p className="mt-2 text-xs leading-5 text-lifeos-muted">
           Complete tasks consistently and LifeOS will start discovering your strongest execution records.
         </p>
 
@@ -194,17 +194,17 @@ export default function AnalyticsPersonalBests({
           Most Tasks Day
       ====================================== */}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-5">
 
         <div className="flex items-start justify-between gap-4">
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Most Tasks in One Day
             </p>
 
-            <p className="mt-3 text-3xl font-black text-white">
+            <p className="mt-3 text-3xl font-bold text-lifeos-text">
               {
                 analytics.mostTasksDay
                   ?.completedTasks ??
@@ -212,21 +212,21 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               completed tasks
             </p>
 
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-amber-400/15 bg-amber-400/5 text-amber-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lifeos-warning/15 bg-lifeos-warning/5 text-lifeos-warning">
             <FaTrophy />
           </div>
 
         </div>
 
-        <div className="mt-5 border-t border-slate-800 pt-4">
+        <div className="mt-5 border-t border-lifeos-border pt-4">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             {
               formatShortDate(
                 analytics.mostTasksDay
@@ -236,7 +236,7 @@ export default function AnalyticsPersonalBests({
           </p>
 
           {analytics.mostTasksDay && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               +{
                 analytics.mostTasksDay
                   .xpEarned
@@ -252,17 +252,17 @@ export default function AnalyticsPersonalBests({
           Most XP Day
       ====================================== */}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-5">
 
         <div className="flex items-start justify-between gap-4">
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Most XP in One Day
             </p>
 
-            <p className="mt-3 text-3xl font-black text-amber-300">
+            <p className="mt-3 text-3xl font-bold text-lifeos-warning">
               +{
                 analytics.mostXPDay
                   ?.xpEarned ??
@@ -270,21 +270,21 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               XP
             </p>
 
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/15 bg-cyan-400/5 text-cyan-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lifeos-accent/15 bg-lifeos-accent/5 text-lifeos-accent">
             <FaBolt />
           </div>
 
         </div>
 
-        <div className="mt-5 border-t border-slate-800 pt-4">
+        <div className="mt-5 border-t border-lifeos-border pt-4">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             {
               formatShortDate(
                 analytics.mostXPDay
@@ -294,7 +294,7 @@ export default function AnalyticsPersonalBests({
           </p>
 
           {analytics.mostXPDay && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               {
                 analytics.mostXPDay
                   .completedTasks
@@ -319,17 +319,17 @@ export default function AnalyticsPersonalBests({
           Longest Execution Streak
       ====================================== */}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-5">
 
         <div className="flex items-start justify-between gap-4">
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Longest Execution Streak
             </p>
 
-            <p className="mt-3 text-3xl font-black text-orange-300">
+            <p className="mt-3 text-3xl font-bold text-lifeos-warning">
               {
                 analytics
                   .longestExecutionStreak
@@ -337,21 +337,21 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               consecutive days
             </p>
 
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-orange-400/15 bg-orange-400/5 text-orange-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lifeos-warning/15 bg-lifeos-warning/5 text-lifeos-warning">
             <FaFire />
           </div>
 
         </div>
 
-        <div className="mt-5 border-t border-slate-800 pt-4">
+        <div className="mt-5 border-t border-lifeos-border pt-4">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             {
               formatDateRange(
                 analytics
@@ -364,7 +364,7 @@ export default function AnalyticsPersonalBests({
             }
           </p>
 
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-lifeos-muted">
             At least one completed task every day
           </p>
 
@@ -376,17 +376,17 @@ export default function AnalyticsPersonalBests({
           Best Month
       ====================================== */}
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/45 p-5">
+      <div className="rounded-2xl border border-lifeos-border bg-lifeos-app/45 p-5">
 
         <div className="flex items-start justify-between gap-4">
 
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Best Month
             </p>
 
-            <p className="mt-3 text-xl font-black text-purple-300">
+            <p className="mt-3 text-xl font-bold text-lifeos-chart-secondary">
               {
                 analytics.bestMonth
                   ?.label ??
@@ -394,23 +394,23 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               strongest execution month
             </p>
 
           </div>
 
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-purple-400/15 bg-purple-400/5 text-purple-300">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-lifeos-chart-secondary/15 bg-lifeos-chart-secondary/5 text-lifeos-chart-secondary">
             <FaCalendarAlt />
           </div>
 
         </div>
 
-        <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-800 pt-4">
+        <div className="mt-5 grid grid-cols-3 gap-3 border-t border-lifeos-border pt-4">
 
           <div>
 
-            <p className="text-lg font-black text-white">
+            <p className="text-lg font-bold text-lifeos-text">
               {
                 analytics.bestMonth
                   ?.completedTasks ??
@@ -418,7 +418,7 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-600">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-lifeos-muted">
               Tasks
             </p>
 
@@ -426,7 +426,7 @@ export default function AnalyticsPersonalBests({
 
           <div>
 
-            <p className="text-lg font-black text-emerald-300">
+            <p className="text-lg font-bold text-lifeos-success">
               {
                 analytics.bestMonth
                   ?.activeDays ??
@@ -434,7 +434,7 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-600">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-lifeos-muted">
               Active Days
             </p>
 
@@ -442,7 +442,7 @@ export default function AnalyticsPersonalBests({
 
           <div>
 
-            <p className="text-lg font-black text-amber-300">
+            <p className="text-lg font-bold text-lifeos-warning">
               +{
                 analytics.bestMonth
                   ?.xpEarned ??
@@ -450,7 +450,7 @@ export default function AnalyticsPersonalBests({
               }
             </p>
 
-            <p className="text-[10px] uppercase tracking-[0.14em] text-slate-600">
+            <p className="text-[11px] uppercase tracking-[0.14em] text-lifeos-muted">
               XP
             </p>
 

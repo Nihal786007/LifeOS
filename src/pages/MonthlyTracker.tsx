@@ -80,17 +80,17 @@ export default function MonthlyTracker() {
         title="Monthly Planner"
         description="Plan your month, track milestones, and achieve every objective with precision."
       >
-        <Card className="border-cyan-500/20 bg-cyan-500/5">
+        <Card className="border-lifeos-accent/20 bg-lifeos-accent/5">
 
-          <p className="text-sm uppercase tracking-widest text-cyan-300">
+          <p className="text-sm uppercase tracking-widest text-lifeos-accent">
             Monthly Progress
           </p>
 
-          <h2 className="mt-3 text-5xl font-black">
+          <h2 className="mt-3 text-5xl font-bold">
             {progress}%
           </h2>
 
-          <p className="mt-3 text-slate-400">
+          <p className="mt-3 text-lifeos-text-secondary">
             Goals Completed
           </p>
 
@@ -109,21 +109,21 @@ export default function MonthlyTracker() {
           icon={<FaBullseye />}
           title="Goals"
           value={goals.length}
-          color="text-cyan-400"
+          color="text-lifeos-accent"
         />
 
         <StatCard
           icon={<FaCheckCircle />}
           title="Completed"
           value={completedGoals}
-          color="text-green-400"
+          color="text-lifeos-success"
         />
 
         <StatCard
           icon={<FaChartLine />}
           title="Progress"
           value={`${progress}%`}
-          color="text-orange-400"
+          color="text-lifeos-warning"
         />
 
       </div>
@@ -142,7 +142,7 @@ export default function MonthlyTracker() {
           {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((day) => (
             <div
               key={day}
-              className="font-semibold uppercase tracking-wider text-slate-500"
+              className="font-semibold uppercase tracking-wider text-lifeos-muted"
             >
               {day}
             </div>
@@ -152,7 +152,7 @@ export default function MonthlyTracker() {
 
             <button
               key={i}
-              className="rounded-2xl border border-slate-800 bg-slate-900 p-4 transition-all duration-300 hover:border-cyan-500 hover:bg-cyan-500/10"
+              className="rounded-2xl border border-lifeos-border bg-lifeos-surface p-4 transition-all duration-300 hover:border-lifeos-accent hover:bg-lifeos-accent/10"
             >
               {i + 1}
             </button>
@@ -197,15 +197,15 @@ export default function MonthlyTracker() {
 
           {goals.length === 0 ? (
 
-            <div className="rounded-2xl border border-dashed border-slate-700 p-8 text-center">
+            <div className="rounded-2xl border border-dashed border-lifeos-border p-8 text-center">
 
-              <FaBullseye className="mx-auto text-4xl text-cyan-400" />
+              <FaBullseye className="mx-auto text-4xl text-lifeos-accent" />
 
               <h3 className="mt-4 text-xl font-bold">
                 No Monthly Goals
               </h3>
 
-              <p className="mt-2 text-slate-400">
+              <p className="mt-2 text-lifeos-text-secondary">
                 Start planning your month by creating your first goal.
               </p>
 
@@ -230,16 +230,16 @@ export default function MonthlyTracker() {
                     <FaCheckCircle
                       className={`text-2xl ${
                         goal.completed
-                          ? "text-green-400"
-                          : "text-slate-600"
+                          ? "text-lifeos-success"
+                          : "text-lifeos-muted"
                       }`}
                     />
 
                     <span
                       className={`text-lg ${
                         goal.completed
-                          ? "line-through text-slate-500"
-                          : "text-white"
+                          ? "line-through text-lifeos-muted"
+                          : "text-lifeos-text"
                       }`}
                     >
                       {goal.text}

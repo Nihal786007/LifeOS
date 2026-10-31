@@ -50,17 +50,17 @@ export default function GoalsCard() {
 
   return (
     <>
-      <div className="rounded-3xl border border-slate-700 bg-slate-900 p-8">
+      <div className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-8">
 
         <div className="mb-8 flex items-center justify-between">
 
           <div>
 
-            <h2 className="text-3xl font-bold text-white">
+            <h2 className="text-3xl font-bold text-lifeos-text">
               🎯 Life Goals
             </h2>
 
-            <p className="mt-2 text-slate-400">
+            <p className="mt-2 text-lifeos-text-secondary">
               Build the future one goal at a time.
             </p>
 
@@ -72,7 +72,7 @@ export default function GoalsCard() {
                 true
               )
             }
-            className="rounded-xl bg-cyan-500 px-5 py-3 font-semibold text-slate-950 transition hover:bg-cyan-400"
+            className="rounded-xl bg-lifeos-accent px-5 py-3 font-semibold text-lifeos-accent-foreground transition hover:bg-lifeos-accent"
           >
             + New Goal
           </button>

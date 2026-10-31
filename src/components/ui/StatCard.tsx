@@ -17,7 +17,7 @@ export default function StatCard({
   value,
   subtitle,
   trend,
-  color = "text-cyan-400",
+  color = "text-lifeos-accent",
   className = "",
 }: StatCardProps) {
   return (
@@ -26,27 +26,27 @@ export default function StatCard({
       padding="lg"
     >
       <div
-        className={`text-3xl transition-transform duration-300 group-hover:scale-110 ${color}`}
+        className={`text-xl ${color}`}
       >
         {icon}
       </div>
 
-      <p className="mt-5 text-sm uppercase tracking-[0.25em] text-slate-500">
+      <p className="mt-4 text-xs font-medium tracking-wide text-lifeos-muted">
         {title}
       </p>
 
-      <h2 className="mt-3 text-5xl font-black">
+      <h2 className="mt-2 text-3xl font-semibold tabular-nums tracking-tight">
         {value}
       </h2>
 
       {subtitle && (
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-2 text-sm text-lifeos-text-secondary">
           {subtitle}
         </p>
       )}
 
       {trend && (
-        <p className="mt-4 text-sm font-semibold text-emerald-400">
+        <p className="mt-4 text-sm font-semibold text-lifeos-success">
           {trend}
         </p>
       )}

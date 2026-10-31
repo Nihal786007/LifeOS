@@ -1037,8 +1037,8 @@ export default function PersonalPlanner() {
         className="
           rounded-xl
           border
-          border-slate-800
-          bg-slate-950/40
+          border-lifeos-border
+          bg-lifeos-app/40
           p-3
         "
       >
@@ -1057,13 +1057,13 @@ export default function PersonalPlanner() {
               justify-center
               rounded-lg
               border
-              border-slate-800
+              border-lifeos-border
               text-lg
-              text-slate-400
+              text-lifeos-text-secondary
               transition
-              hover:border-cyan-500/30
-              hover:bg-cyan-500/5
-              hover:text-cyan-300
+              hover:border-lifeos-accent/30
+              hover:bg-lifeos-accent/5
+              hover:text-lifeos-accent
             "
             aria-label="Previous month"
           >
@@ -1072,13 +1072,13 @@ export default function PersonalPlanner() {
 
           <div className="min-w-0 text-center">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-600">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               Personal workspace
             </p>
 
             <div className="mt-0.5 flex items-center justify-center gap-2">
 
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-lifeos-text">
                 {
                   getMonthLabel(
                     selectedMonth,
@@ -1092,13 +1092,13 @@ export default function PersonalPlanner() {
                   className="
                     rounded-md
                     border
-                    border-cyan-500/20
-                    bg-cyan-500/10
+                    border-lifeos-accent/20
+                    bg-lifeos-accent/10
                     px-1.5
                     py-0.5
-                    text-[10px]
+                    text-[11px]
                     font-semibold
-                    text-cyan-300
+                    text-lifeos-accent
                   "
                 >
                   Current
@@ -1122,13 +1122,13 @@ export default function PersonalPlanner() {
               justify-center
               rounded-lg
               border
-              border-slate-800
+              border-lifeos-border
               text-lg
-              text-slate-400
+              text-lifeos-text-secondary
               transition
-              hover:border-cyan-500/30
-              hover:bg-cyan-500/5
-              hover:text-cyan-300
+              hover:border-lifeos-accent/30
+              hover:bg-lifeos-accent/5
+              hover:text-lifeos-accent
             "
             aria-label="Next month"
           >
@@ -1148,9 +1148,9 @@ export default function PersonalPlanner() {
               className="
                 text-xs
                 font-medium
-                text-cyan-400
+                text-lifeos-accent
                 transition
-                hover:text-cyan-300
+                hover:text-lifeos-accent
               "
             >
               Back to {
@@ -1174,8 +1174,8 @@ export default function PersonalPlanner() {
           className="
             rounded-xl
             border
-            border-slate-800
-            bg-slate-950/30
+            border-lifeos-border
+            bg-lifeos-app/30
             p-4
           "
         >
@@ -1186,7 +1186,7 @@ export default function PersonalPlanner() {
                 ✦
               </div>
 
-              <p className="mt-2 text-sm font-semibold text-slate-200">
+              <p className="mt-2 text-sm font-semibold text-lifeos-text">
                 What should {
                   getMonthLabel(
                     selectedMonth,
@@ -1195,7 +1195,7 @@ export default function PersonalPlanner() {
                 } move forward?
               </p>
 
-              <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
+              <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-lifeos-muted">
                 One clear outcome keeps the month focused without
                 turning your Personal Planner into another task list.
               </p>
@@ -1208,14 +1208,14 @@ export default function PersonalPlanner() {
                 className="
                   mt-4
                   rounded-lg
-                  bg-cyan-500
+                  bg-lifeos-accent
                   px-3.5
                   py-2
                   text-sm
                   font-semibold
-                  text-slate-950
+                  text-lifeos-accent-foreground
                   transition
-                  hover:bg-cyan-400
+                  hover:bg-lifeos-accent
                 "
               >
                 + Plan {
@@ -1229,7 +1229,7 @@ export default function PersonalPlanner() {
           ) : (
             <div>
 
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-400">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-lifeos-accent">
                 Monthly Outcome · {
                   getMonthLabel(
                     selectedMonth,
@@ -1279,21 +1279,21 @@ export default function PersonalPlanner() {
                   w-full
                   rounded-lg
                   border
-                  border-slate-700
-                  bg-slate-950
+                  border-lifeos-border
+                  bg-lifeos-app
                   px-3
                   py-2.5
                   text-sm
-                  text-white
+                  text-lifeos-text
                   outline-none
                   transition
-                  placeholder:text-slate-600
-                  focus:border-cyan-500/60
+                  placeholder:text-lifeos-muted
+                  focus:border-lifeos-accent/60
                 "
               />
 
               {monthError && (
-                <p className="mt-2 text-xs text-red-400">
+                <p className="mt-2 text-xs text-lifeos-danger">
                   {monthError}
                 </p>
               )}
@@ -1307,14 +1307,14 @@ export default function PersonalPlanner() {
                   }
                   className="
                     rounded-lg
-                    bg-cyan-500
+                    bg-lifeos-accent
                     px-3
                     py-1.5
                     text-xs
                     font-semibold
-                    text-slate-950
+                    text-lifeos-accent-foreground
                     transition
-                    hover:bg-cyan-400
+                    hover:bg-lifeos-accent
                   "
                 >
                   Save
@@ -1328,21 +1328,21 @@ export default function PersonalPlanner() {
                   className="
                     rounded-lg
                     border
-                    border-slate-800
+                    border-lifeos-border
                     px-3
                     py-1.5
                     text-xs
                     font-medium
-                    text-slate-400
+                    text-lifeos-text-secondary
                     transition
-                    hover:bg-slate-800
-                    hover:text-white
+                    hover:bg-lifeos-elevated
+                    hover:text-lifeos-text
                   "
                 >
                   Cancel
                 </button>
 
-                <span className="ml-auto text-[10px] text-slate-600">
+                <span className="ml-auto text-[11px] text-lifeos-muted">
                   Enter to save · Esc to cancel
                 </span>
 
@@ -1368,8 +1368,8 @@ export default function PersonalPlanner() {
 
               ${
                 selectedMonthlyPlan.completed
-                  ? "border-emerald-500/15 bg-emerald-500/[0.025]"
-                  : "border-cyan-500/15 bg-cyan-500/[0.03]"
+                  ? "border-lifeos-success/15 bg-lifeos-success/[0.025]"
+                  : "border-lifeos-accent/15 bg-lifeos-accent/[0.03]"
               }
             `}
           >
@@ -1379,11 +1379,11 @@ export default function PersonalPlanner() {
 
                 <div className="flex flex-wrap items-center gap-2">
 
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-400">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
                     Monthly Outcome
                   </p>
 
-                  <span className="text-[10px] text-slate-600">
+                  <span className="text-[11px] text-lifeos-muted">
                     {
                       getMonthLabel(
                         selectedMonth,
@@ -1397,13 +1397,13 @@ export default function PersonalPlanner() {
                       className="
                         rounded-md
                         border
-                        border-emerald-500/20
-                        bg-emerald-500/10
+                        border-lifeos-success/20
+                        bg-lifeos-success/10
                         px-1.5
                         py-0.5
-                        text-[10px]
+                        text-[11px]
                         font-semibold
-                        text-emerald-300
+                        text-lifeos-success
                       "
                     >
                       Completed
@@ -1451,15 +1451,15 @@ export default function PersonalPlanner() {
                       w-full
                       rounded-lg
                       border
-                      border-slate-700
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       px-3
                       py-2
                       text-sm
                       font-semibold
-                      text-white
+                      text-lifeos-text
                       outline-none
-                      focus:border-cyan-500/60
+                      focus:border-lifeos-accent/60
                     "
                   />
                 ) : (
@@ -1471,8 +1471,8 @@ export default function PersonalPlanner() {
 
                       ${
                         selectedMonthlyPlan.completed
-                          ? "text-slate-400"
-                          : "text-white"
+                          ? "text-lifeos-text-secondary"
+                          : "text-lifeos-text"
                       }
                     `}
                   >
@@ -1484,7 +1484,7 @@ export default function PersonalPlanner() {
 
                 <div className="mt-3 flex items-center gap-3">
 
-                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-800">
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-lifeos-elevated">
                     <div
                       className={`
                         h-full
@@ -1493,8 +1493,8 @@ export default function PersonalPlanner() {
 
                         ${
                           selectedMonthlyPlan.completed
-                            ? "bg-emerald-400"
-                            : "bg-cyan-400"
+                            ? "bg-lifeos-success"
+                            : "bg-lifeos-accent"
                         }
                       `}
                       style={{
@@ -1518,8 +1518,8 @@ export default function PersonalPlanner() {
 
                       ${
                         selectedMonthlyPlan.completed
-                          ? "text-emerald-300"
-                          : "text-cyan-300"
+                          ? "text-lifeos-success"
+                          : "text-lifeos-accent"
                       }
                     `}
                   >
@@ -1549,10 +1549,10 @@ export default function PersonalPlanner() {
                       px-2
                       py-1
                       text-[11px]
-                      text-slate-600
+                      text-lifeos-muted
                       transition
-                      hover:bg-slate-800
-                      hover:text-slate-300
+                      hover:bg-lifeos-elevated
+                      hover:text-lifeos-text-secondary
                     "
                   >
                     Edit
@@ -1578,10 +1578,10 @@ export default function PersonalPlanner() {
                       px-2
                       py-1
                       text-[11px]
-                      text-slate-600
+                      text-lifeos-muted
                       transition
-                      hover:bg-slate-800
-                      hover:text-slate-300
+                      hover:bg-lifeos-elevated
+                      hover:text-lifeos-text-secondary
                     "
                   >
                     {
@@ -1603,10 +1603,10 @@ export default function PersonalPlanner() {
                       px-2
                       py-1
                       text-[11px]
-                      text-slate-700
+                      text-lifeos-muted
                       transition
-                      hover:bg-red-500/10
-                      hover:text-red-400
+                      hover:bg-lifeos-danger/10
+                      hover:text-lifeos-danger
                     "
                   >
                     Delete
@@ -1627,7 +1627,7 @@ export default function PersonalPlanner() {
                       selectedMonthlyPlan
                     )
                   }
-                  className="text-xs font-medium text-cyan-400 hover:text-cyan-300"
+                  className="text-xs font-medium text-lifeos-accent hover:text-lifeos-accent"
                 >
                   Save
                 </button>
@@ -1637,12 +1637,12 @@ export default function PersonalPlanner() {
                   onClick={
                     cancelMonthEdit
                   }
-                  className="text-xs text-slate-500 hover:text-slate-300"
+                  className="text-xs text-lifeos-muted hover:text-lifeos-text-secondary"
                 >
                   Cancel
                 </button>
 
-                <span className="ml-auto text-[10px] text-slate-600">
+                <span className="ml-auto text-[11px] text-lifeos-muted">
                   Enter · Esc
                 </span>
 
@@ -1650,7 +1650,7 @@ export default function PersonalPlanner() {
             )}
 
             {monthError && (
-              <p className="mt-2 text-xs text-red-400">
+              <p className="mt-2 text-xs text-lifeos-danger">
                 {monthError}
               </p>
             )}
@@ -1722,10 +1722,10 @@ export default function PersonalPlanner() {
 
                       ${
                         week.isCurrentWeek
-                          ? "border-cyan-500/40 bg-cyan-500/[0.025] shadow-[0_0_0_1px_rgba(34,211,238,0.04)]"
+                          ? "border-lifeos-accent/40 bg-lifeos-accent/[0.025] shadow-[0_0_0_1px_rgba(34,211,238,0.04)]"
                           : completedWeek
-                            ? "border-emerald-500/10 bg-emerald-500/[0.015]"
-                            : "border-slate-800 bg-slate-950/25"
+                            ? "border-lifeos-success/10 bg-lifeos-success/[0.015]"
+                            : "border-lifeos-border bg-lifeos-app/25"
                       }
                     `}
                   >
@@ -1748,8 +1748,8 @@ export default function PersonalPlanner() {
 
                                 ${
                                   completedWeek
-                                    ? "text-slate-500"
-                                    : "text-slate-200"
+                                    ? "text-lifeos-muted"
+                                    : "text-lifeos-text"
                                 }
                               `}
                             >
@@ -1765,13 +1765,13 @@ export default function PersonalPlanner() {
                                 className="
                                   rounded-md
                                   border
-                                  border-cyan-500/20
-                                  bg-cyan-500/10
+                                  border-lifeos-accent/20
+                                  bg-lifeos-accent/10
                                   px-1.5
                                   py-0.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-semibold
-                                  text-cyan-300
+                                  text-lifeos-accent
                                 "
                               >
                                 This week
@@ -1783,13 +1783,13 @@ export default function PersonalPlanner() {
                                 className="
                                   rounded-md
                                   border
-                                  border-emerald-500/20
-                                  bg-emerald-500/10
+                                  border-lifeos-success/20
+                                  bg-lifeos-success/10
                                   px-1.5
                                   py-0.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-semibold
-                                  text-emerald-300
+                                  text-lifeos-success
                                 "
                               >
                                 Done
@@ -1801,12 +1801,12 @@ export default function PersonalPlanner() {
                                 className="
                                   rounded-md
                                   border
-                                  border-slate-700
-                                  bg-slate-800/50
+                                  border-lifeos-border
+                                  bg-lifeos-elevated/50
                                   px-1.5
                                   py-0.5
-                                  text-[10px]
-                                  text-slate-400
+                                  text-[11px]
+                                  text-lifeos-text-secondary
                                 "
                               >
                                 Cross-month
@@ -1816,13 +1816,13 @@ export default function PersonalPlanner() {
                           </div>
 
                           {week.isCurrentWeek && (
-                            <p className="mt-1 text-[10px] font-medium text-cyan-400/70">
+                            <p className="mt-1 text-[11px] font-medium text-lifeos-accent">
                               Today belongs to this planning week.
                             </p>
                           )}
 
                           {crossMonth && (
-                            <p className="mt-1 text-[10px] text-slate-600">
+                            <p className="mt-1 text-[11px] text-lifeos-muted">
                               Managed from {
                                 getWeekOwnerLabel(
                                   week.weekStartDate
@@ -1847,11 +1847,11 @@ export default function PersonalPlanner() {
                                 rounded-md
                                 px-2
                                 py-1
-                                text-[10px]
-                                text-slate-600
+                                text-[11px]
+                                text-lifeos-muted
                                 transition
-                                hover:bg-slate-800
-                                hover:text-slate-300
+                                hover:bg-lifeos-elevated
+                                hover:text-lifeos-text-secondary
                               "
                             >
                               Edit
@@ -1876,11 +1876,11 @@ export default function PersonalPlanner() {
                                 rounded-md
                                 px-2
                                 py-1
-                                text-[10px]
-                                text-slate-600
+                                text-[11px]
+                                text-lifeos-muted
                                 transition
-                                hover:bg-slate-800
-                                hover:text-slate-300
+                                hover:bg-lifeos-elevated
+                                hover:text-lifeos-text-secondary
                               "
                             >
                               {
@@ -1901,11 +1901,11 @@ export default function PersonalPlanner() {
                                 rounded-md
                                 px-2
                                 py-1
-                                text-[10px]
-                                text-slate-700
+                                text-[11px]
+                                text-lifeos-muted
                                 transition
-                                hover:bg-red-500/10
-                                hover:text-red-400
+                                hover:bg-lifeos-danger/10
+                                hover:text-lifeos-danger
                               "
                             >
                               Delete
@@ -1925,12 +1925,12 @@ export default function PersonalPlanner() {
 
                           <div className="flex items-center justify-between gap-3">
 
-                            <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-600">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-lifeos-muted">
                               Weekly Focus
                             </p>
 
                             {weeklyTasks.length > 0 && (
-                              <span className="text-[10px] text-slate-600">
+                              <span className="text-[11px] text-lifeos-muted">
                                 {completedTasks} of {weeklyTasks.length} done
                               </span>
                             )}
@@ -1976,14 +1976,14 @@ export default function PersonalPlanner() {
                                 w-full
                                 rounded-lg
                                 border
-                                border-slate-700
-                                bg-slate-950
+                                border-lifeos-border
+                                bg-lifeos-app
                                 px-3
                                 py-2
                                 text-sm
-                                text-white
+                                text-lifeos-text
                                 outline-none
-                                focus:border-cyan-500/60
+                                focus:border-lifeos-accent/60
                               "
                             />
                           ) : (
@@ -1995,8 +1995,8 @@ export default function PersonalPlanner() {
 
                                 ${
                                   completedWeek
-                                    ? "text-slate-500"
-                                    : "text-white"
+                                    ? "text-lifeos-muted"
+                                    : "text-lifeos-text"
                                 }
                               `}
                             >
@@ -2016,7 +2016,7 @@ export default function PersonalPlanner() {
                                     weeklyTarget
                                   )
                                 }
-                                className="text-xs font-medium text-cyan-400 hover:text-cyan-300"
+                                className="text-xs font-medium text-lifeos-accent hover:text-lifeos-accent"
                               >
                                 Save
                               </button>
@@ -2026,12 +2026,12 @@ export default function PersonalPlanner() {
                                 onClick={
                                   cancelWeekEdit
                                 }
-                                className="text-xs text-slate-500 hover:text-slate-300"
+                                className="text-xs text-lifeos-muted hover:text-lifeos-text-secondary"
                               >
                                 Cancel
                               </button>
 
-                              <span className="ml-auto text-[10px] text-slate-600">
+                              <span className="ml-auto text-[11px] text-lifeos-muted">
                                 Enter · Esc
                               </span>
 
@@ -2040,7 +2040,7 @@ export default function PersonalPlanner() {
 
                           <div className="mt-2.5 flex items-center gap-3">
 
-                            <div className="h-1 flex-1 overflow-hidden rounded-full bg-slate-800">
+                            <div className="h-1 flex-1 overflow-hidden rounded-full bg-lifeos-elevated">
                               <div
                                 className={`
                                   h-full
@@ -2049,8 +2049,8 @@ export default function PersonalPlanner() {
 
                                   ${
                                     completedWeek
-                                      ? "bg-emerald-400"
-                                      : "bg-cyan-400"
+                                      ? "bg-lifeos-success"
+                                      : "bg-lifeos-accent"
                                   }
                                 `}
                                 style={{
@@ -2066,7 +2066,7 @@ export default function PersonalPlanner() {
                               />
                             </div>
 
-                            <span className="text-[10px] font-medium text-slate-500">
+                            <span className="text-[11px] font-medium text-lifeos-muted">
                               {
                                 Math.round(
                                   weeklyTarget.progress
@@ -2080,7 +2080,7 @@ export default function PersonalPlanner() {
                       ) : creatingThisWeek ? (
                         <div className="mt-3">
 
-                          <p className="text-[10px] font-semibold uppercase tracking-[0.15em] text-cyan-400">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-lifeos-accent">
                             Weekly Focus
                           </p>
 
@@ -2127,20 +2127,20 @@ export default function PersonalPlanner() {
                               w-full
                               rounded-lg
                               border
-                              border-slate-700
-                              bg-slate-950
+                              border-lifeos-border
+                              bg-lifeos-app
                               px-3
                               py-2
                               text-sm
-                              text-white
+                              text-lifeos-text
                               outline-none
-                              placeholder:text-slate-600
-                              focus:border-cyan-500/60
+                              placeholder:text-lifeos-muted
+                              focus:border-lifeos-accent/60
                             "
                           />
 
                           {weekError && (
-                            <p className="mt-2 text-xs text-red-400">
+                            <p className="mt-2 text-xs text-lifeos-danger">
                               {weekError}
                             </p>
                           )}
@@ -2154,7 +2154,7 @@ export default function PersonalPlanner() {
                                   week
                                 )
                               }
-                              className="text-xs font-semibold text-cyan-400 hover:text-cyan-300"
+                              className="text-xs font-semibold text-lifeos-accent hover:text-lifeos-accent"
                             >
                               Save
                             </button>
@@ -2164,12 +2164,12 @@ export default function PersonalPlanner() {
                               onClick={
                                 cancelWeekCreation
                               }
-                              className="text-xs text-slate-500 hover:text-slate-300"
+                              className="text-xs text-lifeos-muted hover:text-lifeos-text-secondary"
                             >
                               Cancel
                             </button>
 
-                            <span className="ml-auto text-[10px] text-slate-600">
+                            <span className="ml-auto text-[11px] text-lifeos-muted">
                               Enter · Esc
                             </span>
 
@@ -2182,7 +2182,7 @@ export default function PersonalPlanner() {
                           {selectedMonthOwnsWeek ? (
                             <div>
 
-                              <p className="text-xs leading-5 text-slate-600">
+                              <p className="text-xs leading-5 text-lifeos-muted">
                                 {
                                   getEmptyWeekGuidance(
                                     week
@@ -2201,9 +2201,9 @@ export default function PersonalPlanner() {
                                   mt-1.5
                                   text-xs
                                   font-medium
-                                  text-slate-500
+                                  text-lifeos-muted
                                   transition
-                                  hover:text-cyan-300
+                                  hover:text-lifeos-accent
                                 "
                               >
                                 + Set Weekly Focus
@@ -2211,7 +2211,7 @@ export default function PersonalPlanner() {
 
                             </div>
                           ) : (
-                            <p className="text-xs leading-5 text-slate-600">
+                            <p className="text-xs leading-5 text-lifeos-muted">
                               This week is managed from {
                                 getWeekOwnerLabel(
                                   week.weekStartDate
@@ -2234,12 +2234,12 @@ export default function PersonalPlanner() {
                       <div
                         className={`
                           border-t
-                          border-slate-800
+                          border-lifeos-border
 
                           ${
                             completedWeek
-                              ? "bg-slate-950/20"
-                              : "bg-slate-950/35"
+                              ? "bg-lifeos-app/20"
+                              : "bg-lifeos-app/35"
                           }
                         `}
                       >
@@ -2272,7 +2272,7 @@ export default function PersonalPlanner() {
                         ) : !addingTaskHere ? (
                           <div className="px-3 pt-2.5">
 
-                            <p className="text-[10px] text-slate-600">
+                            <p className="text-[11px] text-lifeos-muted">
                               No tasks yet. Turn this focus into one
                               concrete next action.
                             </p>
@@ -2325,15 +2325,15 @@ export default function PersonalPlanner() {
                                   flex-1
                                   rounded-lg
                                   border
-                                  border-slate-700
-                                  bg-slate-950
+                                  border-lifeos-border
+                                  bg-lifeos-app
                                   px-3
                                   py-2
                                   text-sm
-                                  text-white
+                                  text-lifeos-text
                                   outline-none
-                                  placeholder:text-slate-600
-                                  focus:border-cyan-500/60
+                                  placeholder:text-lifeos-muted
+                                  focus:border-lifeos-accent/60
                                 "
                               />
 
@@ -2347,13 +2347,13 @@ export default function PersonalPlanner() {
                                 }
                                 className="
                                   rounded-lg
-                                  bg-cyan-500
+                                  bg-lifeos-accent
                                   px-3
                                   text-xs
                                   font-semibold
-                                  text-slate-950
+                                  text-lifeos-accent-foreground
                                   transition
-                                  hover:bg-cyan-400
+                                  hover:bg-lifeos-accent
                                 "
                               >
                                 Add
@@ -2367,12 +2367,12 @@ export default function PersonalPlanner() {
                                 className="
                                   rounded-lg
                                   border
-                                  border-slate-800
+                                  border-lifeos-border
                                   px-2.5
                                   text-xs
-                                  text-slate-500
-                                  hover:bg-slate-800
-                                  hover:text-white
+                                  text-lifeos-muted
+                                  hover:bg-lifeos-elevated
+                                  hover:text-lifeos-text
                                 "
                               >
                                 Cancel
@@ -2382,11 +2382,11 @@ export default function PersonalPlanner() {
 
                             <div className="mt-1.5 flex items-center justify-between gap-3">
 
-                              <p className="text-[10px] text-slate-600">
+                              <p className="text-[11px] text-lifeos-muted">
                                 Smart due date
                               </p>
 
-                              <p className="text-[10px] font-medium text-slate-500">
+                              <p className="text-[11px] font-medium text-lifeos-muted">
                                 {
                                   getSmartTaskDate(
                                     week
@@ -2412,10 +2412,10 @@ export default function PersonalPlanner() {
                               text-left
                               text-xs
                               font-medium
-                              text-slate-600
+                              text-lifeos-muted
                               transition
-                              hover:bg-slate-800/30
-                              hover:text-cyan-300
+                              hover:bg-lifeos-elevated/30
+                              hover:text-lifeos-accent
                             "
                           >
                             + Add Task

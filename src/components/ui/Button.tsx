@@ -17,7 +17,7 @@ export default function Button({
     secondary:
       "border border-lifeos-border bg-lifeos-elevated text-lifeos-text hover:bg-lifeos-hover",
     danger:
-      "bg-red-600 text-white hover:bg-red-700",
+      "bg-lifeos-danger text-lifeos-danger-foreground hover:opacity-90",
     ghost:
       "bg-transparent text-lifeos-text-secondary hover:bg-lifeos-hover hover:text-lifeos-text",
   };
@@ -31,12 +31,12 @@ export default function Button({
         justify-center
         gap-2
         min-h-11
-        rounded-xl
+        rounded-[var(--lifeos-radius-control)]
         px-4
         py-2.5
         text-sm
         font-semibold
-        transition-all
+        transition-colors
         duration-150
         focus-visible:outline-2
         focus-visible:outline-offset-2

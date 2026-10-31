@@ -98,10 +98,10 @@ function SummaryCard({
   icon,
 }: SummaryCardProps) {
   const toneClass = {
-    cyan: "border-cyan-500/20 bg-cyan-500/[0.04] text-cyan-300",
-    emerald: "border-emerald-500/20 bg-emerald-500/[0.04] text-emerald-300",
-    amber: "border-amber-500/20 bg-amber-500/[0.04] text-amber-300",
-    violet: "border-violet-500/20 bg-violet-500/[0.04] text-violet-300",
+    cyan: "border-lifeos-accent/20 bg-lifeos-accent/[0.04] text-lifeos-accent",
+    emerald: "border-lifeos-success/20 bg-lifeos-success/[0.04] text-lifeos-success",
+    amber: "border-lifeos-warning/20 bg-lifeos-warning/[0.04] text-lifeos-warning",
+    violet: "border-lifeos-chart-secondary/20 bg-lifeos-chart-secondary/[0.04] text-lifeos-chart-secondary",
   }[tone];
 
   return (
@@ -109,7 +109,7 @@ function SummaryCard({
       className={`rounded-2xl border p-5 ${toneClass}`}
     >
       <div className="flex items-center justify-between gap-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em]">
+        <p className="text-[11px] font-bold uppercase tracking-[0.12em]">
           {label}
         </p>
 
@@ -118,11 +118,11 @@ function SummaryCard({
         </span>
       </div>
 
-      <p className="mt-4 text-3xl font-black text-white">
+      <p className="mt-4 text-3xl font-bold text-lifeos-text">
         {value}
       </p>
 
-      <p className="mt-2 text-xs leading-5 text-slate-400">
+      <p className="mt-2 text-xs leading-5 text-lifeos-text-secondary">
         {description}
       </p>
     </div>
@@ -135,7 +135,7 @@ function EmptyList({
   children: React.ReactNode;
 }) {
   return (
-    <p className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-4 py-4 text-sm leading-6 text-slate-500">
+    <p className="rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-4 py-4 text-sm leading-6 text-lifeos-muted">
       {children}
     </p>
   );
@@ -161,9 +161,9 @@ function SignalList({
       {items.map((item) => (
         <li
           key={item}
-          className="flex gap-3 rounded-xl border border-slate-800 bg-slate-950/40 px-4 py-3 text-sm leading-6 text-slate-300"
+          className="flex gap-3 rounded-xl border border-lifeos-border bg-lifeos-app/40 px-4 py-3 text-sm leading-6 text-lifeos-text-secondary"
         >
-          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-400" />
+          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-lifeos-accent" />
           <span>{item}</span>
         </li>
       ))}
@@ -398,17 +398,17 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
 
       <section className="lifeos-surface-panel flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted">
             {period} review
           </p>
 
-          <h2 className="mt-1 text-xl font-bold text-white">
+          <h2 className="mt-1 text-xl font-bold text-lifeos-text">
             {review.range.label}
           </h2>
 
           {review.range.measuredThroughDate !==
             review.range.endDate && (
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-lifeos-muted">
               Measured through {review.range.measuredThroughDate}
             </p>
           )}
@@ -471,7 +471,7 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
 
       {period === "weekly" ? <WeeklyReviewPanel state={sourceState} referenceDate={referenceDate} now={today} onCreateLifeGoal={onCreateLifeGoal} /> : <>
       {!hasActivity && (
-        <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/30 px-6 py-5 text-sm leading-6 text-slate-400">
+        <div className="rounded-2xl border border-dashed border-lifeos-border bg-lifeos-surface/30 px-6 py-5 text-sm leading-6 text-lifeos-text-secondary">
           Nothing has been recorded for this period yet. Your review will fill in as you execute.
         </div>
       )}
@@ -527,13 +527,13 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
       <section className="grid gap-5 xl:grid-cols-3">
         <Card
           hover={false}
-          className="border-emerald-500/15 bg-emerald-500/[0.025]"
+          className="border-lifeos-success/15 bg-lifeos-success/[0.025]"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-300">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-success">
             What went well
           </p>
 
-          <h2 className="mt-2 text-xl font-bold text-white">
+          <h2 className="mt-2 text-xl font-bold text-lifeos-text">
             Completed work
           </h2>
 
@@ -549,13 +549,13 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
 
         <Card
           hover={false}
-          className="border-amber-500/15 bg-amber-500/[0.025]"
+          className="border-lifeos-warning/15 bg-lifeos-warning/[0.025]"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-warning">
             What slipped
           </p>
 
-          <h2 className="mt-2 text-xl font-bold text-white">
+          <h2 className="mt-2 text-xl font-bold text-lifeos-text">
             Unfinished commitments
           </h2>
 
@@ -571,13 +571,13 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
 
         <Card
           hover={false}
-          className="border-cyan-500/15 bg-cyan-500/[0.025]"
+          className="border-lifeos-accent/15 bg-lifeos-accent/[0.025]"
         >
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-accent">
             Carry forward
           </p>
 
-          <h2 className="mt-2 text-xl font-bold text-white">
+          <h2 className="mt-2 text-xl font-bold text-lifeos-text">
             Still open
           </h2>
 
@@ -595,40 +595,40 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
       <section className="grid gap-5 lg:grid-cols-2">
         <Card hover={false}>
           <div className="flex items-start gap-4">
-            <div className="rounded-xl bg-cyan-500/10 p-3 text-cyan-300">
+            <div className="rounded-xl bg-lifeos-accent/10 p-3 text-lifeos-accent">
               <FaFlagCheckered />
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted">
                 Planning status
               </p>
 
-              <h2 className="mt-2 text-xl font-bold text-white">
+              <h2 className="mt-2 text-xl font-bold text-lifeos-text">
                 {review.planning.label}
               </h2>
 
               {review.planning.focus ? (
-                <p className="mt-3 break-words text-sm leading-6 text-slate-300">
+                <p className="mt-3 break-words text-sm leading-6 text-lifeos-text-secondary">
                   {review.planning.focus}
                 </p>
               ) : (
-                <p className="mt-3 text-sm leading-6 text-slate-500">
+                <p className="mt-3 text-sm leading-6 text-lifeos-muted">
                   No dated planning focus is available for this period.
                 </p>
               )}
 
               <div className="mt-4 flex flex-wrap gap-2 text-xs">
-                <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1.5 text-slate-300">
+                <span className="rounded-full border border-lifeos-border bg-lifeos-app px-3 py-1.5 text-lifeos-text-secondary">
                   {review.planning.active} active
                 </span>
-                <span className="rounded-full border border-slate-700 bg-slate-950 px-3 py-1.5 text-slate-300">
+                <span className="rounded-full border border-lifeos-border bg-lifeos-app px-3 py-1.5 text-lifeos-text-secondary">
                   {review.planning.completed} completed
                 </span>
               </div>
 
               {review.planning.unavailableReason && (
-                <p className="mt-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04] px-4 py-3 text-xs leading-5 text-amber-200/80">
+                <p className="mt-4 rounded-xl border border-lifeos-warning/15 bg-lifeos-warning/[0.04] px-4 py-3 text-xs leading-5 text-lifeos-warning">
                   {review.planning.unavailableReason}
                 </p>
               )}
@@ -638,16 +638,16 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
 
         <Card hover={false}>
           <div className="flex items-start gap-4">
-            <div className="rounded-xl bg-violet-500/10 p-3 text-violet-300">
+            <div className="rounded-xl bg-lifeos-chart-secondary/10 p-3 text-lifeos-chart-secondary">
               {trendIcon}
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+              <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted">
                 Completion trend
               </p>
 
-              <h2 className="mt-2 text-xl font-bold text-white">
+              <h2 className="mt-2 text-xl font-bold text-lifeos-text">
                 {period === "daily"
                   ? "Available in weekly and monthly reviews"
                   : review.taskTrend.direction === "same"
@@ -660,12 +660,12 @@ export default function Reviews({onCreateLifeGoal}: {onCreateLifeGoal?: () => vo
               </h2>
 
               {period !== "daily" && (
-                <p className="mt-3 text-sm leading-6 text-slate-400">
+                <p className="mt-3 text-sm leading-6 text-lifeos-text-secondary">
                   {review.taskTrend.currentValue} completed now · {review.taskTrend.previousValue} in the equivalent previous period.
                 </p>
               )}
 
-              <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
+              <p className="mt-4 flex items-center gap-2 text-xs text-lifeos-muted">
                 <FaCalendarDays />
                 Calendar-aligned Analytics V2 comparison
               </p>

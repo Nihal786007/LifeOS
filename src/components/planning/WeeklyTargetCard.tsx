@@ -296,18 +296,18 @@ export default function WeeklyTargetCard({
       <div className="flex items-start justify-between">
 
         <div>
-          <h3 className="text-xl font-bold text-white">
+          <h3 className="text-xl font-bold text-lifeos-text">
             {targetTitle}
           </h3>
 
-          <p className="mt-2 text-cyan-400">
+          <p className="mt-2 text-lifeos-accent">
             🎯{" "}
             {monthlyTarget
               ? monthlyTarget.title
               : "Standalone Weekly Focus"}
           </p>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-slate-400">
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-lifeos-text-secondary">
 
             <span>
               {calendarRange}
@@ -331,7 +331,7 @@ export default function WeeklyTargetCard({
           onClick={
             handleDelete
           }
-          className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+          className="rounded-xl p-3 text-lifeos-danger transition hover:bg-lifeos-danger/10"
           aria-label={
             `Delete ${targetTitle}`
           }
@@ -344,20 +344,20 @@ export default function WeeklyTargetCard({
 
         <div className="mb-2 flex items-center justify-between text-sm">
 
-          <span className="text-slate-400">
+          <span className="text-lifeos-text-secondary">
             Progress
           </span>
 
-          <span className="font-semibold text-cyan-400">
+          <span className="font-semibold text-lifeos-accent">
             {progress}%
           </span>
 
         </div>
 
-        <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+        <div className="h-3 overflow-hidden rounded-full bg-lifeos-elevated">
 
           <div
-            className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+            className="h-full rounded-full bg-lifeos-accent transition-all duration-500"
             style={{
               width:
                 `${progress}%`,
@@ -368,7 +368,7 @@ export default function WeeklyTargetCard({
 
       </div>
 
-      <div className="mt-6 flex items-center gap-2 text-sm text-slate-400">
+      <div className="mt-6 flex items-center gap-2 text-sm text-lifeos-text-secondary">
 
         <FaCalendarAlt />
 
