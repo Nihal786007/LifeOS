@@ -826,35 +826,35 @@ export default function Tasks() {
         <div className="flex items-center gap-5 text-sm">
 
           <div>
-            <span className="font-semibold text-white">
+            <span className="font-semibold text-lifeos-text">
               {tasks.length}
             </span>
 
-            <span className="ml-1 text-slate-500">
+            <span className="ml-1 text-lifeos-muted">
               total
             </span>
           </div>
 
           <div>
-            <span className="font-semibold text-green-400">
+            <span className="font-semibold text-lifeos-success">
               {
                 completedTasks.length
               }
             </span>
 
-            <span className="ml-1 text-slate-500">
+            <span className="ml-1 text-lifeos-muted">
               done
             </span>
           </div>
 
           <div>
-            <span className="font-semibold text-cyan-400">
+            <span className="font-semibold text-lifeos-accent">
               {
                 todayTasks.length
               }
             </span>
 
-            <span className="ml-1 text-slate-500">
+            <span className="ml-1 text-lifeos-muted">
               today
             </span>
           </div>
@@ -898,8 +898,8 @@ export default function Tasks() {
 
                   ${
                     active
-                      ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
-                      : "border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                      ? "border-lifeos-accent/40 bg-lifeos-accent/10 text-lifeos-accent"
+                      : "border-lifeos-border bg-lifeos-surface text-lifeos-text-secondary hover:border-lifeos-border hover:text-lifeos-text"
                   }
                 `}
               >
@@ -914,8 +914,8 @@ export default function Tasks() {
 
                     ${
                       active
-                        ? "text-cyan-400"
-                        : "text-slate-600"
+                        ? "text-lifeos-accent"
+                        : "text-lifeos-muted"
                     }
                   `}
                 >
@@ -934,7 +934,7 @@ export default function Tasks() {
           Search + Smart Quick Add
       ====================================== */}
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-3">
+      <div className="rounded-xl border border-lifeos-border bg-lifeos-surface p-3">
 
         <div className="grid gap-3 xl:grid-cols-[minmax(220px,1fr)_minmax(260px,1.4fr)_130px_150px_auto]">
 
@@ -942,7 +942,7 @@ export default function Tasks() {
 
           <div className="relative">
 
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-600" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-lifeos-muted" />
 
             <Input
               value={
@@ -1006,7 +1006,7 @@ export default function Tasks() {
                   .value as Priority
               )
             }
-            className="h-10 rounded-xl border border-slate-700 bg-slate-950 px-3 text-sm text-slate-200 outline-none transition focus:border-cyan-500"
+            className="h-10 rounded-xl border border-lifeos-border bg-lifeos-app px-3 text-sm text-lifeos-text outline-none transition focus:border-lifeos-accent"
           >
             <option value="low">
               Low
@@ -1088,8 +1088,8 @@ export default function Tasks() {
               ${
                 planScope ===
                 "standalone"
-                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
-                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+                  ? "border-lifeos-accent/40 bg-lifeos-accent/10 text-lifeos-accent"
+                  : "border-lifeos-border bg-lifeos-app text-lifeos-muted hover:text-lifeos-text-secondary"
               }
             `}
           >
@@ -1124,8 +1124,8 @@ export default function Tasks() {
               ${
                 planScope ===
                 "personal"
-                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
-                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+                  ? "border-lifeos-accent/40 bg-lifeos-accent/10 text-lifeos-accent"
+                  : "border-lifeos-border bg-lifeos-app text-lifeos-muted hover:text-lifeos-text-secondary"
               }
             `}
           >
@@ -1158,8 +1158,8 @@ export default function Tasks() {
               ${
                 planScope ===
                 "goal"
-                  ? "border-cyan-500/40 bg-cyan-500/10 text-cyan-300"
-                  : "border-slate-800 bg-slate-950 text-slate-500 hover:text-slate-300"
+                  ? "border-lifeos-accent/40 bg-lifeos-accent/10 text-lifeos-accent"
+                  : "border-lifeos-border bg-lifeos-app text-lifeos-muted hover:text-lifeos-text-secondary"
               }
             `}
           >
@@ -1195,14 +1195,14 @@ export default function Tasks() {
                 min-w-52
                 rounded-lg
                 border
-                border-slate-800
-                bg-slate-950
+                border-lifeos-border
+                bg-lifeos-app
                 px-3
                 text-xs
-                text-slate-300
+                text-lifeos-text-secondary
                 outline-none
                 transition
-                focus:border-cyan-500/50
+                focus:border-lifeos-accent/50
               "
             >
               <option value="">
@@ -1247,14 +1247,14 @@ export default function Tasks() {
               ${
                 placementResult.status ===
                 "matched"
-                  ? "border-emerald-500/20 bg-emerald-500/5"
-                  : "border-amber-500/20 bg-amber-500/5"
+                  ? "border-lifeos-success/20 bg-lifeos-success/5"
+                  : "border-lifeos-warning/20 bg-lifeos-warning/5"
               }
             `}
           >
             <p
               className={`
-                text-[10px]
+                text-[11px]
                 font-semibold
                 uppercase
                 tracking-wider
@@ -1262,15 +1262,15 @@ export default function Tasks() {
                 ${
                   placementResult.status ===
                   "matched"
-                    ? "text-emerald-400"
-                    : "text-amber-400"
+                    ? "text-lifeos-success"
+                    : "text-lifeos-warning"
                 }
               `}
             >
               LifeOS Placement
             </p>
 
-            <p className="mt-1 text-xs text-slate-300">
+            <p className="mt-1 text-xs text-lifeos-text-secondary">
               {
                 placementResult.message
               }
@@ -1278,7 +1278,7 @@ export default function Tasks() {
 
             {placementResult.status ===
               "matched" && (
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500">
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-lifeos-muted">
 
                 {placementResult.goal && (
                   <span>
@@ -1328,18 +1328,18 @@ export default function Tasks() {
                   mt-3
                   rounded-lg
                   border
-                  border-amber-500/15
-                  bg-slate-950/35
+                  border-lifeos-warning/15
+                  bg-lifeos-app/35
                   p-3
                 "
               >
                 <p
                   className="
-                    text-[10px]
+                    text-[11px]
                     font-semibold
                     uppercase
                     tracking-wider
-                    text-amber-400
+                    text-lifeos-warning
                   "
                 >
                   Plan This Week
@@ -1349,8 +1349,8 @@ export default function Tasks() {
                   <p
                     className="
                       mt-1
-                      text-[10px]
-                      text-slate-500
+                      text-[11px]
+                      text-lifeos-muted
                     "
                   >
                     {
@@ -1363,8 +1363,8 @@ export default function Tasks() {
                   <p
                     className="
                       mt-1
-                      text-[10px]
-                      text-slate-600
+                      text-[11px]
+                      text-lifeos-muted
                     "
                   >
                     Monthly outcome:{" "}
@@ -1425,15 +1425,15 @@ export default function Tasks() {
                       flex-1
                       rounded-lg
                       border
-                      border-slate-800
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       px-3
                       text-xs
-                      text-slate-200
+                      text-lifeos-text
                       outline-none
                       transition
-                      placeholder:text-slate-700
-                      focus:border-amber-500/40
+                      placeholder:text-lifeos-muted
+                      focus:border-lifeos-warning/40
                     "
                   />
 
@@ -1446,13 +1446,13 @@ export default function Tasks() {
                       h-9
                       shrink-0
                       rounded-lg
-                      bg-amber-400
+                      bg-lifeos-warning
                       px-3
                       text-xs
                       font-semibold
-                      text-slate-950
+                      text-lifeos-accent-foreground
                       transition
-                      hover:bg-amber-300
+                      hover:bg-lifeos-warning
                     "
                   >
                     Create Weekly Focus

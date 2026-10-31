@@ -153,9 +153,9 @@ export default function CaptureModal({
             <div
               className="
                 rounded-xl
-                bg-cyan-500/15
+                bg-lifeos-accent/15
                 p-3
-                text-cyan-400
+                text-lifeos-accent
               "
             >
               <FaBolt />
@@ -218,7 +218,7 @@ export default function CaptureModal({
           {error && (
             <p
               role="alert"
-              className="mt-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+              className="mt-3 rounded-xl border border-lifeos-danger/30 bg-lifeos-danger/10 px-4 py-3 text-sm text-lifeos-danger"
             >
               Capture is still visible for this session, but local persistence
               failed: {error}
@@ -236,7 +236,7 @@ export default function CaptureModal({
             justify-end
             gap-4
             border-t
-            border-slate-800
+            border-lifeos-border
             p-6
           "
         >

@@ -223,77 +223,21 @@ export default function TaskModal({
   // Form Synchronization
   // ==========================================
 
-  useEffect(
-    () => {
-      if (!open) {
-        return;
-      }
-
-      setError(
-        null
-      );
-
-      if (
-        task
-      ) {
-        setTitle(
-          task.title
-        );
-
-        setDescription(
-          task.description ??
-          ""
-        );
-
-        setDueDate(
-          task.dueDate ??
-          ""
-        );
-
-        setPriority(
-          task.priority
-        );
-
-        setWeeklyTargetId(
-          task.weeklyTargetId !==
-          undefined
-            ? String(
-                task.weeklyTargetId
-              )
-            : ""
-        );
-
-        return;
-      }
-
-      setTitle("");
-
-      setDescription("");
-
-      setDueDate(
-        resolvedDefaultDueDate
-      );
-
-      setPriority(
-        "medium"
-      );
-
-      setWeeklyTargetId(
-        defaultWeeklyTargetId !==
-        undefined
-          ? String(
-              defaultWeeklyTargetId
-            )
-          : ""
-      );
-    },
-    [
-      open,
-      task,
-      resolvedDefaultDueDate,
-      defaultWeeklyTargetId,
-    ]
-  );
+  const [formContext, setFormContext] = useState({ open: false, task, resolvedDefaultDueDate, defaultWeeklyTargetId });
+  if (formContext.open !== open || formContext.task !== task ||
+      formContext.resolvedDefaultDueDate !== resolvedDefaultDueDate ||
+      formContext.defaultWeeklyTargetId !== defaultWeeklyTargetId) {
+    setFormContext({ open, task, resolvedDefaultDueDate, defaultWeeklyTargetId });
+    if (open) {
+      setError(null);
+      setTitle(task?.title ?? "");
+      setDescription(task?.description ?? "");
+      setDueDate(task ? task.dueDate ?? "" : resolvedDefaultDueDate);
+      setPriority(task?.priority ?? "medium");
+      const selectedWeek = task ? task.weeklyTargetId : defaultWeeklyTargetId;
+      setWeeklyTargetId(selectedWeek === undefined ? "" : String(selectedWeek));
+    }
+  }
 
   // ==========================================
   // Escape Handling
@@ -526,8 +470,8 @@ export default function TaskModal({
           className="
             rounded-xl
             border
-            border-cyan-500/15
-            bg-cyan-500/5
+            border-lifeos-accent/15
+            bg-lifeos-accent/5
             px-4
             py-3
           "
@@ -546,11 +490,11 @@ export default function TaskModal({
 
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-cyan-400
+                  text-lifeos-accent
                 "
               >
                 Due
@@ -561,7 +505,7 @@ export default function TaskModal({
                   mt-1
                   text-sm
                   font-semibold
-                  text-slate-200
+                  text-lifeos-text
                 "
               >
                 {
@@ -579,17 +523,17 @@ export default function TaskModal({
 
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-slate-600
+                  text-lifeos-muted
                 "
               >
                 Planning context
               </p>
 
-              <p className="mt-1 text-xs font-medium text-slate-400">
+              <p className="mt-1 text-xs font-medium text-lifeos-text-secondary">
                 {
                   selectedWeeklyTarget
                     ? selectedWeeklyTarget.title
@@ -604,9 +548,9 @@ export default function TaskModal({
           <p
             className="
               mt-2
-              text-[10px]
+              text-[11px]
               leading-4
-              text-slate-600
+              text-lifeos-muted
             "
           >
             {
@@ -630,7 +574,7 @@ export default function TaskModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Task
@@ -679,11 +623,11 @@ export default function TaskModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Description
-            <span className="ml-1 text-slate-600">
+            <span className="ml-1 text-lifeos-muted">
               Optional
             </span>
           </label>
@@ -708,20 +652,20 @@ export default function TaskModal({
               resize-none
               rounded-xl
               border
-              border-slate-800
-              bg-slate-950
+              border-lifeos-border
+              bg-lifeos-app
               px-4
               py-3
               text-sm
-              text-white
+              text-lifeos-text
               outline-none
               transition
-              placeholder:text-slate-600
-              focus:border-cyan-500
+              placeholder:text-lifeos-muted
+              focus:border-lifeos-accent
             "
           />
 
-          <p className="mt-1.5 text-[10px] text-slate-600">
+          <p className="mt-1.5 text-[11px] text-lifeos-muted">
             Enter stays available for writing here. Use the Save button when the description is multiline.
           </p>
 
@@ -738,7 +682,7 @@ export default function TaskModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Due Date
@@ -764,15 +708,15 @@ export default function TaskModal({
               w-full
               rounded-xl
               border
-              border-slate-800
-              bg-slate-950
+              border-lifeos-border
+              bg-lifeos-app
               px-4
               py-3
               text-sm
-              text-white
+              text-lifeos-text
               outline-none
               transition
-              focus:border-cyan-500
+              focus:border-lifeos-accent
             "
           />
 
@@ -789,7 +733,7 @@ export default function TaskModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Priority
@@ -810,15 +754,15 @@ export default function TaskModal({
               w-full
               rounded-xl
               border
-              border-slate-800
-              bg-slate-950
+              border-lifeos-border
+              bg-lifeos-app
               px-4
               py-3
               text-sm
-              text-white
+              text-lifeos-text
               outline-none
               transition
-              focus:border-cyan-500
+              focus:border-lifeos-accent
             "
           >
             <option value="low">
@@ -847,7 +791,7 @@ export default function TaskModal({
               mb-2
               block
               text-sm
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             Weekly Focus
@@ -855,7 +799,7 @@ export default function TaskModal({
             <span
               className="
                 ml-1
-                text-slate-600
+                text-lifeos-muted
               "
             >
               Optional
@@ -881,15 +825,15 @@ export default function TaskModal({
               w-full
               rounded-xl
               border
-              border-slate-800
-              bg-slate-950
+              border-lifeos-border
+              bg-lifeos-app
               px-4
               py-3
               text-sm
-              text-white
+              text-lifeos-text
               outline-none
               transition
-              focus:border-cyan-500
+              focus:border-lifeos-accent
             "
           >
             <option value="">
@@ -915,9 +859,9 @@ export default function TaskModal({
           <p
             className="
               mt-2
-              text-[10px]
+              text-[11px]
               leading-4
-              text-slate-600
+              text-lifeos-muted
             "
           >
             Keep the existing Weekly Focus when you want LifeOS to automatically relocate the task based on its due date.
@@ -934,19 +878,19 @@ export default function TaskModal({
             className="
               rounded-lg
               border
-              border-red-500/20
-              bg-red-500/5
+              border-lifeos-danger/20
+              bg-lifeos-danger/5
               px-3
               py-2
             "
           >
-            <p className="text-xs text-red-400">
+            <p className="text-xs text-lifeos-danger">
               {error}
             </p>
           </div>
         )}
 
-        <p className="text-right text-[10px] text-slate-600">
+        <p className="text-right text-[11px] text-lifeos-muted">
           Enter on the task title saves · Esc closes
         </p>
 

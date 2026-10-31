@@ -89,22 +89,22 @@ export class AtlasConnectorRegistry {
   async execute(request: AtlasConnectorRequest): Promise<AtlasConnectorResult> {
     const definition = getConnectorCapabilityDefinition(request.capability);
     if (!definition || definition.connectorId !== request.connectorId) {
-      return { status: "failed", requestId: request.requestId, safeError: "The connector capability is unsupported." };
+      return { status: "failed", requestId: request.requestId, dispatch: "not-started", safeError: "The connector capability is unsupported." };
     }
     if (this.preferenceFor(request.capability) === "blocked") {
-      return { status: "failed", requestId: request.requestId, safeError: "The connector capability is disabled." };
+      return { status: "failed", requestId: request.requestId, dispatch: "not-started", safeError: "The connector capability is disabled." };
     }
     const connector = this.connectors.get(request.connectorId);
     if (!connector || !connector.capabilities.includes(request.capability)) {
-      return { status: "unavailable", requestId: request.requestId, safeError: "The connector is unavailable." };
+      return { status: "unavailable", requestId: request.requestId, dispatch: "not-started", safeError: "The connector is unavailable." };
     }
     if (connector.connectionState() !== "connected") {
-      return { status: "unavailable", requestId: request.requestId, safeError: "The connector is not connected." };
+      return { status: "unavailable", requestId: request.requestId, dispatch: "not-started", safeError: "The connector is not connected." };
     }
     try {
-      return await connector.execute(structuredClone(request));
+      return { ...await connector.execute(structuredClone(request)), dispatch: "started" };
     } catch {
-      return { status: "failed", requestId: request.requestId, safeError: "The connector action failed safely." };
+      return { status: "failed", requestId: request.requestId, dispatch: "started", safeError: "The connector action failed safely." };
     }
   }
 }

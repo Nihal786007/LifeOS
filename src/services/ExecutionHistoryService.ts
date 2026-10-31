@@ -73,10 +73,13 @@ export class ExecutionHistoryService {
   private static repositoryUnsubscribe: () => void = () => undefined;
   private static readonly listeners = new Set<() => void>();
   private static mutationVersion = 0;
+  private static repositoryGeneration = 0;
   private static expectedSnapshot: ExecutionRecord[] | null = null;
 
   static configureRepository(repository: CompatibleRepository): void {
     if (this.repository === repository) return;
+    this.repositoryGeneration += 1;
+    const generation = this.repositoryGeneration;
 
     this.repositoryUnsubscribe();
     this.repositoryUnsubscribe = () => undefined;
@@ -93,6 +96,7 @@ export class ExecutionHistoryService {
       this.records = repository.load();
       this.phase = "hydrated";
       this.repositoryUnsubscribe = repository.subscribe(() => {
+        if (this.repository !== repository || this.repositoryGeneration !== generation) return;
         this.records = repository.load();
         this.notify();
       });
@@ -101,6 +105,7 @@ export class ExecutionHistoryService {
 
   static releaseRepository(repository: CompatibleRepository): void {
     if (this.repository !== repository) return;
+    this.repositoryGeneration += 1;
     this.repositoryUnsubscribe();
     this.repositoryUnsubscribe = () => undefined;
     this.repository = null;
@@ -120,21 +125,28 @@ export class ExecutionHistoryService {
 
     const repository = this.getRepository();
     if (!isAsyncRepository(repository)) return Promise.resolve(this.getAll());
+    const generation = this.repositoryGeneration;
+    const ownsRepository = () => this.repository === repository && this.repositoryGeneration === generation;
 
     this.initialization = repository.initialize((phase) => {
+      if (!ownsRepository()) return;
       this.phase = phase;
       onPhase?.(phase);
     }).then((records) => {
+      if (!ownsRepository()) throw new Error("Execution History initialization account scope changed");
       this.records = cloneRecords(records);
       this.phase = "hydrated";
       this.persistenceError = null;
-      this.repositoryUnsubscribe = repository.subscribe((event) =>
-        this.handleRepositoryEvent(event));
+      this.repositoryUnsubscribe = repository.subscribe((event) => {
+        if (ownsRepository()) this.handleRepositoryEvent(event);
+      });
       return this.getAll();
     }).catch((error: unknown) => {
       const resolved = error instanceof Error ? error : new Error(String(error));
-      this.phase = "error";
-      this.persistenceError = resolved;
+      if (ownsRepository()) {
+        this.phase = "error";
+        this.persistenceError = resolved;
+      }
       throw resolved;
     });
 
@@ -180,6 +192,18 @@ export class ExecutionHistoryService {
     }
   }
 
+  /** Fence a delayed producer to the repository it was authorized to use.
+   * Keep the check and dispatch synchronous; never redirect to a new account. */
+  static appendForRepository(
+    repository: CompatibleRepository,
+    records: ExecutionRecord[]
+  ): ExecutionRecord[] {
+    if (this.repository !== repository) {
+      throw new Error("Execution History account scope is no longer current");
+    }
+    return this.append(records);
+  }
+
   static append(records: ExecutionRecord[]): ExecutionRecord[] {
     this.requireHydrated();
     if (records.length === 0) return this.getAll();
@@ -195,23 +219,34 @@ export class ExecutionHistoryService {
     return this.getAll();
   }
 
+  static async appendConfirmedForRepository(
+    repository: CompatibleRepository, records: ExecutionRecord[]
+  ): Promise<ExecutionRecord[]> {
+    if (this.repository !== repository) throw new Error("Execution History account scope is no longer current");
+    return this.appendConfirmed(records);
+  }
+
   static async appendConfirmed(records: ExecutionRecord[]): Promise<ExecutionRecord[]> {
     this.requireHydrated();
     if (records.length === 0) return this.getAll();
 
     const previous = this.getAll();
+    const repository = this.getRepository();
+    const generation = this.repositoryGeneration;
     const added = cloneRecords(records);
     const expected = [...added, ...previous];
     const version = ++this.mutationVersion;
     this.applyOptimistic(expected);
 
     try {
-      const repository = this.getRepository();
+      if (this.repository !== repository || generation !== this.repositoryGeneration) {
+        throw new Error("Execution History account scope changed");
+      }
       const persisted = isAsyncRepository(repository)
         ? await repository.append(added)
         : repository.append(added);
 
-      if (version !== this.mutationVersion) {
+      if (this.repository !== repository || generation !== this.repositoryGeneration || version !== this.mutationVersion) {
         throw new Error("Execution History confirmation was superseded by another mutation");
       }
       if (!recordsMatch(persisted, expected)) {
@@ -223,7 +258,7 @@ export class ExecutionHistoryService {
       this.persistenceError = null;
       return this.getAll();
     } catch (error) {
-      if (version === this.mutationVersion) {
+      if (this.repository === repository && generation === this.repositoryGeneration && version === this.mutationVersion) {
         this.expectedSnapshot = null;
         this.records = previous;
         this.persistenceError = error instanceof Error ? error : new Error(String(error));
@@ -286,9 +321,13 @@ export class ExecutionHistoryService {
     expected: ExecutionRecord[],
     operation: () => Promise<ExecutionRecord[]>
   ): void {
+    const repository = this.getRepository();
+    const generation = this.repositoryGeneration;
     const version = ++this.mutationVersion;
+    const ownsMutation = () => this.repository === repository &&
+      this.repositoryGeneration === generation && version === this.mutationVersion;
     void operation().then((persisted) => {
-      if (version !== this.mutationVersion) return;
+      if (!ownsMutation()) return;
       if (!recordsMatch(persisted, expected)) {
         throw new Error("Execution History persistence returned an unexpected snapshot");
       }
@@ -296,7 +335,7 @@ export class ExecutionHistoryService {
       this.records = cloneRecords(persisted);
       this.persistenceError = null;
     }).catch((error: unknown) => {
-      if (version !== this.mutationVersion) return;
+      if (!ownsMutation()) return;
       this.expectedSnapshot = null;
       this.persistenceError = error instanceof Error ? error : new Error(String(error));
       console.error("Execution History persistence failed", this.persistenceError);

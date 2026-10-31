@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useMemo,
   useState,
 } from "react";
@@ -471,10 +472,10 @@ export default function GoalMonthPlanner({
       ]
     );
 
-  function getWeeklyTargetForSlot(
+  const getWeeklyTargetForSlot = useCallback((
     weekStartDate: string,
     weekEndDate: string
-  ) {
+  ) => {
     return monthWeeklyTargets.find(
       (target) =>
         target.weekStartDate ===
@@ -482,7 +483,7 @@ export default function GoalMonthPlanner({
         target.weekEndDate ===
           weekEndDate
     );
-  }
+  }, [monthWeeklyTargets]);
 
   function getTasksForWeeklyTarget(
     weeklyTargetId: number
@@ -573,7 +574,7 @@ export default function GoalMonthPlanner({
         ).length,
       [
         ownedWeeks,
-        monthWeeklyTargets,
+        getWeeklyTargetForSlot,
       ]
     );
 
@@ -947,8 +948,8 @@ export default function GoalMonthPlanner({
         overflow-hidden
         rounded-xl
         border
-        border-slate-800
-        bg-slate-900/55
+        border-lifeos-border
+        bg-lifeos-surface/55
       "
     >
       {/* ======================================
@@ -963,7 +964,7 @@ export default function GoalMonthPlanner({
           px-3
           py-3
           transition
-          hover:bg-slate-800/35
+          hover:bg-lifeos-elevated/35
         "
       >
         <button
@@ -993,7 +994,7 @@ export default function GoalMonthPlanner({
               justify-center
               rounded-md
               text-xs
-              text-slate-500
+              text-lifeos-muted
             "
           >
             {expanded ? (
@@ -1017,7 +1018,7 @@ export default function GoalMonthPlanner({
                 className="
                   text-sm
                   font-semibold
-                  text-slate-200
+                  text-lifeos-text
                 "
               >
                 {formatMonthLabel(
@@ -1030,7 +1031,7 @@ export default function GoalMonthPlanner({
                 className="
                   truncate
                   text-xs
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 {month.title}
@@ -1042,7 +1043,7 @@ export default function GoalMonthPlanner({
             className="
               hidden
               text-[11px]
-              text-slate-600
+              text-lifeos-muted
               sm:inline
             "
           >
@@ -1059,7 +1060,7 @@ export default function GoalMonthPlanner({
               text-right
               text-xs
               font-medium
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             {clampProgress(
@@ -1083,11 +1084,11 @@ export default function GoalMonthPlanner({
             items-center
             justify-center
             rounded-md
-            text-[10px]
-            text-slate-600
+            text-[11px]
+            text-lifeos-muted
             transition
-            hover:bg-slate-800
-            hover:text-cyan-400
+            hover:bg-lifeos-elevated
+            hover:text-lifeos-accent
           "
         >
           <FaPen />
@@ -1102,19 +1103,19 @@ export default function GoalMonthPlanner({
         <div
           className="
             border-t
-            border-slate-800
-            bg-slate-950/35
+            border-lifeos-border
+            bg-lifeos-app/35
             px-3
             py-3
           "
         >
           <p
             className="
-              text-[10px]
+              text-[11px]
               font-semibold
               uppercase
               tracking-wider
-              text-cyan-400
+              text-lifeos-accent
             "
           >
             Edit Monthly Outcome
@@ -1123,8 +1124,8 @@ export default function GoalMonthPlanner({
           <p
             className="
               mt-1
-              text-[10px]
-              text-slate-600
+              text-[11px]
+              text-lifeos-muted
             "
           >
             {formatMonthLabel(
@@ -1179,16 +1180,16 @@ export default function GoalMonthPlanner({
                 flex-1
                 rounded-lg
                 border
-                border-slate-800
-                bg-slate-950
+                border-lifeos-border
+                bg-lifeos-app
                 px-3
                 py-2
                 text-sm
-                text-white
+                text-lifeos-text
                 outline-none
                 transition
-                placeholder:text-slate-700
-                focus:border-cyan-500/50
+                placeholder:text-lifeos-muted
+                focus:border-lifeos-accent/50
               "
               autoFocus
             />
@@ -1207,11 +1208,11 @@ export default function GoalMonthPlanner({
                 items-center
                 justify-center
                 rounded-lg
-                bg-cyan-500
+                bg-lifeos-accent
                 text-xs
-                text-slate-950
+                text-lifeos-accent-foreground
                 transition
-                hover:bg-cyan-400
+                hover:bg-lifeos-accent
               "
             >
               <FaCheck />
@@ -1232,12 +1233,12 @@ export default function GoalMonthPlanner({
                 justify-center
                 rounded-lg
                 border
-                border-slate-800
-                bg-slate-900
+                border-lifeos-border
+                bg-lifeos-surface
                 text-xs
-                text-slate-500
+                text-lifeos-muted
                 transition
-                hover:text-slate-300
+                hover:text-lifeos-text-secondary
               "
             >
               <FaXmark />
@@ -1255,8 +1256,8 @@ export default function GoalMonthPlanner({
           className="
             space-y-2
             border-t
-            border-slate-800
-            bg-slate-950/25
+            border-lifeos-border
+            bg-lifeos-app/25
             p-3
           "
         >
@@ -1274,11 +1275,11 @@ export default function GoalMonthPlanner({
             <div>
               <p
                 className="
-                  text-[10px]
+                  text-[11px]
                   font-bold
                   uppercase
                   tracking-wider
-                  text-slate-500
+                  text-lifeos-muted
                 "
               >
                 Month Workspace
@@ -1287,8 +1288,8 @@ export default function GoalMonthPlanner({
               <p
                 className="
                   mt-1
-                  text-[10px]
-                  text-slate-600
+                  text-[11px]
+                  text-lifeos-muted
                 "
               >
                 Real calendar weeks for{" "}
@@ -1301,9 +1302,9 @@ export default function GoalMonthPlanner({
 
             <span
               className="
-                text-[10px]
+                text-[11px]
                 font-medium
-                text-slate-500
+                text-lifeos-muted
               "
             >
               {plannedOwnedWeeks}
@@ -1321,7 +1322,7 @@ export default function GoalMonthPlanner({
                 rounded-lg
                 border
                 border-dashed
-                border-slate-800
+                border-lifeos-border
                 px-4
                 py-5
                 text-center
@@ -1331,7 +1332,7 @@ export default function GoalMonthPlanner({
                 className="
                   text-xs
                   font-medium
-                  text-slate-400
+                  text-lifeos-text-secondary
                 "
               >
                 No active goal weeks in this month
@@ -1340,8 +1341,8 @@ export default function GoalMonthPlanner({
               <p
                 className="
                   mt-1
-                  text-[10px]
-                  text-slate-600
+                  text-[11px]
+                  text-lifeos-muted
                 "
               >
                 This month falls outside the goal&apos;s active timeline.
@@ -1431,8 +1432,8 @@ export default function GoalMonthPlanner({
                       border
                       ${
                         week.isCurrentWeek
-                          ? "border-cyan-500/25 bg-cyan-500/5"
-                          : "border-slate-800 bg-slate-900/45"
+                          ? "border-lifeos-accent/25 bg-lifeos-accent/5"
+                          : "border-lifeos-border bg-lifeos-surface/45"
                       }
                     `}
                   >
@@ -1462,7 +1463,7 @@ export default function GoalMonthPlanner({
                               className="
                                 text-xs
                                 font-semibold
-                                text-slate-300
+                                text-lifeos-text-secondary
                               "
                             >
                               {week.displayLabel}
@@ -1472,14 +1473,14 @@ export default function GoalMonthPlanner({
                               <span
                                 className="
                                   rounded
-                                  bg-cyan-500/10
+                                  bg-lifeos-accent/10
                                   px-1.5
                                   py-0.5
-                                  text-[9px]
+                                  text-[11px]
                                   font-bold
                                   uppercase
                                   tracking-wide
-                                  text-cyan-400
+                                  text-lifeos-accent
                                 "
                               >
                                 This week
@@ -1492,12 +1493,12 @@ export default function GoalMonthPlanner({
                                 className="
                                   rounded
                                   border
-                                  border-slate-800
-                                  bg-slate-950/40
+                                  border-lifeos-border
+                                  bg-lifeos-app/40
                                   px-1.5
                                   py-0.5
-                                  text-[9px]
-                                  text-slate-600
+                                  text-[11px]
+                                  text-lifeos-muted
                                 "
                               >
                                 Cross-month
@@ -1510,13 +1511,13 @@ export default function GoalMonthPlanner({
                                   className="
                                     rounded
                                     border
-                                    border-violet-500/20
-                                    bg-violet-500/5
+                                    border-lifeos-chart-secondary/20
+                                    bg-lifeos-chart-secondary/5
                                     px-1.5
                                     py-0.5
-                                    text-[9px]
+                                    text-[11px]
                                     font-medium
-                                    text-violet-300
+                                    text-lifeos-chart-secondary
                                   "
                                 >
                                   Owned by{" "}
@@ -1544,7 +1545,7 @@ export default function GoalMonthPlanner({
                                 className="
                                   text-[11px]
                                   font-semibold
-                                  text-slate-300
+                                  text-lifeos-text-secondary
                                 "
                               >
                                 {target.title}
@@ -1552,8 +1553,8 @@ export default function GoalMonthPlanner({
 
                               <span
                                 className="
-                                  text-[10px]
-                                  text-slate-600
+                                  text-[11px]
+                                  text-lifeos-muted
                                 "
                               >
                                 {clampProgress(
@@ -1564,8 +1565,8 @@ export default function GoalMonthPlanner({
 
                               <span
                                 className="
-                                  text-[10px]
-                                  text-slate-600
+                                  text-[11px]
+                                  text-lifeos-muted
                                 "
                               >
                                 {
@@ -1594,11 +1595,11 @@ export default function GoalMonthPlanner({
                                     items-center
                                     justify-center
                                     rounded-md
-                                    text-[9px]
-                                    text-slate-700
+                                    text-[11px]
+                                    text-lifeos-muted
                                     transition
-                                    hover:bg-slate-800
-                                    hover:text-cyan-400
+                                    hover:bg-lifeos-elevated
+                                    hover:text-lifeos-accent
                                   "
                                 >
                                   <FaPen />
@@ -1612,14 +1613,14 @@ export default function GoalMonthPlanner({
                                   <p
                                     className="
                                       text-[11px]
-                                      text-slate-500
+                                      text-lifeos-muted
                                     "
                                   >
                                     Weekly Focus:{" "}
                                     <span
                                       className="
                                         font-medium
-                                        text-slate-400
+                                        text-lifeos-text-secondary
                                       "
                                     >
                                       {
@@ -1632,8 +1633,8 @@ export default function GoalMonthPlanner({
                                     <p
                                       className="
                                         mt-0.5
-                                        text-[10px]
-                                        text-slate-600
+                                        text-[11px]
+                                        text-lifeos-muted
                                       "
                                     >
                                       Managed from{" "}
@@ -1645,14 +1646,14 @@ export default function GoalMonthPlanner({
                                 <p
                                   className="
                                     text-[11px]
-                                    text-slate-600
+                                    text-lifeos-muted
                                   "
                                 >
                                   This real week is planned from{" "}
                                   <span
                                     className="
                                       font-medium
-                                      text-violet-300
+                                      text-lifeos-chart-secondary
                                     "
                                   >
                                     {ownerLabel}
@@ -1663,7 +1664,7 @@ export default function GoalMonthPlanner({
                                 <p
                                   className="
                                     text-[11px]
-                                    text-amber-400/80
+                                    text-lifeos-warning
                                   "
                                 >
                                   {ownerLabel
@@ -1677,7 +1678,7 @@ export default function GoalMonthPlanner({
                               className="
                                 mt-2
                                 text-[11px]
-                                text-slate-600
+                                text-lifeos-muted
                               "
                             >
                               No Weekly Focus planned.
@@ -1711,16 +1712,16 @@ export default function GoalMonthPlanner({
                                 gap-1.5
                                 rounded-md
                                 border
-                                border-cyan-500/20
-                                bg-cyan-500/5
+                                border-lifeos-accent/20
+                                bg-lifeos-accent/5
                                 px-2.5
                                 py-1.5
-                                text-[10px]
+                                text-[11px]
                                 font-semibold
-                                text-cyan-400
+                                text-lifeos-accent
                                 transition
-                                hover:bg-cyan-500/10
-                                hover:text-cyan-300
+                                hover:bg-lifeos-accent/10
+                                hover:text-lifeos-accent
                               "
                             >
                               <FaPlus />
@@ -1744,8 +1745,8 @@ export default function GoalMonthPlanner({
                               gap-2
                               rounded-lg
                               border
-                              border-cyan-500/15
-                              bg-slate-950/35
+                              border-lifeos-accent/15
+                              bg-lifeos-app/35
                               p-2.5
                             "
                           >
@@ -1787,16 +1788,16 @@ export default function GoalMonthPlanner({
                                 flex-1
                                 rounded-lg
                                 border
-                                border-slate-800
-                                bg-slate-950
+                                border-lifeos-border
+                                bg-lifeos-app
                                 px-3
                                 py-2
                                 text-sm
-                                text-white
+                                text-lifeos-text
                                 outline-none
                                 transition
-                                placeholder:text-slate-700
-                                focus:border-cyan-500/50
+                                placeholder:text-lifeos-muted
+                                focus:border-lifeos-accent/50
                               "
                               autoFocus
                             />
@@ -1815,9 +1816,9 @@ export default function GoalMonthPlanner({
                                 items-center
                                 justify-center
                                 rounded-lg
-                                bg-cyan-500
+                                bg-lifeos-accent
                                 text-xs
-                                text-slate-950
+                                text-lifeos-accent-foreground
                               "
                             >
                               <FaCheck />
@@ -1838,10 +1839,10 @@ export default function GoalMonthPlanner({
                                 justify-center
                                 rounded-lg
                                 border
-                                border-slate-800
-                                bg-slate-900
+                                border-lifeos-border
+                                bg-lifeos-surface
                                 text-xs
-                                text-slate-500
+                                text-lifeos-muted
                               "
                             >
                               <FaXmark />
@@ -1860,19 +1861,19 @@ export default function GoalMonthPlanner({
                               mt-3
                               rounded-lg
                               border
-                              border-cyan-500/20
-                              bg-slate-950/40
+                              border-lifeos-accent/20
+                              bg-lifeos-app/40
                               p-3
                             "
                           >
                             <div>
                               <p
                                 className="
-                                  text-[10px]
+                                  text-[11px]
                                   font-semibold
                                   uppercase
                                   tracking-wider
-                                  text-cyan-400
+                                  text-lifeos-accent
                                 "
                               >
                                 New Weekly Focus
@@ -1881,8 +1882,8 @@ export default function GoalMonthPlanner({
                               <p
                                 className="
                                   mt-1
-                                  text-[10px]
-                                  text-slate-600
+                                  text-[11px]
+                                  text-lifeos-muted
                                 "
                               >
                                 {
@@ -1937,16 +1938,16 @@ export default function GoalMonthPlanner({
                                 w-full
                                 rounded-lg
                                 border
-                                border-slate-800
-                                bg-slate-950
+                                border-lifeos-border
+                                bg-lifeos-app
                                 px-3
                                 py-2.5
                                 text-sm
-                                text-white
+                                text-lifeos-text
                                 outline-none
                                 transition
-                                placeholder:text-slate-700
-                                focus:border-cyan-500/50
+                                placeholder:text-lifeos-muted
+                                focus:border-lifeos-accent/50
                               "
                               autoFocus
                             />
@@ -1955,8 +1956,8 @@ export default function GoalMonthPlanner({
                               <p
                                 className="
                                   mt-2
-                                  text-[10px]
-                                  text-amber-400
+                                  text-[11px]
+                                  text-lifeos-warning
                                 "
                               >
                                 {weeklyFocusError}
@@ -1980,10 +1981,10 @@ export default function GoalMonthPlanner({
                                   rounded-md
                                   px-3
                                   py-1.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-medium
-                                  text-slate-500
-                                  hover:bg-slate-800
+                                  text-lifeos-muted
+                                  hover:bg-lifeos-elevated
                                 "
                               >
                                 Cancel
@@ -1996,13 +1997,13 @@ export default function GoalMonthPlanner({
                                 }
                                 className="
                                   rounded-md
-                                  bg-cyan-500
+                                  bg-lifeos-accent
                                   px-3
                                   py-1.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-bold
-                                  text-slate-950
-                                  hover:bg-cyan-400
+                                  text-lifeos-accent-foreground
+                                  hover:bg-lifeos-accent
                                 "
                               >
                                 Create Weekly Focus
@@ -2020,8 +2021,8 @@ export default function GoalMonthPlanner({
                       <div
                         className="
                           border-t
-                          border-slate-800
-                          bg-slate-950/25
+                          border-lifeos-border
+                          bg-lifeos-app/25
                           p-3
                         "
                       >
@@ -2036,11 +2037,11 @@ export default function GoalMonthPlanner({
                           <div>
                             <p
                               className="
-                                text-[10px]
+                                text-[11px]
                                 font-semibold
                                 uppercase
                                 tracking-wider
-                                text-slate-500
+                                text-lifeos-muted
                               "
                             >
                               Tasks
@@ -2049,8 +2050,8 @@ export default function GoalMonthPlanner({
                             <p
                               className="
                                 mt-0.5
-                                text-[10px]
-                                text-slate-600
+                                text-[11px]
+                                text-lifeos-muted
                               "
                             >
                               {weeklyTasks.length ===
@@ -2075,15 +2076,15 @@ export default function GoalMonthPlanner({
                                 gap-1.5
                                 rounded-md
                                 border
-                                border-cyan-500/20
-                                bg-cyan-500/5
+                                border-lifeos-accent/20
+                                bg-lifeos-accent/5
                                 px-2.5
                                 py-1.5
-                                text-[10px]
+                                text-[11px]
                                 font-semibold
-                                text-cyan-400
+                                text-lifeos-accent
                                 transition
-                                hover:bg-cyan-500/10
+                                hover:bg-lifeos-accent/10
                               "
                             >
                               <FaPlus />
@@ -2103,8 +2104,8 @@ export default function GoalMonthPlanner({
                               mt-3
                               rounded-lg
                               border
-                              border-cyan-500/15
-                              bg-slate-950/45
+                              border-lifeos-accent/15
+                              bg-lifeos-app/45
                               p-3
                             "
                           >
@@ -2120,11 +2121,11 @@ export default function GoalMonthPlanner({
                               <div>
                                 <p
                                   className="
-                                    text-[10px]
+                                    text-[11px]
                                     font-semibold
                                     uppercase
                                     tracking-wider
-                                    text-cyan-400
+                                    text-lifeos-accent
                                   "
                                 >
                                   New Task
@@ -2133,8 +2134,8 @@ export default function GoalMonthPlanner({
                                 <p
                                   className="
                                     mt-1
-                                    text-[10px]
-                                    text-slate-600
+                                    text-[11px]
+                                    text-lifeos-muted
                                   "
                                 >
                                   Context:{" "}
@@ -2145,9 +2146,9 @@ export default function GoalMonthPlanner({
                               {taskDueDate && (
                                 <span
                                   className="
-                                    text-[10px]
+                                    text-[11px]
                                     font-medium
-                                    text-slate-500
+                                    text-lifeos-muted
                                   "
                                 >
                                   Due{" "}
@@ -2206,15 +2207,15 @@ export default function GoalMonthPlanner({
                                   min-w-0
                                   rounded-lg
                                   border
-                                  border-slate-800
-                                  bg-slate-950
+                                  border-lifeos-border
+                                  bg-lifeos-app
                                   px-3
                                   text-sm
-                                  text-white
+                                  text-lifeos-text
                                   outline-none
                                   transition
-                                  placeholder:text-slate-700
-                                  focus:border-cyan-500/50
+                                  placeholder:text-lifeos-muted
+                                  focus:border-lifeos-accent/50
                                 "
                                 autoFocus
                               />
@@ -2234,13 +2235,13 @@ export default function GoalMonthPlanner({
                                   h-10
                                   rounded-lg
                                   border
-                                  border-slate-800
-                                  bg-slate-950
+                                  border-lifeos-border
+                                  bg-lifeos-app
                                   px-3
                                   text-sm
-                                  text-slate-300
+                                  text-lifeos-text-secondary
                                   outline-none
-                                  focus:border-cyan-500/50
+                                  focus:border-lifeos-accent/50
                                 "
                               >
                                 <option value="low">
@@ -2272,13 +2273,13 @@ export default function GoalMonthPlanner({
                                   h-10
                                   rounded-lg
                                   border
-                                  border-slate-800
-                                  bg-slate-950
+                                  border-lifeos-border
+                                  bg-lifeos-app
                                   px-3
                                   text-sm
-                                  text-slate-300
+                                  text-lifeos-text-secondary
                                   outline-none
-                                  focus:border-cyan-500/50
+                                  focus:border-lifeos-accent/50
                                 "
                               />
                             </div>
@@ -2296,15 +2297,15 @@ export default function GoalMonthPlanner({
                                     <p
                                       className="
                                         mt-2
-                                        text-[10px]
-                                        text-emerald-400/80
+                                        text-[11px]
+                                        text-lifeos-success
                                       "
                                     >
                                       <FaCheck
                                         className="
                                           mr-1
                                           inline
-                                          text-[9px]
+                                          text-[11px]
                                         "
                                       />
 
@@ -2324,17 +2325,17 @@ export default function GoalMonthPlanner({
                                         mt-3
                                         rounded-lg
                                         border
-                                        border-amber-500/20
-                                        bg-amber-500/5
+                                        border-lifeos-warning/20
+                                        bg-lifeos-warning/5
                                         px-3
                                         py-2
                                       "
                                     >
                                       <p
                                         className="
-                                          text-[10px]
+                                          text-[11px]
                                           font-semibold
-                                          text-amber-400
+                                          text-lifeos-warning
                                         "
                                       >
                                         {
@@ -2363,10 +2364,10 @@ export default function GoalMonthPlanner({
                                   rounded-md
                                   px-3
                                   py-1.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-medium
-                                  text-slate-500
-                                  hover:bg-slate-800
+                                  text-lifeos-muted
+                                  hover:bg-lifeos-elevated
                                 "
                               >
                                 Cancel
@@ -2388,14 +2389,14 @@ export default function GoalMonthPlanner({
                                 }
                                 className="
                                   rounded-md
-                                  bg-cyan-500
+                                  bg-lifeos-accent
                                   px-3
                                   py-1.5
-                                  text-[10px]
+                                  text-[11px]
                                   font-bold
-                                  text-slate-950
+                                  text-lifeos-accent-foreground
                                   transition
-                                  hover:bg-cyan-400
+                                  hover:bg-lifeos-accent
                                   disabled:cursor-not-allowed
                                   disabled:opacity-40
                                 "

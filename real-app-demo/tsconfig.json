@@ -1,0 +1,5 @@
+{
+  "extends": "../tsconfig.app.json",
+  "compilerOptions": { "strict": true, "types": ["vite/client", "node"], "tsBuildInfoFile": "../node_modules/.tmp/real-app-demo.tsbuildinfo" },
+  "include": ["./**/*.ts", "./**/*.tsx", "../vite.real-app-demo.config.ts"]
+}

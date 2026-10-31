@@ -99,7 +99,12 @@ test("approved execution calls only the trusted adapter and records zero-XP audi
   );
   const result = await executor.executeApprovedAction({ proposal: taskProposal(), approval: APPROVED, snapshot: EMPTY });
   assert.deepEqual(calls, ["task.create"]);
-  assert.deepEqual(result, { status: "executed", actionId: ID, entityId: 42, executionRecordIds: [99] });
+  assert.equal(result.status, "executed");
+  if (result.status !== "executed") throw new Error("Expected adapter acknowledgement");
+  assert.equal(result.entityId, 42);
+  assert.deepEqual(result.executionRecordIds, [99]);
+  assert.equal(result.outcome?.operation.status, "succeeded");
+  assert.equal(result.outcome?.audit.status, "unconfirmed");
 });
 
 test("stale entity relationships are rejected before mutation", async () => {
@@ -120,7 +125,9 @@ test("already-completed task proposals are rejected before mutation", async () =
     approval: approvalFor(proposal),
     snapshot: { ...EMPTY, taskIds: [77], completedTaskIds: [77] },
   });
-  assert.deepEqual(result, { status: "rejected", actionId: ID, reason: "The referenced task is already complete." });
+  assert.equal(result.status, "rejected");
+  assert.equal(result.outcome?.operation.status, "not-started");
+  if (result.status === "rejected") assert.equal(result.reason, "The referenced task is already complete.");
   assert.equal(called, false);
 });
 
@@ -285,7 +292,9 @@ test("the same approved proposal cannot execute twice", async () => {
   const executor = new AtlasActionExecutor({ execute: async () => { mutations += 1; return { executed: true }; } });
   assert.equal((await executor.executeApprovedAction({ proposal: taskProposal(), approval: APPROVED, snapshot: EMPTY })).status, "executed");
   const duplicate = await executor.executeApprovedAction({ proposal: taskProposal(), approval: APPROVED, snapshot: EMPTY });
-  assert.deepEqual(duplicate, { status: "rejected", actionId: ID, reason: "This ATLAS action has already been submitted." });
+  assert.equal(duplicate.status, "rejected");
+  assert.equal(duplicate.outcome?.operation.status, "not-started");
+  if (duplicate.status === "rejected") assert.equal(duplicate.reason, "This ATLAS action has already been submitted.");
   assert.equal(mutations, 1);
 });
 

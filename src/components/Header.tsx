@@ -8,7 +8,7 @@ export default function Header() {
           Good Afternoon, Nihal 👋
         </h1>
 
-        <p className="mt-2 text-slate-400">
+        <p className="mt-2 text-lifeos-text-secondary">
           {today.toDateString()}
         </p>
       </div>
@@ -17,10 +17,10 @@ export default function Header() {
         <input
           type="text"
           placeholder="Search..."
-          className="rounded-xl bg-slate-800 px-4 py-2 outline-none focus:ring-2 focus:ring-blue-500"
+          className="rounded-xl bg-lifeos-elevated px-4 py-2 outline-none focus:ring-2 focus:ring-lifeos-accent"
         />
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-bold">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-lifeos-accent text-lg font-bold">
           N
         </div>
       </div>

@@ -80,10 +80,10 @@ export default function UniversalTaskTable({
         className={`
           rounded-xl
           border
-          border-slate-800
-          bg-slate-900/60
+          border-lifeos-border
+          bg-lifeos-surface/60
           text-center
-          text-slate-500
+          text-lifeos-muted
 
           ${
             isCompact
@@ -103,12 +103,15 @@ export default function UniversalTaskTable({
 
   return (
     <div
+      role="region"
+      aria-label="Task table"
+      tabIndex={0}
       className="
-        overflow-hidden
+        overflow-x-auto
         rounded-xl
         border
-        border-slate-800
-        bg-slate-900
+        border-lifeos-border
+        bg-lifeos-surface
       "
     >
       {/* ======================================
@@ -123,14 +126,14 @@ export default function UniversalTaskTable({
             grid-cols-[40px_minmax(150px,1fr)_90px_90px_76px]
             items-center
             border-b
-            border-slate-700
-            bg-slate-950/80
+            border-lifeos-border
+            bg-lifeos-app/80
             px-2
-            text-[10px]
+            text-[11px]
             font-semibold
             uppercase
             tracking-wider
-            text-slate-600
+            text-lifeos-muted
             md:grid
           "
         >
@@ -166,14 +169,14 @@ export default function UniversalTaskTable({
             grid-cols-[44px_minmax(240px,1.2fr)_110px_minmax(220px,1.4fr)_90px_88px_78px_76px]
             items-center
             border-b
-            border-slate-700
-            bg-slate-950/80
+            border-lifeos-border
+            bg-lifeos-app/80
             px-3
             text-[11px]
             font-semibold
             uppercase
             tracking-wider
-            text-slate-500
+            text-lifeos-muted
             md:grid
           "
         >

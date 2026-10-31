@@ -16,32 +16,32 @@ export default function AtlasMission({
       priority.toLowerCase()
     ) {
       case "high":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-lifeos-danger/20 text-lifeos-danger border-lifeos-danger/30";
 
       case "medium":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-lifeos-warning/20 text-lifeos-warning border-lifeos-warning/30";
 
       default:
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-lifeos-success/20 text-lifeos-success border-lifeos-success/30";
     }
   };
 
   return (
-    <div className="rounded-3xl border border-orange-500/30 bg-slate-900 p-6 shadow-lg">
+    <div className="rounded-3xl border border-lifeos-warning/30 bg-lifeos-surface p-6 shadow-lg">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-orange-400">
+        <h2 className="text-xl font-bold text-lifeos-warning">
           🎯 Today's Missions
         </h2>
 
-        <span className="rounded-full bg-orange-500/10 px-3 py-1 text-sm text-orange-300">
+        <span className="rounded-full bg-lifeos-warning/10 px-3 py-1 text-sm text-lifeos-warning">
           {missions.length} Active
         </span>
       </div>
 
       <div className="mt-6 space-y-4">
         {missions.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 p-8 text-center">
-            <p className="text-slate-400">
+          <div className="rounded-2xl border border-dashed border-lifeos-border p-8 text-center">
+            <p className="text-lifeos-text-secondary">
               No missions available.
             </p>
           </div>
@@ -52,7 +52,7 @@ export default function AtlasMission({
                 key={
                   mission.title
                 }
-                className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5 transition-all duration-300 hover:border-orange-500/40 hover:bg-slate-800 hover:shadow-lg hover:shadow-orange-500/10"
+                className="rounded-2xl border border-lifeos-border bg-lifeos-elevated/70 p-5 transition-all duration-300 hover:border-lifeos-warning/40 hover:bg-lifeos-elevated hover:shadow-lg hover:shadow-lifeos-warning/10"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -62,7 +62,7 @@ export default function AtlasMission({
                       }
                     </h3>
 
-                    <p className="mt-3 text-sm text-slate-400">
+                    <p className="mt-3 text-sm text-lifeos-text-secondary">
                       {
                         mission.reason
                       }
@@ -79,7 +79,7 @@ export default function AtlasMission({
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-3">
-                  <div className="rounded-lg bg-slate-900 px-3 py-2 text-sm">
+                  <div className="rounded-lg bg-lifeos-surface px-3 py-2 text-sm">
                     ⏱{" "}
                     {
                       mission.estimatedMinutes
@@ -88,7 +88,7 @@ export default function AtlasMission({
                   </div>
 
                   {mission.completed && (
-                    <div className="rounded-lg bg-green-500/20 px-3 py-2 text-sm text-green-400">
+                    <div className="rounded-lg bg-lifeos-success/20 px-3 py-2 text-sm text-lifeos-success">
                       ✅ Completed
                     </div>
                   )}

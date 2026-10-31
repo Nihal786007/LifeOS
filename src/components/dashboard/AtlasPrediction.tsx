@@ -8,8 +8,8 @@ export default function AtlasPrediction({
   burnoutRisk,
 }: AtlasPredictionProps) {
   return (
-    <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6">
-      <h2 className="text-xl font-bold text-green-400">
+    <div className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-6">
+      <h2 className="text-xl font-bold text-lifeos-success">
         📈 Prediction
       </h2>
 

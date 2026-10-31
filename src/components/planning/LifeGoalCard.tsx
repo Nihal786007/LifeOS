@@ -340,7 +340,7 @@ export default function LifeGoalCard({
   // ==========================================
 
   return (
-    <div className="rounded-3xl border border-slate-700 bg-slate-900 p-6 transition hover:border-cyan-500/50">
+    <div className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-6 transition hover:border-lifeos-accent/50">
 
       <div className="flex items-start justify-between gap-4">
 
@@ -354,7 +354,7 @@ export default function LifeGoalCard({
               ================================== */}
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-lifeos-muted">
                   Goal Title
                 </label>
 
@@ -374,17 +374,17 @@ export default function LifeGoalCard({
                     w-full
                     rounded-xl
                     border
-                    border-slate-700
-                    bg-slate-950
+                    border-lifeos-border
+                    bg-lifeos-app
                     px-4
                     py-3
                     text-lg
                     font-semibold
-                    text-white
+                    text-lifeos-text
                     outline-none
                     transition
-                    placeholder:text-slate-700
-                    focus:border-cyan-500
+                    placeholder:text-lifeos-muted
+                    focus:border-lifeos-accent
                   "
                   placeholder="Life Goal title"
                 />
@@ -395,7 +395,7 @@ export default function LifeGoalCard({
               ================================== */}
 
               <div>
-                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-lifeos-muted">
                   Description
                 </label>
 
@@ -418,17 +418,17 @@ export default function LifeGoalCard({
                     resize-none
                     rounded-xl
                     border
-                    border-slate-700
-                    bg-slate-950
+                    border-lifeos-border
+                    bg-lifeos-app
                     px-4
                     py-3
                     text-sm
                     leading-6
-                    text-slate-200
+                    text-lifeos-text
                     outline-none
                     transition
-                    placeholder:text-slate-700
-                    focus:border-cyan-500
+                    placeholder:text-lifeos-muted
+                    focus:border-lifeos-accent
                   "
                   placeholder="Describe what this goal means..."
                 />
@@ -441,7 +441,7 @@ export default function LifeGoalCard({
               <div className="grid gap-3 sm:grid-cols-2">
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-lifeos-muted">
                     Start Date
                   </label>
 
@@ -461,21 +461,21 @@ export default function LifeGoalCard({
                       w-full
                       rounded-xl
                       border
-                      border-slate-700
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       px-4
                       py-3
                       text-sm
-                      text-slate-200
+                      text-lifeos-text
                       outline-none
                       transition
-                      focus:border-cyan-500
+                      focus:border-lifeos-accent
                     "
                   />
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-lifeos-muted">
                     Target Date
                   </label>
 
@@ -495,15 +495,15 @@ export default function LifeGoalCard({
                       w-full
                       rounded-xl
                       border
-                      border-slate-700
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       px-4
                       py-3
                       text-sm
-                      text-slate-200
+                      text-lifeos-text
                       outline-none
                       transition
-                      focus:border-cyan-500
+                      focus:border-lifeos-accent
                     "
                   />
                 </div>
@@ -515,7 +515,7 @@ export default function LifeGoalCard({
               ================================== */}
 
               {editError && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-300">
+                <div className="rounded-xl border border-lifeos-danger/20 bg-lifeos-danger/5 px-4 py-3 text-sm text-lifeos-danger">
                   {
                     editError
                   }
@@ -538,14 +538,14 @@ export default function LifeGoalCard({
                     items-center
                     gap-2
                     rounded-xl
-                    bg-cyan-500
+                    bg-lifeos-accent
                     px-4
                     py-2.5
                     text-sm
                     font-semibold
-                    text-slate-950
+                    text-lifeos-accent-foreground
                     transition
-                    hover:bg-cyan-400
+                    hover:bg-lifeos-accent
                   "
                 >
                   <FaSave />
@@ -564,16 +564,16 @@ export default function LifeGoalCard({
                     gap-2
                     rounded-xl
                     border
-                    border-slate-700
-                    bg-slate-950
+                    border-lifeos-border
+                    bg-lifeos-app
                     px-4
                     py-2.5
                     text-sm
                     font-semibold
-                    text-slate-300
+                    text-lifeos-text-secondary
                     transition
-                    hover:border-slate-600
-                    hover:text-white
+                    hover:border-lifeos-border
+                    hover:text-lifeos-text
                   "
                 >
                   <FaTimes />
@@ -586,19 +586,19 @@ export default function LifeGoalCard({
             </div>
           ) : (
             <>
-              <h3 className="text-2xl font-bold text-white">
+              <h3 className="text-2xl font-bold text-lifeos-text">
                 {goal.title}
               </h3>
 
               {goal.description && (
-                <p className="mt-2 leading-7 text-slate-400">
+                <p className="mt-2 leading-7 text-lifeos-text-secondary">
                   {
                     goal.description
                   }
                 </p>
               )}
 
-              <div className="mt-3 text-sm text-slate-400">
+              <div className="mt-3 text-sm text-lifeos-text-secondary">
                 {linkedTasks.length}{" "}
                 {linkedTasks.length === 1
                   ? "task"
@@ -621,7 +621,7 @@ export default function LifeGoalCard({
               onClick={
                 handleStartEditing
               }
-              className="rounded-xl p-3 text-cyan-400 transition hover:bg-cyan-500/10"
+              className="rounded-xl p-3 text-lifeos-accent transition hover:bg-lifeos-accent/10"
               aria-label={
                 `Edit ${goal.title}`
               }
@@ -634,7 +634,7 @@ export default function LifeGoalCard({
               onClick={
                 handleDelete
               }
-              className="rounded-xl p-3 text-red-400 transition hover:bg-red-500/10"
+              className="rounded-xl p-3 text-lifeos-danger transition hover:bg-lifeos-danger/10"
               aria-label={
                 `Delete ${goal.title}`
               }
@@ -655,7 +655,7 @@ export default function LifeGoalCard({
             }
           />
 
-          <div className="mt-6 flex flex-col gap-2 text-sm text-slate-400">
+          <div className="mt-6 flex flex-col gap-2 text-sm text-lifeos-text-secondary">
 
             <div className="flex items-center gap-2">
 

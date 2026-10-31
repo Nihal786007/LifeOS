@@ -1,9 +1,9 @@
-import type { CreateTaskInput, TaskPriority, UpdateTaskInput } from "../../shared/types";
+import type { CreateTaskInput, TaskPriority, UpdateTaskInput } from "../../shared/types.ts";
 import type {
   CreateHabitInput,
   HabitWeekday,
   UpdateHabitInput,
-} from "../../shared/habits";
+} from "../../shared/habits.ts";
 
 export const ATLAS_ACTION_PROPOSAL_VERSION = "1.0.0" as const;
 export const ATLAS_ACTION_APPROVAL_VERSION = "1.1.0" as const;
@@ -141,7 +141,7 @@ export interface AtlasActionEntitySnapshot {
   weeklyFocusIds: readonly number[];
 }
 
-export type AtlasActionExecutionResult =
+export type AtlasActionExecutionResult = (
   | {
       status: "executed";
       actionId: string;
@@ -157,17 +157,20 @@ export type AtlasActionExecutionResult =
       status: "failed";
       actionId: string;
       safeError: string;
-    };
+    }
+  | { status: "unknown"; actionId: string; safeError: string }
+) & { outcome?: import("./actionOutcomeTypes.ts").AtlasActionOutcome };
 
-export interface AtlasTrustedMutationResult {
+export type AtlasTrustedMutationResult = {
   executed: boolean;
   entityId?: number;
   executionRecordIds?: readonly number[];
   reason?: string;
-}
+} | { outcome: "unknown"; executed?: never }
+  | { receipt: import("./mutationReceiptTypes.ts").AtlasTaskCreationReceipt; executed?: never };
 
 export interface AtlasActionAdapter {
-  execute(proposal: AtlasActionProposal): Promise<AtlasTrustedMutationResult>;
+  execute(proposal: AtlasActionProposal, attempt?: Readonly<import("./actionOutcomeTypes.ts").AtlasAttemptIdentity>): Promise<AtlasTrustedMutationResult>;
 }
 
 export type AtlasLifeOSActionAdapter = AtlasActionAdapter;
@@ -184,7 +187,10 @@ export interface AtlasActionAuditEntry {
 }
 
 export interface AtlasActionAuditWriter {
-  record(entry: AtlasActionAuditEntry): Promise<readonly number[]>;
+  record(entry: AtlasActionAuditEntry): Promise<readonly number[] | {
+    recordIds: readonly number[];
+    persistence: "confirmed";
+  }>;
 }
 
 export const ATLAS_ACTION_PRIORITIES: readonly TaskPriority[] = [

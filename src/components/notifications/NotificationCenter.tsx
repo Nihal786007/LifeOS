@@ -40,9 +40,9 @@ const CATEGORY_LABELS: Readonly<
 const SEVERITY_STYLES: Readonly<
   Record<NotificationSeverity, string>
 > = {
-  info: "bg-cyan-400 shadow-cyan-400/40",
-  attention: "bg-amber-400 shadow-amber-400/40",
-  important: "bg-rose-400 shadow-rose-400/40",
+  info: "bg-lifeos-accent shadow-lifeos-accent/40",
+  attention: "bg-lifeos-warning shadow-lifeos-warning/40",
+  important: "bg-lifeos-danger shadow-lifeos-danger/40",
 };
 
 function formatNotificationTime(value: string): string {
@@ -106,7 +106,7 @@ export default function NotificationCenter({
         {unreadCount > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-slate-950 bg-cyan-400 px-1 text-[9px] font-black text-slate-950"
+            className="absolute -right-1.5 -top-1.5 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-lifeos-border bg-lifeos-accent px-1 text-[11px] font-bold text-lifeos-accent-foreground"
           >
             {unreadCount > 99 ? "99+" : unreadCount}
           </span>
@@ -119,7 +119,7 @@ export default function NotificationCenter({
             type="button"
             aria-label="Close notifications"
             onClick={() => setOpen(false)}
-            className="fixed inset-0 z-40 cursor-default bg-slate-950/55 backdrop-blur-[2px] lg:bg-transparent lg:backdrop-blur-none"
+            className="fixed inset-0 z-40 cursor-default bg-lifeos-app/55 backdrop-blur-[2px] lg:bg-transparent lg:backdrop-blur-none"
           />
 
           <section
@@ -136,7 +136,7 @@ export default function NotificationCenter({
                 </p>
                 <h2
                   id="lifeos-notification-title"
-                  className="mt-1 text-lg font-black text-lifeos-text"
+                  className="mt-1 text-lg font-bold text-lifeos-text"
                 >
                   Notifications
                 </h2>
@@ -168,7 +168,7 @@ export default function NotificationCenter({
 
             {settingsOpen && (
               <div className="shrink-0 border-b border-lifeos-border bg-lifeos-surface-secondary px-5 py-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted">
                   Show categories
                 </p>
                 <div className="mt-3 grid grid-cols-2 gap-2">
@@ -198,22 +198,22 @@ export default function NotificationCenter({
             <div className="flex min-h-0 flex-1 flex-col">
               {ready && persistenceError && (
                 <p
-                  className="shrink-0 border-b border-rose-400/20 bg-rose-400/10 px-5 py-3 text-xs text-rose-200"
+                  className="shrink-0 border-b border-lifeos-danger/20 bg-lifeos-danger/10 px-5 py-3 text-xs text-lifeos-danger"
                   role="alert"
                 >
                   Notification settings could not be saved. {persistenceError}
                 </p>
               )}
               {notifications.length > 0 && (
-                <div className="flex shrink-0 items-center justify-between border-b border-slate-800/80 px-5 py-3">
-                  <p className="text-xs text-slate-500">
+                <div className="flex shrink-0 items-center justify-between border-b border-lifeos-border/80 px-5 py-3">
+                  <p className="text-xs text-lifeos-muted">
                     {unreadCount} unread · {notifications.length} visible
                   </p>
                   <button
                     type="button"
                     disabled={unreadCount === 0}
                     onClick={markAllRead}
-                    className="flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-cyan-300 transition hover:bg-cyan-400/10 disabled:cursor-default disabled:text-slate-600"
+                    className="flex min-h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-lifeos-accent transition hover:bg-lifeos-accent/10 disabled:cursor-default disabled:text-lifeos-muted"
                   >
                     <FaCheckDouble aria-hidden="true" />
                     Mark all read
@@ -223,7 +223,7 @@ export default function NotificationCenter({
 
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3">
                 {!ready ? (
-                  <div className="flex h-full min-h-48 items-center justify-center px-8 text-center text-sm text-slate-400">
+                  <div className="flex h-full min-h-48 items-center justify-center px-8 text-center text-sm text-lifeos-text-secondary">
                     {persistenceError
                       ? `Notification settings could not be loaded. ${persistenceError}`
                       : "Loading notification settings…"}
@@ -231,10 +231,10 @@ export default function NotificationCenter({
                 ) : notifications.length === 0 ? (
                   <div className="flex h-full min-h-48 items-center justify-center px-8 text-center">
                     <div>
-                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.05] text-cyan-300">
+                      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-lifeos-accent/15 bg-lifeos-accent/[0.05] text-lifeos-accent">
                         <FaBell aria-hidden="true" />
                       </div>
-                      <p className="mt-4 text-sm font-bold text-slate-200">
+                      <p className="mt-4 text-sm font-bold text-lifeos-text">
                         All clear. Nothing needs your attention right now.
                       </p>
                     </div>
@@ -246,15 +246,15 @@ export default function NotificationCenter({
                         key={notification.id}
                         className={`group relative rounded-2xl border p-4 transition ${
                           notification.read
-                            ? "border-slate-800 bg-slate-900/35"
-                            : "border-cyan-400/15 bg-slate-900/80"
+                            ? "border-lifeos-border bg-lifeos-surface/35"
+                            : "border-lifeos-accent/15 bg-lifeos-surface/80"
                         }`}
                       >
                         <button
                           type="button"
                           aria-label={`Mark ${notification.title} as read`}
                           onClick={() => markRead(notification.id)}
-                          className="absolute inset-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+                          className="absolute inset-0 rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lifeos-accent"
                         />
                         <div className="relative pointer-events-none flex items-start gap-3">
                           <span
@@ -263,28 +263,28 @@ export default function NotificationCenter({
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
                               <div>
-                                <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted">
                                   {CATEGORY_LABELS[notification.category]}
                                 </p>
-                                <h3 className="mt-1 text-sm font-bold text-slate-100">
+                                <h3 className="mt-1 text-sm font-bold text-lifeos-text">
                                   {notification.title}
                                 </h3>
                               </div>
                               {!notification.read && (
-                                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-cyan-400" />
+                                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-lifeos-accent" />
                               )}
                             </div>
-                            <p className="mt-1 text-xs leading-5 text-slate-400">
+                            <p className="mt-1 text-xs leading-5 text-lifeos-text-secondary">
                               {notification.message}
                             </p>
                             <div className="mt-3 flex items-center justify-between gap-3">
-                              <time className="text-[10px] text-slate-600">
+                              <time className="text-[11px] text-lifeos-muted">
                                 {formatNotificationTime(notification.createdAt)}
                               </time>
                               <button
                                 type="button"
                                 onClick={() => dismiss(notification.id)}
-                                className="pointer-events-auto relative z-10 min-h-8 rounded-lg px-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 transition hover:bg-slate-800 hover:text-slate-200"
+                                className="pointer-events-auto relative z-10 min-h-8 rounded-lg px-2 text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-muted transition hover:bg-lifeos-elevated hover:text-lifeos-text"
                               >
                                 Dismiss
                               </button>

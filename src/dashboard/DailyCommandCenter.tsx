@@ -19,7 +19,7 @@ import type { AtlasAIOrchestrator } from "../atlas/orchestration/AtlasAIOrchestr
 import { useAtlasCanonicalState } from "../atlas/state/useAtlasCanonicalState";
 import Button from "../components/ui/Button";
 import RecentCaptures from "../components/capture/RecentCaptures";
-import { useHabitExecution } from "../context/HabitExecutionContext";
+import { useHabitExecution } from "../context/habitExecutionContextValue";
 import { usePlanningExecution } from "../context/PlanningExecutionContext";
 import { useGoogleCalendar } from "../connectors/googleCalendar/GoogleCalendarContext";
 import { eventOccursOnLocalDate } from "../connectors/googleCalendar/mapping";
@@ -38,8 +38,8 @@ interface DailyCommandCenterProps {
 }
 
 const PRIORITY_STYLE = {
-  high: "border-lifeos-danger bg-red-400/10 text-lifeos-danger",
-  medium: "border-lifeos-warning bg-amber-400/10 text-lifeos-warning",
+  high: "border-lifeos-danger bg-lifeos-danger/10 text-lifeos-danger",
+  medium: "border-lifeos-warning bg-lifeos-warning/10 text-lifeos-warning",
   low: "border-lifeos-border bg-lifeos-elevated text-lifeos-text-secondary",
 } as const;
 
@@ -100,7 +100,7 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
             <p className="lifeos-page-description">{daily.dateLabel} · Here’s what matters today.</p>
           </div>
           <div className="rounded-xl border border-lifeos-border bg-lifeos-surface p-4">
-            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-lifeos-accent">Primary focus</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-accent">Primary focus</p>
             <p className="mt-2 text-lg font-bold text-lifeos-text">{brief.primaryFocus.title}</p>
             <p className="mt-1 text-xs leading-5 text-lifeos-text-secondary">{brief.primaryFocus.reasons[0]}</p>
             {daily.priorities[0] && (
@@ -121,8 +121,8 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-5">
           {[["Tasks", daily.summary.tasks], ["Completed", daily.summary.tasksCompleted], ["Habits due", daily.summary.habitsDue], ["Habits done", daily.summary.habitsCompleted], ["XP today", daily.summary.xp]].map(([label, value]) => (
             <div key={label} className="rounded-xl bg-lifeos-surface-secondary px-4 py-3">
-              <p className="text-2xl font-black text-lifeos-text">{value}</p>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-wider text-lifeos-muted">{label}</p>
+              <p className="text-2xl font-bold text-lifeos-text">{value}</p>
+              <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-lifeos-muted">{label}</p>
             </div>
           ))}
         </div>
@@ -130,8 +130,8 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
 
       {googleCalendar.connection.state === "connected" && (
         <section className="lifeos-surface-panel p-5 sm:p-6" aria-labelledby="today-schedule-heading">
-          <div className="flex items-center justify-between gap-4"><div><p className="lifeos-page-eyebrow">External calendar</p><h2 id="today-schedule-heading" className="mt-1 text-lg font-bold text-lifeos-text">Today’s schedule</h2></div><span className="lifeos-status-pill text-blue-300">Google · read-only</span></div>
-          {todaysEvents.length === 0 ? <p className="lifeos-empty-state mt-4">No Google Calendar events today.</p> : <div className="mt-4 space-y-2">{todaysEvents.slice(0, 6).map((event) => <div key={`${event.calendarId}:${event.externalId}`} className="flex items-start gap-4 rounded-xl bg-lifeos-surface-secondary px-4 py-3"><span className="w-16 shrink-0 text-xs font-black text-blue-300">{event.start.kind === "date" ? "All day" : new Date(event.start.dateTime).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span><div className="min-w-0"><p className="truncate text-sm font-semibold text-lifeos-text">{event.title}</p><p className="mt-1 text-xs text-lifeos-muted">{event.calendarName}</p></div></div>)}</div>}
+          <div className="flex items-center justify-between gap-4"><div><p className="lifeos-page-eyebrow">External calendar</p><h2 id="today-schedule-heading" className="mt-1 text-lg font-bold text-lifeos-text">Today’s schedule</h2></div><span className="lifeos-status-pill text-lifeos-accent">Google · read-only</span></div>
+          {todaysEvents.length === 0 ? <p className="lifeos-empty-state mt-4">No Google Calendar events today.</p> : <div className="mt-4 space-y-2">{todaysEvents.slice(0, 6).map((event) => <div key={`${event.calendarId}:${event.externalId}`} className="flex items-start gap-4 rounded-xl bg-lifeos-surface-secondary px-4 py-3"><span className="w-16 shrink-0 text-xs font-bold text-lifeos-accent">{event.start.kind === "date" ? "All day" : new Date(event.start.dateTime).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}</span><div className="min-w-0"><p className="truncate text-sm font-semibold text-lifeos-text">{event.title}</p><p className="mt-1 text-xs text-lifeos-muted">{event.calendarName}</p></div></div>)}</div>}
         </section>
       )}
 
@@ -145,7 +145,7 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
             {daily.priorities.map((task) => (
               <button key={task.id} type="button" onClick={() => onNavigate("tasks")} className="lifeos-surface-panel group p-5 text-left transition hover:border-lifeos-accent">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-black text-lifeos-accent">#{task.rank}</span>
+                  <span className="text-xs font-bold text-lifeos-accent">#{task.rank}</span>
                   <span className="lifeos-status-pill text-lifeos-warning">ATLAS urgency: {task.tier}</span>
                 </div>
                 <h3 className="mt-3 font-bold text-lifeos-text group-hover:text-lifeos-accent">{task.title}</h3>
@@ -237,15 +237,15 @@ export default function DailyCommandCenter({ orchestrator, onNavigate, onOpenCap
           <div className="mt-4 grid grid-cols-2 gap-3">
             {[["Tasks completed", daily.progress.tasksCompleted], ["Habits completed", daily.progress.habitsCompleted], ["XP earned", daily.progress.xpEarned], ["Execution events", daily.progress.executionCount]].map(([label, value]) => (
               <div key={label} className="rounded-xl bg-lifeos-surface-secondary p-3">
-                <p className="text-xl font-black text-lifeos-text">{value}</p><p className="mt-1 text-[10px] uppercase tracking-wider text-lifeos-muted">{label}</p>
+                <p className="text-xl font-bold text-lifeos-text">{value}</p><p className="mt-1 text-[11px] uppercase tracking-wider text-lifeos-muted">{label}</p>
               </div>
             ))}
           </div>
         </article>}
         <div className="space-y-5">
           {atlasInsight && (
-            <article className={`rounded-2xl border p-5 ${atlasInsight.important ? "border-lifeos-warning bg-amber-400/5" : "border-lifeos-border bg-lifeos-surface"}`}>
-              <div className="flex items-center gap-2 text-lifeos-accent">{atlasInsight.important ? <FaTriangleExclamation /> : <FaBrain />}<p className="text-[10px] font-black uppercase tracking-[0.18em]">Deterministic ATLAS insight</p></div>
+            <article className={`rounded-2xl border p-5 ${atlasInsight.important ? "border-lifeos-warning bg-lifeos-warning/5" : "border-lifeos-border bg-lifeos-surface"}`}>
+              <div className="flex items-center gap-2 text-lifeos-accent">{atlasInsight.important ? <FaTriangleExclamation /> : <FaBrain />}<p className="text-[11px] font-bold uppercase tracking-[0.12em]">Deterministic ATLAS insight</p></div>
               <h2 className="mt-3 font-bold text-lifeos-text">{atlasInsight.title}</h2>
               <p className="mt-2 text-sm leading-6 text-lifeos-text-secondary">{atlasInsight.reason}</p>
             </article>

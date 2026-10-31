@@ -83,11 +83,11 @@ export default function TodayTasks() {
 
         <div>
 
-          <h2 className="text-3xl font-bold text-white">
+          <h2 className="text-3xl font-bold text-lifeos-text">
             ✅ Today&apos;s Tasks
           </h2>
 
-          <p className="mt-2 text-slate-400">
+          <p className="mt-2 text-lifeos-text-secondary">
             Focus only on what matters today.
           </p>
 
@@ -105,24 +105,24 @@ export default function TodayTasks() {
 
       </div>
 
-      <div className="rounded-3xl border border-slate-800 bg-slate-900 p-6">
+      <div className="rounded-3xl border border-lifeos-border bg-lifeos-surface p-6">
 
         <div className="flex items-center justify-between">
 
-          <h3 className="text-xl font-semibold text-white">
+          <h3 className="text-xl font-semibold text-lifeos-text">
             Progress
           </h3>
 
-          <span className="font-semibold text-cyan-400">
+          <span className="font-semibold text-lifeos-accent">
             {completed} / {todayTasks.length}
           </span>
 
         </div>
 
-        <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-4 h-3 overflow-hidden rounded-full bg-lifeos-elevated">
 
           <div
-            className="h-full rounded-full bg-cyan-500 transition-all"
+            className="h-full rounded-full bg-lifeos-accent transition-all"
             style={{
               width:
                 todayTasks.length ===

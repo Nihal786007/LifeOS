@@ -1,4 +1,5 @@
 import {
+  useId,
   useState,
 } from "react";
 
@@ -74,6 +75,7 @@ export default function GoalModal({
   onClose,
   onCreate,
 }: GoalModalProps) {
+  const formId = useId();
   const [
     title,
     setTitle,
@@ -133,6 +135,7 @@ export default function GoalModal({
 
   return (
     <Modal
+      onClose={handleClose}
       open={
         open
       }
@@ -164,11 +167,12 @@ export default function GoalModal({
       ====================================== */}
 
       <div>
-        <label className="text-sm text-slate-400">
+        <label htmlFor={`${formId}-title`} className="text-sm text-lifeos-text-secondary">
           Goal Title
         </label>
 
         <input
+          id={`${formId}-title`}
           value={
             title
           }
@@ -185,14 +189,14 @@ export default function GoalModal({
             w-full
             rounded-xl
             border
-            border-slate-700
-            bg-slate-950
+            border-lifeos-border
+            bg-lifeos-app
             p-3
-            text-white
+            text-lifeos-text
             outline-none
             transition
-            placeholder:text-slate-600
-            focus:border-cyan-500
+            placeholder:text-lifeos-muted
+            focus:border-lifeos-accent
           "
           autoFocus
         />
@@ -203,14 +207,15 @@ export default function GoalModal({
       ====================================== */}
 
       <div>
-        <label className="text-sm text-slate-400">
+        <label htmlFor={`${formId}-description`} className="text-sm text-lifeos-text-secondary">
           Description
-          <span className="ml-1 text-slate-600">
+          <span className="ml-1 text-lifeos-muted">
             Optional
           </span>
         </label>
 
         <textarea
+          id={`${formId}-description`}
           rows={
             4
           }
@@ -231,14 +236,14 @@ export default function GoalModal({
             resize-none
             rounded-xl
             border
-            border-slate-700
-            bg-slate-950
+            border-lifeos-border
+            bg-lifeos-app
             p-3
-            text-white
+            text-lifeos-text
             outline-none
             transition
-            placeholder:text-slate-600
-            focus:border-cyan-500
+            placeholder:text-lifeos-muted
+            focus:border-lifeos-accent
           "
         />
       </div>
@@ -251,8 +256,8 @@ export default function GoalModal({
         className="
           rounded-xl
           border
-          border-cyan-500/15
-          bg-cyan-500/5
+          border-lifeos-accent/15
+          bg-lifeos-accent/5
           px-4
           py-3
         "
@@ -268,11 +273,11 @@ export default function GoalModal({
           <div>
             <p
               className="
-                text-[10px]
+                text-[11px]
                 font-bold
                 uppercase
                 tracking-wider
-                text-cyan-400
+                text-lifeos-accent
               "
             >
               Starts
@@ -283,7 +288,7 @@ export default function GoalModal({
                 mt-1
                 text-sm
                 font-semibold
-                text-slate-200
+                text-lifeos-text
               "
             >
               Today
@@ -294,7 +299,7 @@ export default function GoalModal({
             className="
               text-xs
               font-medium
-              text-slate-400
+              text-lifeos-text-secondary
             "
           >
             {getTodayLabel()}
@@ -304,9 +309,9 @@ export default function GoalModal({
         <p
           className="
             mt-2
-            text-[10px]
+            text-[11px]
             leading-4
-            text-slate-600
+            text-lifeos-muted
           "
         >
           LifeOS automatically starts a new Life Goal today.
@@ -327,9 +332,9 @@ export default function GoalModal({
             gap-3
           "
         >
-          <label className="text-sm text-slate-400">
+          <label htmlFor={`${formId}-target`} className="text-sm text-lifeos-text-secondary">
             Target Date
-            <span className="ml-1 text-slate-600">
+            <span className="ml-1 text-lifeos-muted">
               Optional
             </span>
           </label>
@@ -337,9 +342,9 @@ export default function GoalModal({
           {targetDate && (
             <span
               className="
-                text-[10px]
+                text-[11px]
                 font-medium
-                text-cyan-400
+                text-lifeos-accent
               "
             >
               {formatSelectedDate(
@@ -350,6 +355,7 @@ export default function GoalModal({
         </div>
 
         <input
+          id={`${formId}-target`}
           type="date"
           value={
             targetDate
@@ -366,13 +372,13 @@ export default function GoalModal({
             w-full
             rounded-xl
             border
-            border-slate-700
-            bg-slate-950
+            border-lifeos-border
+            bg-lifeos-app
             p-3
-            text-slate-200
+            text-lifeos-text
             outline-none
             transition
-            focus:border-cyan-500
+            focus:border-lifeos-accent
           "
         />
 
@@ -380,8 +386,8 @@ export default function GoalModal({
           <p
             className="
               mt-2
-              text-[10px]
-              text-slate-600
+              text-[11px]
+              text-lifeos-muted
             "
           >
             No deadline required. You can add one later.

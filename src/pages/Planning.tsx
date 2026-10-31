@@ -69,14 +69,14 @@ export default function Planning({ onNavigate }: PlanningProps) {
                 key={layer.label}
                 className="flex items-center gap-2 rounded-xl border border-lifeos-border bg-lifeos-surface px-3 py-3"
               >
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-cyan-400/10 text-xs text-cyan-300">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-lifeos-accent/10 text-xs text-lifeos-accent">
                   <Icon />
                 </span>
                 <span className="min-w-0 truncate text-xs font-semibold text-lifeos-text-secondary">
                   {layer.label}
                 </span>
                 {index < PLANNING_LAYERS.length - 1 && (
-                  <FaArrowRight className="ml-auto hidden text-[10px] text-slate-700 sm:block" />
+                  <FaArrowRight className="ml-auto hidden text-[11px] text-lifeos-muted sm:block" />
                 )}
               </div>
             );
@@ -88,17 +88,17 @@ export default function Planning({ onNavigate }: PlanningProps) {
 
       <section className="lifeos-surface-panel p-5 sm:p-6">
         <div className="mb-6 flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lifeos-accent/10 text-lifeos-accent">
             <FaBullseye />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-accent">
               Goal Planning
             </p>
-            <h2 className="mt-1 text-xl font-bold text-white">
+            <h2 className="mt-1 text-xl font-bold text-lifeos-text">
               Build from a Life Goal
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               Shape each goal into Monthly Outcomes, Weekly Focus, and Tasks.
             </p>
           </div>
@@ -108,17 +108,17 @@ export default function Planning({ onNavigate }: PlanningProps) {
 
       <section className="lifeos-surface-panel p-5 sm:p-6">
         <div className="mb-6 flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-400/10 text-violet-300">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-lifeos-chart-secondary/10 text-lifeos-chart-secondary">
             <FaUser />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-violet-300">
+            <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-lifeos-chart-secondary">
               Personal Planning
             </p>
-            <h2 className="mt-1 text-xl font-bold text-white">
+            <h2 className="mt-1 text-xl font-bold text-lifeos-text">
               Plan without a Life Goal
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-lifeos-muted">
               Create standalone Monthly Outcomes and Weekly Focus for personal
               priorities.
             </p>

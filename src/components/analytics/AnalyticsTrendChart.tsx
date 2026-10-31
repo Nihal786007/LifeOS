@@ -90,7 +90,7 @@ export default function AnalyticsTrendChart({
                 "12px",
 
               boxShadow:
-                "0 10px 30px rgba(0,0,0,0.35)",
+                "var(--lifeos-shadow-surface)",
             }}
             labelStyle={{
               color:
@@ -112,13 +112,13 @@ export default function AnalyticsTrendChart({
             ]}
           />
 
-          <Line
+          <Line isAnimationActive={false}
             type="monotone"
             dataKey={dataKey}
             stroke={
               isXP
-                ? "#facc15"
-                : "#22d3ee"
+                ? "var(--lifeos-chart-secondary)"
+                : "var(--lifeos-accent)"
             }
             strokeWidth={3}
             dot={{
@@ -126,8 +126,8 @@ export default function AnalyticsTrendChart({
 
               fill:
                 isXP
-                  ? "#facc15"
-                  : "#22d3ee",
+                  ? "var(--lifeos-chart-secondary)"
+                  : "var(--lifeos-accent)",
             }}
             activeDot={{
               r: 6,

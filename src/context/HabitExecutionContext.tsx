@@ -1,3 +1,4 @@
+import { HabitExecutionContext } from "./habitExecutionContextValue";
 // ==========================================
 // LifeOS Habit Execution Context
 // Version: 1.0
@@ -26,10 +27,6 @@
 // - Pure mutation logic stays in engines
 // ==========================================
 
-import {
-  createContext,
-  useContext,
-} from "react";
 
 import type {
   ReactNode,
@@ -55,57 +52,6 @@ import type {
   CreateHabitInput,
   UpdateHabitInput,
 } from "../shared/habits";
-
-// ==========================================
-// Context Contract
-// ==========================================
-
-interface HabitExecutionContextValue {
-  createHabit: (
-    input: CreateHabitInput
-  ) => void;
-
-  updateHabit: (
-    habitId: number,
-    input: UpdateHabitInput
-  ) => void;
-
-  archiveHabit: (
-    habitId: number
-  ) => void;
-
-  restoreHabit: (
-    habitId: number
-  ) => void;
-
-  deleteHabit: (
-    habitId: number
-  ) => void;
-
-  completeHabit: (
-    habitId: number,
-    date: string
-  ) => void;
-
-  uncompleteHabit: (
-    habitId: number,
-    date: string
-  ) => void;
-
-  toggleHabit: (
-    habitId: number,
-    date: string
-  ) => void;
-}
-
-// ==========================================
-// Context
-// ==========================================
-
-const HabitExecutionContext =
-  createContext<
-    HabitExecutionContextValue | null
-  >(null);
 
 // ==========================================
 // Helpers
@@ -420,23 +366,4 @@ export function HabitExecutionProvider({
       {children}
     </HabitExecutionContext.Provider>
   );
-}
-
-// ==========================================
-// Hook
-// ==========================================
-
-export function useHabitExecution() {
-  const context =
-    useContext(
-      HabitExecutionContext
-    );
-
-  if (!context) {
-    throw new Error(
-      "useHabitExecution must be used inside HabitExecutionProvider"
-    );
-  }
-
-  return context;
 }

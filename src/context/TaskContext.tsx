@@ -44,7 +44,7 @@ interface TaskContextType {
    */
   replaceTasks: (
     tasks: Task[]
-  ) => void;
+  ) => boolean;
 }
 
 // ==========================================
@@ -159,12 +159,13 @@ export function TaskProvider({
 
   function replaceTasks(
     nextTasks: Task[]
-  ) {
+  ): boolean {
+    if (!mountedRef.current) return false;
     if (!hydrated) {
       const error = new Error("Task mutations require hydrated persistence");
       setTaskPersistence({ phase: "error", error: error.message });
       console.error(error);
-      return;
+      return false;
     }
 
     const version = replacementVersionRef.current + 1;
@@ -189,6 +190,8 @@ export function TaskProvider({
       setTaskPersistence({ phase: "error", error: message });
       console.error("Task persistence replacement failed", error);
     });
+    // The canonical in-memory state accepted this snapshot. Persistence is async.
+    return true;
   }
 
   // ==========================================

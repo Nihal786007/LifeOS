@@ -129,7 +129,7 @@ export default function Sidebar({
         type="button"
         aria-label="Close navigation menu"
         onClick={onClose}
-        className={`fixed inset-0 z-[60] bg-lifeos-overlay backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+        className={`fixed inset-0 z-[60] bg-lifeos-overlay backdrop-blur-sm transition-opacity duration-150 lg:hidden ${
           mobileOpen
             ? "visible pointer-events-auto opacity-100"
             : "invisible pointer-events-none opacity-0"
@@ -139,7 +139,7 @@ export default function Sidebar({
     <aside
       id="lifeos-primary-navigation"
       aria-label="Primary navigation"
-      className={`fixed inset-y-0 left-0 z-[70] flex h-dvh w-[min(18rem,calc(100vw-2rem))] shrink-0 flex-col border-r border-lifeos-divider bg-lifeos-surface shadow-2xl shadow-black/20 transition-transform duration-300 ease-out lg:static lg:z-auto lg:h-full lg:w-72 lg:translate-x-0 lg:shadow-none ${
+      className={`fixed inset-y-0 left-0 z-[70] flex h-dvh w-[min(18rem,calc(100vw-2rem))] shrink-0 flex-col border-r border-lifeos-divider bg-lifeos-surface shadow-2xl shadow-black/20 transition-transform duration-300 ease-out lg:static lg:z-auto lg:h-full lg:w-64 lg:translate-x-0 lg:shadow-none ${
         mobileOpen
           ? "visible translate-x-0"
           : "invisible -translate-x-full lg:visible"
@@ -148,15 +148,15 @@ export default function Sidebar({
 
       {/* Logo */}
 
-      <div className="flex items-start justify-between gap-4 border-b border-slate-800 px-6 py-6 lg:px-8 lg:py-8">
+      <div className="flex items-start justify-between gap-4 border-b border-lifeos-border px-6 py-5">
 
         <div>
 
-        <h1 className="bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-4xl font-black tracking-tight text-transparent">
+        <h1 className="text-3xl font-semibold tracking-tight text-lifeos-text">
           LifeOS
         </h1>
 
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-lifeos-muted">
           Personal Operating System
         </p>
 
@@ -166,7 +166,7 @@ export default function Sidebar({
           type="button"
           aria-label="Close navigation menu"
           onClick={onClose}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-700 bg-slate-900 text-slate-300 transition hover:border-cyan-400/40 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-lifeos-border bg-lifeos-surface text-lifeos-text-secondary transition hover:border-lifeos-accent/40 hover:text-lifeos-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lifeos-accent lg:hidden"
         >
           <FaXmark />
         </button>
@@ -175,9 +175,9 @@ export default function Sidebar({
 
       {/* Navigation */}
 
-      <nav className="flex-1 overflow-y-auto px-5 py-6 lg:py-8">
+      <nav className="flex-1 overflow-y-auto px-4 py-5">
 
-        <p className="mb-5 px-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">
+        <p className="mb-5 px-3 text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
           Navigation
         </p>
 
@@ -190,6 +190,7 @@ export default function Sidebar({
             return (
               <button
                 key={item.id}
+                aria-current={active ? "page" : undefined}
                 onClick={() =>
                   navigateTo(
                     item.id
@@ -209,8 +210,8 @@ export default function Sidebar({
 
                   ${
                     active
-                      ? "border border-cyan-500/20 bg-cyan-500/10 text-cyan-300 shadow-lg shadow-cyan-500/10"
-                      : "border border-transparent text-slate-400 hover:border-slate-700 hover:bg-slate-900 hover:text-white"
+                      ? "border border-lifeos-accent/20 bg-lifeos-accent/10 text-lifeos-accent "
+                      : "border border-transparent text-lifeos-text-secondary hover:border-lifeos-border hover:bg-lifeos-surface hover:text-lifeos-text"
                   }
                 `}
               >
@@ -223,7 +224,7 @@ export default function Sidebar({
                     ${
                       active
                         ? "scale-110"
-                        : "group-hover:translate-x-1"
+                        : "group-hover:translate-x-0.5"
                     }
                   `}
                 >
@@ -250,18 +251,18 @@ export default function Sidebar({
             "atlas"
           )
         }
-        className="mx-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-5 text-left transition hover:border-cyan-400/40 hover:bg-cyan-500/10"
+        className="mx-5 rounded-2xl border border-lifeos-accent/20 bg-lifeos-accent/5 p-5 text-left transition hover:border-lifeos-accent/40 hover:bg-lifeos-accent/10"
       >
 
-        <p className="text-xs uppercase tracking-[0.35em] text-cyan-400">
+        <p className="text-xs uppercase tracking-[0.12em] text-lifeos-accent">
           ATLAS
         </p>
 
-        <h3 className="mt-3 font-semibold text-white">
+        <h3 className="mt-3 font-semibold text-lifeos-text">
           Intelligence
         </h3>
 
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-lifeos-text-secondary">
           Open Intelligence
         </p>
 
@@ -269,21 +270,21 @@ export default function Sidebar({
 
       {/* Profile */}
 
-      <div className="border-t border-slate-800 px-6 py-6">
+      <div className="border-t border-lifeos-border px-6 py-6">
 
         <div className="flex items-center gap-4">
 
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 font-bold text-slate-950">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-lifeos-selected text-lifeos-accent font-bold">
             NA
           </div>
 
           <div>
 
-            <h3 className="font-semibold text-white">
+            <h3 className="font-semibold text-lifeos-text">
               Nihal Arfain Ahmed
             </h3>
 
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-lifeos-text-secondary">
               Builder Mode
             </p>
 

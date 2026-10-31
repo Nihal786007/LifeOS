@@ -62,10 +62,11 @@ export interface AtlasConnectorRequest {
   payload: unknown;
 }
 
-export type AtlasConnectorResult =
+export type AtlasConnectorResult = (
   | { status: "success"; requestId: string; data?: unknown }
   | { status: "unavailable"; requestId: string; safeError: string }
-  | { status: "failed"; requestId: string; safeError: string };
+  | { status: "failed"; requestId: string; safeError: string }
+) & { dispatch?: "not-started" | "started" };
 
 export interface AtlasConnector {
   readonly id: AtlasConnectorId;

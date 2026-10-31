@@ -18,7 +18,7 @@ export default function TaskSection({
 
   return (
     <section className="space-y-5">
-      <h2 className="text-2xl font-bold text-white">
+      <h2 className="text-2xl font-bold text-lifeos-text">
         {title}
       </h2>
 

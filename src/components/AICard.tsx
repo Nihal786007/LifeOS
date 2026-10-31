@@ -6,12 +6,12 @@ interface AICardProps {
 
 export default function AICard({ atlas }: AICardProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-6">
+    <div className="rounded-2xl border border-lifeos-border bg-lifeos-surface p-6">
       <h2 className="text-2xl font-bold mb-4">
         🤖 ATLAS AI Assistant
       </h2>
 
-      <div className="rounded-xl bg-slate-950 p-4 text-slate-300 space-y-3">
+      <div className="rounded-xl bg-lifeos-app p-4 text-lifeos-text-secondary space-y-3">
 
         <p>
           <strong>{atlas.greeting}</strong>
@@ -31,13 +31,13 @@ export default function AICard({ atlas }: AICardProps) {
               {rec.title}
             </p>
 
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-lifeos-text-secondary">
               {rec.description}
             </p>
           </div>
         ))}
 
-        <p className="italic text-cyan-400">
+        <p className="italic text-lifeos-accent">
           "{atlas.motivation}"
         </p>
 

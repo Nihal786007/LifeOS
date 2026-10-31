@@ -15,20 +15,20 @@ export default function GoalProgress({
 
       <div className="mb-2 flex items-center justify-between">
 
-        <span className="text-sm font-medium text-slate-300">
+        <span className="text-sm font-medium text-lifeos-text-secondary">
           Progress
         </span>
 
-        <span className="text-sm font-semibold text-cyan-400">
+        <span className="text-sm font-semibold text-lifeos-accent">
           {safeProgress}%
         </span>
 
       </div>
 
-      <div className="h-3 overflow-hidden rounded-full bg-slate-800">
+      <div className="h-3 overflow-hidden rounded-full bg-lifeos-elevated">
 
         <div
-          className="h-full rounded-full bg-cyan-500 transition-all duration-500"
+          className="h-full rounded-full bg-lifeos-accent transition-all duration-500"
           style={{
             width: `${safeProgress}%`,
           }}
@@ -36,7 +36,7 @@ export default function GoalProgress({
 
       </div>
 
-      <p className="mt-2 text-xs text-slate-500">
+      <p className="mt-2 text-xs text-lifeos-muted">
         Progress is automatically calculated by
         LifeOS as you complete linked plans and
         tasks.

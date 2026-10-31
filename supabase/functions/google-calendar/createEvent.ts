@@ -9,12 +9,16 @@ export function googleEventBody(payload: CalendarEventPayload, eventId: string, 
 }
 
 /** Single insert, never an update/delete. Same approved identity maps to one Google ID. */
-export async function insertApprovedGoogleEvent(fetcher: typeof fetch, input: { accessToken: string; scopes: string[]; payload: unknown; eventId: string; fingerprint: string }): Promise<ExternalCalendarEvent> {
+export async function insertApprovedGoogleEvent(fetcher: typeof fetch, input: { accessToken: string; scopes: string[]; payload: unknown; eventId: string; fingerprint: string; assertAuthorization?: () => Promise<void> }): Promise<ExternalCalendarEvent> {
   const payload = parseCalendarEventPayload(input.payload);
   if (await calendarEventFingerprint(payload) !== input.fingerprint) throw new Error("approval_changed");
   if (!/^[0-9a-v]{5,1024}$/.test(input.eventId)) throw new Error("invalid_event_id");
   const headers = { Authorization: `Bearer ${input.accessToken}`, "Content-Type": "application/json" };
   const call = async (url: string, init: RequestInit) => {
+    // Recheck after every asynchronous boundary, including calendar validation.
+    // Already-dispatched Google requests cannot be recalled; their receipts must
+    // still use the unchanged idempotency/audit finalizer.
+    await input.assertAuthorization?.();
     const response = await fetcher(url, { ...init, signal: AbortSignal.timeout(20_000) });
     if (!response.ok && response.status !== 409) throw new Error(response.status === 401 ? "authorization_revoked" : response.status === 403 ? "calendar_not_writable" : "provider_failure");
     return response;

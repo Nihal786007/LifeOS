@@ -54,7 +54,7 @@ import {
 
 import {
   useHabitExecution,
-} from "../context/HabitExecutionContext";
+} from "../context/habitExecutionContextValue";
 
 import {
   HabitEngine,
@@ -760,20 +760,20 @@ export default function Habits() {
         title="Consistency System"
         description="Execute habits week by week and understand your consistency across longer periods."
       >
-        <Card className="border-orange-500/20 bg-orange-500/5">
-          <p className="text-sm uppercase tracking-[0.2em] text-orange-300">
+        <Card className="border-lifeos-warning/20 bg-lifeos-warning/5">
+          <p className="text-sm uppercase tracking-[0.12em] text-lifeos-warning">
             Today's Progress
           </p>
 
           <div className="mt-4 flex items-end gap-3">
-            <h2 className="text-5xl font-black text-white">
+            <h2 className="text-5xl font-bold text-lifeos-text">
               {
                 todayProgress
               }
               %
             </h2>
 
-            <p className="pb-1 text-sm text-slate-400">
+            <p className="pb-1 text-sm text-lifeos-text-secondary">
               {
                 completedToday.length
               }
@@ -785,9 +785,9 @@ export default function Habits() {
             </p>
           </div>
 
-          <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+          <div className="mt-5 h-2 overflow-hidden rounded-full bg-lifeos-elevated">
             <div
-              className="h-full rounded-full bg-orange-400 transition-all duration-300"
+              className="h-full rounded-full bg-lifeos-warning transition-all duration-300"
               style={{
                 width:
                   `${todayProgress}%`,
@@ -820,7 +820,7 @@ export default function Habits() {
           value={
             completedToday.length
           }
-          color="text-green-400"
+          color="text-lifeos-success"
         />
 
         <StatCard
@@ -831,7 +831,7 @@ export default function Habits() {
           value={
             `${weeklySummary.completionRate}%`
           }
-          color="text-cyan-400"
+          color="text-lifeos-accent"
         />
 
         <StatCard
@@ -842,7 +842,7 @@ export default function Habits() {
           value={
             bestCurrentStreak
           }
-          color="text-orange-400"
+          color="text-lifeos-warning"
         />
       </div>
 
@@ -853,15 +853,15 @@ export default function Habits() {
       <Card className="p-6">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
               Habit Setup
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold text-white">
+            <h2 className="mt-2 text-2xl font-bold text-lifeos-text">
               Add a new habit
             </h2>
 
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-lifeos-text-secondary">
               Choose the weekdays this habit should be scheduled.
               Unscheduled days are rest days and do not break streaks.
             </p>
@@ -872,7 +872,7 @@ export default function Habits() {
             onClick={
               selectEveryDay
             }
-            className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-500/50 hover:text-white"
+            className="rounded-xl border border-lifeos-border px-4 py-2 text-xs font-semibold text-lifeos-text-secondary transition hover:border-lifeos-accent/50 hover:text-lifeos-text"
           >
             Select Every Day
           </button>
@@ -928,8 +928,8 @@ export default function Habits() {
                       className={[
                         "min-w-[58px] rounded-xl border px-3 py-2 text-xs font-semibold transition",
                         selected
-                          ? "border-cyan-400/60 bg-cyan-400/10 text-cyan-300"
-                          : "border-slate-700 bg-slate-900 text-slate-500 hover:border-slate-600 hover:text-slate-300",
+                          ? "border-lifeos-accent/60 bg-lifeos-accent/10 text-lifeos-accent"
+                          : "border-lifeos-border bg-lifeos-surface text-lifeos-muted hover:border-lifeos-border hover:text-lifeos-text-secondary",
                       ].join(
                         " "
                       )}
@@ -945,7 +945,7 @@ export default function Habits() {
 
             {selectedDays.length ===
               0 && (
-              <p className="mt-3 text-sm text-rose-400">
+              <p className="mt-3 text-sm text-lifeos-danger">
                 Select at least one active day.
               </p>
             )}
@@ -967,7 +967,7 @@ export default function Habits() {
       ==================================== */}
 
       <div className="flex justify-center">
-        <div className="inline-flex rounded-2xl border border-slate-800 bg-slate-950/70 p-1.5">
+        <div className="inline-flex rounded-2xl border border-lifeos-border bg-lifeos-app/70 p-1.5">
           <button
             type="button"
             onClick={() =>
@@ -979,8 +979,8 @@ export default function Habits() {
               "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition",
               activeView ===
               "weekly"
-                ? "bg-cyan-500/10 text-cyan-300 shadow-sm"
-                : "text-slate-500 hover:text-slate-300",
+                ? "bg-lifeos-accent/10 text-lifeos-accent shadow-sm"
+                : "text-lifeos-muted hover:text-lifeos-text-secondary",
             ].join(
               " "
             )}
@@ -1001,8 +1001,8 @@ export default function Habits() {
               "flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition",
               activeView ===
               "monthly"
-                ? "bg-cyan-500/10 text-cyan-300 shadow-sm"
-                : "text-slate-500 hover:text-slate-300",
+                ? "bg-lifeos-accent/10 text-lifeos-accent shadow-sm"
+                : "text-lifeos-muted hover:text-lifeos-text-secondary",
             ].join(
               " "
             )}
@@ -1023,11 +1023,11 @@ export default function Habits() {
         <section className="space-y-5">
           <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-accent">
                 Weekly Tracker
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-white">
+              <h2 className="mt-2 text-3xl font-bold text-lifeos-text">
                 {
                   formatWeekRange(
                     selectedWeekStart,
@@ -1036,7 +1036,7 @@ export default function Habits() {
                 }
               </h2>
 
-              <p className="mt-2 text-sm text-slate-400">
+              <p className="mt-2 text-sm text-lifeos-text-secondary">
                 {
                   weeklySummary.completedDays
                 }{" "}
@@ -1084,13 +1084,13 @@ export default function Habits() {
           {activeHabits.length ===
           0 ? (
             <Card className="p-12 text-center">
-              <FaBullseye className="mx-auto text-5xl text-cyan-400" />
+              <FaBullseye className="mx-auto text-5xl text-lifeos-accent" />
 
-              <h3 className="mt-6 text-2xl font-bold text-white">
+              <h3 className="mt-6 text-2xl font-bold text-lifeos-text">
                 No Active Habits
               </h3>
 
-              <p className="mx-auto mt-3 max-w-xl text-slate-400">
+              <p className="mx-auto mt-3 max-w-xl text-lifeos-text-secondary">
                 Add your first habit above and it will appear here as a weekly tracking row.
               </p>
             </Card>
@@ -1100,9 +1100,9 @@ export default function Habits() {
                 <div className="min-w-[1050px]">
                   {/* Header */}
 
-                  <div className="grid grid-cols-[minmax(240px,1.7fr)_repeat(7,minmax(86px,0.7fr))_120px_110px] border-b border-slate-800 bg-slate-950/60">
+                  <div className="grid grid-cols-[minmax(240px,1.7fr)_repeat(7,minmax(86px,0.7fr))_120px_110px] border-b border-lifeos-border bg-lifeos-app/60">
                     <div className="flex items-center px-5 py-4">
-                      <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
                         Habit
                       </span>
                     </div>
@@ -1127,9 +1127,9 @@ export default function Habits() {
                               dateString
                             }
                             className={[
-                              "border-l border-slate-800 px-2 py-3 text-center",
+                              "border-l border-lifeos-border px-2 py-3 text-center",
                               isToday
-                                ? "bg-cyan-500/10"
+                                ? "bg-lifeos-accent/10"
                                 : "",
                             ].join(
                               " "
@@ -1139,8 +1139,8 @@ export default function Habits() {
                               className={[
                                 "text-[11px] font-semibold uppercase tracking-[0.15em]",
                                 isToday
-                                  ? "text-cyan-300"
-                                  : "text-slate-500",
+                                  ? "text-lifeos-accent"
+                                  : "text-lifeos-muted",
                               ].join(
                                 " "
                               )}
@@ -1155,8 +1155,8 @@ export default function Habits() {
                               className={[
                                 "mt-1 text-lg font-bold",
                                 isToday
-                                  ? "text-cyan-300"
-                                  : "text-slate-200",
+                                  ? "text-lifeos-accent"
+                                  : "text-lifeos-text",
                               ].join(
                                 " "
                               )}
@@ -1170,14 +1170,14 @@ export default function Habits() {
                       }
                     )}
 
-                    <div className="flex items-center justify-center border-l border-slate-800 px-3 py-4">
-                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <div className="flex items-center justify-center border-l border-lifeos-border px-3 py-4">
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
                         Week
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-center border-l border-slate-800 px-3 py-4">
-                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <div className="flex items-center justify-center border-l border-lifeos-border px-3 py-4">
+                      <span className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
                         Streak
                       </span>
                     </div>
@@ -1208,13 +1208,13 @@ export default function Habits() {
                           key={
                             habit.id
                           }
-                          className="grid grid-cols-[minmax(240px,1.7fr)_repeat(7,minmax(86px,0.7fr))_120px_110px] border-b border-slate-800/80 last:border-b-0 transition hover:bg-slate-900/30"
+                          className="grid grid-cols-[minmax(240px,1.7fr)_repeat(7,minmax(86px,0.7fr))_120px_110px] border-b border-lifeos-border/80 last:border-b-0 transition hover:bg-lifeos-surface/30"
                         >
                           {/* Habit */}
 
                           <div className="flex min-w-0 items-center justify-between gap-3 px-5 py-4">
                             <div className="min-w-0">
-                              <p className="truncate font-semibold text-white">
+                              <p className="truncate font-semibold text-lifeos-text">
                                 {
                                   habit.name
                                 }
@@ -1236,10 +1236,10 @@ export default function Habits() {
                                           day.value
                                         }
                                         className={[
-                                          "rounded-md px-1.5 py-0.5 text-[9px] font-bold uppercase",
+                                          "rounded-md px-1.5 py-0.5 text-[11px] font-bold uppercase",
                                           active
-                                            ? "bg-cyan-500/10 text-cyan-400"
-                                            : "bg-slate-900 text-slate-700",
+                                            ? "bg-lifeos-accent/10 text-lifeos-accent"
+                                            : "bg-lifeos-surface text-lifeos-muted",
                                         ].join(
                                           " "
                                         )}
@@ -1265,7 +1265,7 @@ export default function Habits() {
                                   habit.id
                                 )
                               }
-                              className="shrink-0 rounded-lg p-2 text-slate-600 transition hover:bg-slate-800 hover:text-slate-300"
+                              className="shrink-0 rounded-lg p-2 text-lifeos-muted transition hover:bg-lifeos-elevated hover:text-lifeos-text-secondary"
                             >
                               <FaBoxArchive />
                             </button>
@@ -1313,9 +1313,9 @@ export default function Habits() {
                                     dateString
                                   }
                                   className={[
-                                    "flex items-center justify-center border-l border-slate-800 px-2 py-4",
+                                    "flex items-center justify-center border-l border-lifeos-border px-2 py-4",
                                     isToday
-                                      ? "bg-cyan-500/[0.04]"
+                                      ? "bg-lifeos-accent/[0.04]"
                                       : "",
                                   ].join(
                                     " "
@@ -1324,7 +1324,7 @@ export default function Habits() {
                                   {!scheduled ? (
                                     <div
                                       title="Rest day"
-                                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-950/60 text-slate-700"
+                                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-lifeos-border bg-lifeos-app/60 text-lifeos-muted"
                                     >
                                       —
                                     </div>
@@ -1356,12 +1356,12 @@ export default function Habits() {
                                       className={[
                                         "flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold transition",
                                         completed
-                                          ? "border-emerald-400/60 bg-emerald-400/15 text-emerald-300 shadow-[0_0_18px_rgba(52,211,153,0.08)]"
+                                          ? "border-lifeos-success/60 bg-lifeos-success/15 text-lifeos-success shadow-[0_0_18px_rgba(52,211,153,0.08)]"
                                           : isFuture
-                                            ? "cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-700"
+                                            ? "cursor-not-allowed border-lifeos-border bg-lifeos-surface/40 text-lifeos-muted"
                                             : isToday
-                                              ? "border-cyan-500/50 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
-                                              : "border-slate-700 bg-slate-900 text-slate-500 hover:border-cyan-500/40 hover:text-cyan-300",
+                                              ? "border-lifeos-accent/50 bg-lifeos-accent/10 text-lifeos-accent hover:bg-lifeos-accent/20"
+                                              : "border-lifeos-border bg-lifeos-surface text-lifeos-muted hover:border-lifeos-accent/40 hover:text-lifeos-accent",
                                       ].join(
                                         " "
                                       )}
@@ -1378,17 +1378,17 @@ export default function Habits() {
 
                           {/* Week */}
 
-                          <div className="flex flex-col items-center justify-center border-l border-slate-800 px-3 py-4">
+                          <div className="flex flex-col items-center justify-center border-l border-lifeos-border px-3 py-4">
                             <span
                               className={[
-                                "text-lg font-black",
+                                "text-lg font-bold",
                                 progress.completionRate ===
                                 100
-                                  ? "text-emerald-400"
+                                  ? "text-lifeos-success"
                                   : progress.completionRate >=
                                       60
-                                    ? "text-cyan-400"
-                                    : "text-slate-300",
+                                    ? "text-lifeos-accent"
+                                    : "text-lifeos-text-secondary",
                               ].join(
                                 " "
                               )}
@@ -1399,7 +1399,7 @@ export default function Habits() {
                               %
                             </span>
 
-                            <span className="mt-1 text-[10px] text-slate-600">
+                            <span className="mt-1 text-[11px] text-lifeos-muted">
                               {
                                 progress.completedDays
                               }
@@ -1412,18 +1412,18 @@ export default function Habits() {
 
                           {/* Streak */}
 
-                          <div className="flex flex-col items-center justify-center border-l border-slate-800 px-3 py-4">
-                            <div className="flex items-center gap-1.5 text-orange-300">
+                          <div className="flex flex-col items-center justify-center border-l border-lifeos-border px-3 py-4">
+                            <div className="flex items-center gap-1.5 text-lifeos-warning">
                               <FaFire className="text-xs" />
 
-                              <span className="text-lg font-black">
+                              <span className="text-lg font-bold">
                                 {
                                   streaks.currentStreak
                                 }
                               </span>
                             </div>
 
-                            <span className="mt-1 text-[10px] text-slate-600">
+                            <span className="mt-1 text-[11px] text-lifeos-muted">
                               best{" "}
                               {
                                 streaks.longestStreak
@@ -1439,25 +1439,25 @@ export default function Habits() {
 
               {/* Legend */}
 
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-slate-800 bg-slate-950/40 px-5 py-4 text-xs text-slate-500">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-lifeos-border bg-lifeos-app/40 px-5 py-4 text-xs text-lifeos-muted">
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded border border-emerald-400/60 bg-emerald-400/15" />
+                  <span className="h-3 w-3 rounded border border-lifeos-success/60 bg-lifeos-success/15" />
                   Completed
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded border border-slate-700 bg-slate-900" />
+                  <span className="h-3 w-3 rounded border border-lifeos-border bg-lifeos-surface" />
                   Scheduled
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="flex h-3 w-3 items-center justify-center text-slate-700">
+                  <span className="flex h-3 w-3 items-center justify-center text-lifeos-muted">
                     —
                   </span>
                   Rest day
                 </div>
 
-                <div className="ml-auto text-slate-600">
+                <div className="ml-auto text-lifeos-muted">
                   {
                     selectedWeekStartDate
                   }{" "}
@@ -1489,20 +1489,20 @@ export default function Habits() {
         0 && (
         <section className="space-y-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-600">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
               History
             </p>
 
-            <h2 className="mt-2 text-xl font-bold text-slate-300">
+            <h2 className="mt-2 text-xl font-bold text-lifeos-text-secondary">
               Archived Habits
             </h2>
 
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mt-2 text-sm text-lifeos-muted">
               Archived habits keep their completion history and can be restored at any time.
             </p>
           </div>
 
-          <Card className="divide-y divide-slate-800 p-0">
+          <Card className="divide-y divide-lifeos-border p-0">
             {archivedHabits.map(
               (
                 habit
@@ -1522,13 +1522,13 @@ export default function Habits() {
                     className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div>
-                      <p className="font-semibold text-slate-300">
+                      <p className="font-semibold text-lifeos-text-secondary">
                         {
                           habit.name
                         }
                       </p>
 
-                      <p className="mt-1 text-xs text-slate-500">
+                      <p className="mt-1 text-xs text-lifeos-muted">
                         Longest streak:{" "}
                         {
                           streaks.longestStreak

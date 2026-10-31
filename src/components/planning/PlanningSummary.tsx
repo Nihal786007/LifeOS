@@ -182,8 +182,8 @@ export default function PlanningSummary() {
                 gap-4
                 rounded-xl
                 border
-                border-slate-800
-                bg-slate-900
+                border-lifeos-border
+                bg-lifeos-surface
                 px-4
                 py-3
               "
@@ -198,10 +198,10 @@ export default function PlanningSummary() {
                   justify-center
                   rounded-lg
                   border
-                  border-cyan-500/20
-                  bg-cyan-500/10
+                  border-lifeos-accent/20
+                  bg-lifeos-accent/10
                   text-sm
-                  text-cyan-400
+                  text-lifeos-accent
                 "
               >
                 {metric.icon}
@@ -209,17 +209,17 @@ export default function PlanningSummary() {
 
               <div className="min-w-0">
 
-                <p className="text-xs font-medium uppercase tracking-wider text-slate-500">
+                <p className="text-xs font-medium uppercase tracking-wider text-lifeos-muted">
                   {metric.label}
                 </p>
 
                 <div className="mt-1 flex items-baseline gap-2">
 
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-lifeos-text">
                     {metric.value}
                   </span>
 
-                  <span className="truncate text-xs text-slate-500">
+                  <span className="truncate text-xs text-lifeos-muted">
                     {metric.detail}
                   </span>
 

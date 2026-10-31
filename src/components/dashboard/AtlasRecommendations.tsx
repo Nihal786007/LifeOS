@@ -10,30 +10,30 @@ export default function AtlasRecommendations({
   const getPriorityColor = (priority: string) => {
     switch (priority.toLowerCase()) {
       case "high":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-lifeos-danger/20 text-lifeos-danger border-lifeos-danger/30";
       case "medium":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-lifeos-warning/20 text-lifeos-warning border-lifeos-warning/30";
       default:
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-lifeos-success/20 text-lifeos-success border-lifeos-success/30";
     }
   };
 
   return (
-    <div className="rounded-3xl border border-cyan-500/30 bg-slate-900 p-6 shadow-lg">
+    <div className="rounded-3xl border border-lifeos-accent/30 bg-lifeos-surface p-6 shadow-lg">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-cyan-400">
+        <h2 className="text-xl font-bold text-lifeos-accent">
           💡 AI Recommendations
         </h2>
 
-        <span className="rounded-full bg-cyan-500/10 px-3 py-1 text-xs uppercase tracking-widest text-cyan-300">
+        <span className="rounded-full bg-lifeos-accent/10 px-3 py-1 text-xs uppercase tracking-widest text-lifeos-accent">
           ATLAS
         </span>
       </div>
 
       <div className="mt-6 space-y-4">
         {recommendations.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-700 p-8 text-center">
-            <p className="text-slate-400">
+          <div className="rounded-2xl border border-dashed border-lifeos-border p-8 text-center">
+            <p className="text-lifeos-text-secondary">
               No recommendations available.
             </p>
           </div>
@@ -41,7 +41,7 @@ export default function AtlasRecommendations({
           recommendations.map((item) => (
             <div
               key={item.title}
-              className="rounded-2xl border border-slate-700 bg-slate-800/70 p-5 transition-all duration-300 hover:border-cyan-500/40 hover:bg-slate-800 hover:shadow-lg hover:shadow-cyan-500/10"
+              className="rounded-2xl border border-lifeos-border bg-lifeos-elevated/70 p-5 transition-all duration-300 hover:border-lifeos-accent/40 hover:bg-lifeos-elevated hover:shadow-lg hover:shadow-lifeos-accent/10"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -49,7 +49,7 @@ export default function AtlasRecommendations({
                     {item.title}
                   </h3>
 
-                  <p className="mt-2 text-slate-400">
+                  <p className="mt-2 text-lifeos-text-secondary">
                     {item.description}
                   </p>
                 </div>
@@ -63,8 +63,8 @@ export default function AtlasRecommendations({
                 </span>
               </div>
 
-              <div className="mt-5 rounded-xl bg-slate-900 p-4">
-                <p className="text-xs uppercase tracking-widest text-cyan-300">
+              <div className="mt-5 rounded-xl bg-lifeos-surface p-4">
+                <p className="text-xs uppercase tracking-widest text-lifeos-accent">
                   Related Mission
                 </p>
 
@@ -73,12 +73,12 @@ export default function AtlasRecommendations({
                 </p>
               </div>
 
-              <div className="mt-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                <p className="text-xs uppercase tracking-widest text-cyan-300">
+              <div className="mt-4 rounded-xl border border-lifeos-accent/20 bg-lifeos-accent/5 p-4">
+                <p className="text-xs uppercase tracking-widest text-lifeos-accent">
                   ATLAS Reason
                 </p>
 
-                <p className="mt-2 text-slate-300">
+                <p className="mt-2 text-lifeos-text-secondary">
                   {item.reason}
                 </p>
               </div>

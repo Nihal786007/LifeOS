@@ -48,20 +48,20 @@ function getScopeColor(
 ): string {
   switch (point.scope) {
     case "goal":
-      return "bg-cyan-400";
+      return "bg-lifeos-accent";
 
     case "personal":
-      return "bg-purple-400";
+      return "bg-lifeos-chart-secondary";
 
     case "weekly":
-      return "bg-emerald-400";
+      return "bg-lifeos-success";
 
     case "standalone":
-      return "bg-slate-400";
+      return "bg-lifeos-muted";
 
     case "unresolved":
     default:
-      return "bg-rose-400";
+      return "bg-lifeos-danger";
   }
 }
 
@@ -70,20 +70,20 @@ function getScopeTextColor(
 ): string {
   switch (point.scope) {
     case "goal":
-      return "text-cyan-300";
+      return "text-lifeos-accent";
 
     case "personal":
-      return "text-purple-300";
+      return "text-lifeos-chart-secondary";
 
     case "weekly":
-      return "text-emerald-300";
+      return "text-lifeos-success";
 
     case "standalone":
-      return "text-slate-300";
+      return "text-lifeos-text-secondary";
 
     case "unresolved":
     default:
-      return "text-rose-300";
+      return "text-lifeos-danger";
   }
 }
 
@@ -111,11 +111,11 @@ export default function AnalyticsEffortDistribution({
 
         <div>
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Completed Execution
           </p>
 
-          <p className="mt-1 text-3xl font-black text-white">
+          <p className="mt-1 text-3xl font-bold text-lifeos-text">
             {
               analytics.totalCompletedTasks
             }
@@ -125,11 +125,11 @@ export default function AnalyticsEffortDistribution({
 
         <div>
 
-          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-muted">
             Classified
           </p>
 
-          <p className="mt-1 text-xl font-bold text-slate-300">
+          <p className="mt-1 text-xl font-bold text-lifeos-text-secondary">
             {
               analytics.classifiedTasks
             }
@@ -141,11 +141,11 @@ export default function AnalyticsEffortDistribution({
           0 && (
           <div>
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-rose-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-lifeos-danger">
               Unresolved
             </p>
 
-            <p className="mt-1 text-xl font-bold text-rose-300">
+            <p className="mt-1 text-xl font-bold text-lifeos-danger">
               {
                 analytics.unresolvedTasks
               }
@@ -185,8 +185,8 @@ export default function AnalyticsEffortDistribution({
                       justify-center
                       rounded-lg
                       border
-                      border-slate-800
-                      bg-slate-950
+                      border-lifeos-border
+                      bg-lifeos-app
                       text-xs
 
                       ${getScopeTextColor(
@@ -203,13 +203,13 @@ export default function AnalyticsEffortDistribution({
 
                   <div className="min-w-0">
 
-                    <p className="truncate text-sm font-semibold text-white">
+                    <p className="truncate text-sm font-semibold text-lifeos-text">
                       {
                         point.label
                       }
                     </p>
 
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-lifeos-muted">
                       {
                         point.completedTasks
                       }{" "}
@@ -224,7 +224,7 @@ export default function AnalyticsEffortDistribution({
                   className={`
                     flex-none
                     text-lg
-                    font-black
+                    font-bold
 
                     ${getScopeTextColor(
                       point
@@ -238,7 +238,7 @@ export default function AnalyticsEffortDistribution({
 
               </div>
 
-              <div className="h-2 overflow-hidden rounded-full bg-slate-900">
+              <div className="h-2 overflow-hidden rounded-full bg-lifeos-surface">
 
                 <div
                   className={`
@@ -271,13 +271,13 @@ export default function AnalyticsEffortDistribution({
 
       {analytics.totalCompletedTasks ===
         0 && (
-        <div className="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 px-5 py-8 text-center">
+        <div className="rounded-xl border border-dashed border-lifeos-border bg-lifeos-app/40 px-5 py-8 text-center">
 
-          <p className="text-sm font-semibold text-slate-300">
+          <p className="text-sm font-semibold text-lifeos-text-secondary">
             No completed execution yet
           </p>
 
-          <p className="mt-2 text-xs leading-5 text-slate-500">
+          <p className="mt-2 text-xs leading-5 text-lifeos-muted">
             Complete tasks in this period to see where your effort is going.
           </p>
 
@@ -290,9 +290,9 @@ export default function AnalyticsEffortDistribution({
 
       {analytics.unresolvedTasks >
         0 && (
-        <div className="rounded-lg border border-rose-500/15 bg-rose-500/5 px-4 py-3">
+        <div className="rounded-lg border border-lifeos-danger/15 bg-lifeos-danger/5 px-4 py-3">
 
-          <p className="text-xs leading-5 text-rose-300">
+          <p className="text-xs leading-5 text-lifeos-danger">
             {
               analytics.unresolvedTasks
             }{" "}
